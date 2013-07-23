@@ -17,7 +17,7 @@
 
 //#include "ctl_matrix.h" 
 
-#include "gfx/gfx_matrix.h"  
+#include "gfx_matrix.h"  
 #include "ctl_gl.h"
 
 // #include "ctl_mglyph.h"
