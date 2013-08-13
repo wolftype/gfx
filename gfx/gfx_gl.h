@@ -418,7 +418,8 @@ namespace gfx {
             glVertex3f(a,b,c);
         }
         
-        inline void vertex( const Vec3f& v){
+        template<class T>
+        inline void vertex( const T& v){
             glVertex3f(v[0],v[1],v[2]);
         }
 
