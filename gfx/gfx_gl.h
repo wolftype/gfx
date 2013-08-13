@@ -422,6 +422,15 @@ namespace gfx {
         inline void vertex( const T& v){
             glVertex3f(v[0],v[1],v[2]);
         }
+        
+        inline void normal(float a, float b, float c){
+            glNormal3f(a,b,c);
+        }
+        
+        template<class T>
+        inline void normal( const T& v){
+            glNormal3f(v[0],v[1],v[2]);
+        }
 
         inline void translate (float const * p){
             glTranslatef(p[0], p[1], p[2]);
