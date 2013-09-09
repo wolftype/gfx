@@ -11,7 +11,6 @@
 #ifndef GFX_Glyph_h
 #define GFX_Glyph_h
 
-//#include "vsr_gxlib.h"
 #include "gfx/gfx_lib.h"
 #include "gfx/gfx_matrix.h" 
 
@@ -335,7 +334,7 @@ inline void Glyph :: Segment(float angle, float radius, bool sign, int res){
 
 	glNormal3f(0, 0, 1);
 
-	int num = res * std::fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
+	int num = res * fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
 
 	glBegin(GL_LINE_STRIP);
 		
@@ -358,7 +357,7 @@ inline void Glyph :: Segment2(float angle, float angle2, float radius, int res){
 
     // * fabs(angle);//floor(20 * PI / (1 + ( PI - angle ) ));
 
-	double ta = std::fabs(angle2 - angle);
+	double ta = fabs(angle2 - angle);
 	int num = res * ta;
     glBegin(GL_LINE_STRIP);
 		
@@ -402,7 +401,7 @@ inline void Glyph ::  DashedSegment (float angle, float radius, bool sign, int r
 
 	glNormal3f(0, 0, 1);
 
-	int num = res * std::fabs(angle);//floor(20 * PI / (1 + ( PI - angle ) ));
+	int num = res * fabs(angle);//floor(20 * PI / (1 + ( PI - angle ) ));
 
 	glBegin(GL_LINES);
 
@@ -422,7 +421,7 @@ inline void Glyph::DashedSegment2(float angle, float angle2, float radius, int r
 
 	glNormal3f(0, 0, 1);
 
-	int num = res * std::fabs(angle);//floor(20 * PI / (1 + ( PI - angle ) ));
+	int num = res * fabs(angle);//floor(20 * PI / (1 + ( PI - angle ) ));
 
 	glBegin(GL_LINES);
 		
@@ -443,7 +442,7 @@ inline void Glyph :: DashedSegment3(float angle, float off, float radius, bool s
 
 	glNormal3f(0, 0, 1);
 
-	int num = res * std::fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
+	int num = res * fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
 
 	glBegin(GL_LINES );
 		
@@ -463,7 +462,7 @@ inline void Glyph :: DirSegment (float angle, float radius, bool clockwise, int 
 
 	glNormal3f(0, 0, 1);
 
-	int num = 10 * std::fabs(angle);
+	int num = 10 * fabs(angle);
 	
 	Glyph::Segment(angle, radius, res);
 	
@@ -483,7 +482,7 @@ inline void Glyph :: DirDashedSegment (float angle, float radius, bool clockwise
 
 	glNormal3f(0, 0, 1);
 
-	int num = 10 * std::fabs(angle);
+	int num = 10 * fabs(angle);
 	
 	Glyph::DashedSegment(angle, radius, res);
 	
@@ -547,8 +546,9 @@ inline void Glyph :: DirDashedSegment (float angle, float radius, bool clockwise
 // 
 // } 
 
-
-inline void Glyph :: Line(const Vec& v1, const Vec& v2) {
+ 
+template<class V>
+inline void Glyph :: Line(const V& v1, const V& v2) {
 
 	glNormal3f(0, 0, 1);
 
@@ -593,90 +593,92 @@ inline void Glyph :: DashedLine(const V& v2, int num) {
 	DashedLine(V(0,0,0), v2, num);
 }      
 
+
+
 template<class V> 
 inline void Glyph :: Dir(const V& v2) {
 
 	// Rot r2 = Gen::ratio( V(0,0,1), v2.unit() );	
 	// Rot t = Gen::aa(r2); 
-	Quat t = Quat::rotor( Vec3f(0,0,1), Vec3f(v2[0], v2[1], v2[2]) ).axan();
+	Quat t = Quat::Rotor( Vec3f(0,0,1), Vec3f(v2[0], v2[1], v2[2]) ).axan();
 	
 	Glyph::Line(v2);
 	glPushMatrix();	
 		glTranslated(v2[0], v2[1], v2[2]);
-		glRotated(t[0], t[1], t[2], t[3]);	
+		glRotated(t.w, t.x, t.y, t.z);	
 		Glyph::Cone();
 	glPopMatrix();
 
 }
+// 
+// inline void Glyph :: Arr(const Vec& v2, bool line) {
+// 
+// 	Rot r2 = Gen::ratio( Vec::z, v2.unit() );	
+// 	Rot t = Gen::aa(r2);
+// 	
+// 	if (line) DashedLine(v2);
+// 	glPushMatrix();
+// 		glTranslated(v2[0], v2[1], v2[2]);
+// 		glRotated(t[0], t[1], t[2], t[3]);	
+// 		Glyph::Cone();
+// 	glPopMatrix();
+// 
+// }
+// 
+// inline void Glyph :: Dir(const Vec& v1, const Vec& v2) {
+// 
+// 	Glyph::Line(v1, v2);	
+// 	Vec v3 = Vec( v2-v1 ).unit();		
+// 	Rot r2 = Gen::ratio( Vec::z, v3 );
+// 	
+// //	double * m = &(Op::mat(r2)[0][0]);
+// 	Rot t = Gen::aa(r2);
+// 	
+// 	glPushMatrix();	
+// 		glTranslated(v2[0], v2[1], v2[2]);
+// 		glRotated(t[0], t[1], t[2], t[3]);
+// //		glMultMatrixd( m );		
+// 		Glyph::Cone();
+// 	glPopMatrix();
+// 
+// }
+// 
+// inline void Glyph :: Dir2D(const Vec& v1, const Vec& v2) {
+// 
+// 	Glyph::Line(v1, v2);	
+// 	Vec v3 = Vec( v2-v1 ).unit();		
+// 	Rot r2 = Gen::ratio( Vec::z, v3 );
+// 	
+// //	double * m = &(Op::mat(r2)[0][0]);
+// 	Rot t = Gen::aa(r2);
+// 	
+// 	glPushMatrix();	
+// 		glTranslated(v2[0], v2[1], v2[2]);
+// 		glRotated(t[0], t[1], t[2], t[3]);
+// //		glMultMatrixd( m );		
+// 		Glyph::TriLine(true);
+// 	glPopMatrix();
+// 
+// }
+// 
+// 
+// inline void Glyph :: Pin(const Vec& v2) {
+// 
+// 	Glyph::Line(Vec(0,0,0), v2);
+// 	
+// 	Vec v3 = v2.unit();	
+// 	
+// 	Rot r2 = Gen::ratio( Vec::z, v3 );
+// 	
+// 	glPushMatrix();	
+// 		glTranslated(v2[0], v2[1], v2[2]);
+// 		//glMultMatrixd( m );
+// 		Glyph::Sphere(.05);
+// 	glPopMatrix();
+// 	
+// } 
 
-inline void Glyph :: Arr(const Vec& v2, bool line) {
 
-	Rot r2 = Gen::ratio( Vec::z, v2.unit() );	
-	Rot t = Gen::aa(r2);
-	
-	if (line) DashedLine(v2);
-	glPushMatrix();
-		glTranslated(v2[0], v2[1], v2[2]);
-		glRotated(t[0], t[1], t[2], t[3]);	
-		Glyph::Cone();
-	glPopMatrix();
-
-}
-
-inline void Glyph :: Dir(const Vec& v1, const Vec& v2) {
-
-	Glyph::Line(v1, v2);	
-	Vec v3 = Vec( v2-v1 ).unit();		
-	Rot r2 = Gen::ratio( Vec::z, v3 );
-	
-//	double * m = &(Op::mat(r2)[0][0]);
-	Rot t = Gen::aa(r2);
-	
-	glPushMatrix();	
-		glTranslated(v2[0], v2[1], v2[2]);
-		glRotated(t[0], t[1], t[2], t[3]);
-//		glMultMatrixd( m );		
-		Glyph::Cone();
-	glPopMatrix();
-
-}
-
-inline void Glyph :: Dir2D(const Vec& v1, const Vec& v2) {
-
-	Glyph::Line(v1, v2);	
-	Vec v3 = Vec( v2-v1 ).unit();		
-	Rot r2 = Gen::ratio( Vec::z, v3 );
-	
-//	double * m = &(Op::mat(r2)[0][0]);
-	Rot t = Gen::aa(r2);
-	
-	glPushMatrix();	
-		glTranslated(v2[0], v2[1], v2[2]);
-		glRotated(t[0], t[1], t[2], t[3]);
-//		glMultMatrixd( m );		
-		Glyph::TriLine(true);
-	glPopMatrix();
-
-}
-
-
-inline void Glyph :: Pin(const Vec& v2) {
-
-	Glyph::Line(Vec(0,0,0), v2);
-	
-	Vec v3 = v2.unit();	
-	
-	Rot r2 = Gen::ratio( Vec::z, v3 );
-	
-//	double * m = &(Op::mat(r2)[0][0]);
-	
-	glPushMatrix();	
-		glTranslated(v2[0], v2[1], v2[2]);
-		//glMultMatrixd( m );
-		Glyph::Sphere(.05);
-	glPopMatrix();
-	
-}
 
 template<class A>
 inline void Glyph :: Point(const A& v) {
@@ -811,12 +813,11 @@ inline void Glyph :: Box ( double w, double h, double d ){
     double fr = d/2.0;     double ba = -d/2.0;
 
     glBegin(GL_QUADS);
-        GL::Quad( Vec(le,bo,fr), Vec(le,to,fr), Vec(ri,to,fr), Vec(ri,bo,fr) ) ;
-        GL::Quad( Vec(le,to,fr), Vec(le,to,ba), Vec(ri,to,ba), Vec(ri,to,fr) ) ;
-        GL::Quad( Vec(le,to,ba), Vec(le,bo,ba), Vec(ri,bo,ba), Vec(ri,to,ba) ) ;
-        GL::Quad( Vec(le,bo,ba), Vec(le,bo,fr), Vec(ri,bo,fr), Vec(ri,bo,ba) ) ;
-        GL::Quad( Vec(le,bo,ba), Vec(le,to,ba), Vec(le,to,fr), Vec(le,bo,fr) ) ;
-        GL::Quad( Vec(ri,bo,fr), Vec(ri,to,fr), Vec(ri,to,ba), Vec(ri,bo,ba) ) ;
+        GL::Quad( Vec3f(le,bo,fr), Vec3f(le,to,fr), Vec3f(ri,to,fr), Vec3f(ri,bo,fr) ) ;
+        GL::Quad( Vec3f(le,to,fr), Vec3f(le,to,ba), Vec3f(ri,to,ba), Vec3f(ri,to,fr) ) ;
+        GL::Quad( Vec3f(le,to,ba), Vec3f(le,bo,ba), Vec3f(ri,bo,ba), Vec3f(ri,to,ba) ) ;
+        GL::Quad( Vec3f(le,bo,ba), Vec3f(le,bo,fr), Vec3f(ri,bo,fr), Vec3f(ri,bo,ba) ) ;
+        GL::Quad( Vec3f(ri,bo,fr), Vec3f(ri,to,fr), Vec3f(ri,to,ba), Vec3f(ri,bo,ba) ) ;
     glEnd();
 
 }
@@ -826,8 +827,8 @@ inline void Glyph :: Cube(double size){
     Glyph::Box(size,size,size);
 }
 
-
-inline void Glyph :: Axes(const Vec& v1, const Vec& v2, const Vec& v3){
+template<class V>
+inline void Glyph :: Axes(const V& v1, const V& v2, const V& v3){
 
 	glBegin(GL_LINES);
 		glVertex3f(0,0,0);
@@ -853,7 +854,7 @@ inline void Glyph :: Axes(const Vec& v1, const Vec& v2, const Vec& v3){
 //     //POINT POSITION AND RADIUS
 // 	Pnt v = Ro::cen(K);                                 //Center of Circle
 // 	double siz = Ro::size(K,false);                            //Squared Radius
-// 	double rad = sqrt ( std::fabs (siz) );                   //Radius
+// 	double rad = sqrt ( fabs (siz) );                   //Radius
 // 	                           
 // 	bool sign = Op::sn(b, Biv::xy);
 // 	
@@ -878,7 +879,7 @@ inline void Glyph :: Axes(const Vec& v1, const Vec& v2, const Vec& v3){
 //     //POINT POSITION AND RADIUS
 // 	Pnt v = Ro::cen(K);                                 //Center of Circle
 // 	double siz = Ro::size(K,false);                       //Squared Radius
-// 	double rad = sqrt ( std::fabs (siz) );                   //Radius
+// 	double rad = sqrt ( fabs (siz) );                   //Radius
 // 	                           
 // 	bool sign = Op::sn(b, Biv::xy);
 // 	
@@ -903,7 +904,7 @@ inline void Glyph :: Axes(const Vec& v1, const Vec& v2, const Vec& v3){
 //     //POINT POSITION AND RADIUS
 //     Pnt v = Ro::cen(K);                                 //Center of Circle
 //     double siz = Ro::size(K,false);                            //Squared Radius
-//     double rad = sqrt ( std::fabs (siz) );                   //Radius
+//     double rad = sqrt ( fabs (siz) );                   //Radius
 //     
 //    // bool sign = Op::sn(b, Biv::xy);
 //     
