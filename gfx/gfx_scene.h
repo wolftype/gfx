@@ -2,7 +2,9 @@
 #define GFX_SCENE_INCLUDED   
 
 #include "gfx_gl.h" 
-#include "gfx_xfmatrix.h"
+#include "gfx_xfmatrix.h" 
+#include "gfx_glsl.h" 
+
 
 namespace gfx{   
 
@@ -132,19 +134,21 @@ namespace gfx{
 		Vec3f& pos() { return mPos; }
 	};
 
-	struct Camera{     
+	struct Camera : public Pose {     
 		
 		Lens lens;
 		
-		Vec3f eye;
-		Vec3f up;
-		Vec3f forward; 
+		Vec3f eye(){ return mPos; }
+		Vec3f up() { return mY; }
+		Vec3f forward() { return -mZ; }
+
 		
 		template<class T>
 		Camera& set(const T& t){
-			eye = t.pos();
-			up = t.y();
-			forward = -t.z();  
+			mPos = t.pos();
+			mY = t.y();
+			mX = t.x();
+			mZ =  t.z();  
 			return *this;
 		}    
 		
@@ -155,14 +159,17 @@ namespace gfx{
 
 		 Camera cam;
 		 Pose model;
-		 XformMat xf;  
+		 XformMat xf; 
+		 Pipe pipe; 
       
 		void fit(int w, int h){
 			cam.lens.width( w ); 
 			cam.lens.height( h ); 
 		} 
 
-	  // FIXED FUNCTION PIPELINE ONLY
+	  // FIXED FUNCTION PIPELINE ONLY 
+	
+	  #ifdef GL_IMMEDIATE_MODE
 	  void push(){
 		
 			GL :: enablePreset();    
@@ -170,34 +177,34 @@ namespace gfx{
 		    glMatrixMode(GL_MODELVIEW);
 		    glPushMatrix();
 		    glLoadIdentity();
-		    gluLookAt( cam.eye.x, cam.eye.y, cam.eye.z, cam.forward.x, cam.forward.y, cam.forward.z, cam.up.x, cam.up.y, cam.up.z);
+		    gluLookAt( cam.eye().x, cam.eye().y, cam.eye().z, cam.forward().x, cam.forward().y, cam.forward().z, cam.up().x, cam.up().y, cam.up().z);
 
 		}
 
 	  void pop(){
             glPopMatrix();  
 			GL :: disablePreset();  
-	   } 
+	   }  
+	 
+	  #endif  
 	
+
 
 	   	//Mat4f mod() { return model.image(); }
         //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
-
- 
 
           Mat4f mod() { return XMat::rot( model.quat() ); }
 
 		 
 		//	Mat4f mvm() { return XMat::trans(0,0,-2); }// XMat::identity() * mod(); }
 			Mat4f mvm() { 
-			//	cout << camera.pos() << endl; 
-				return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
+				return XMat::lookAt( cam.x(), cam.y(), cam.z(), cam.pos() ) * mod(); 
 			}
 
 			 // Mat4f proj() { return XMat::identity(); }
             
 			Mat4f proj() {    
-				Lens& tl = camera.lens();
+				Lens& tl = cam.lens;
                 return XMat::fovy( tl.mFocal * PI/180.0, tl.mWidth/tl.mHeight, tl.mNear, tl.mFar ); 
 	         }
 	
@@ -215,7 +222,7 @@ namespace gfx{
         void updateMatrices(){
         
             Mat4f tmod = mod();
-            Mat4f tview = XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos());
+            Mat4f tview = XMat::lookAt( cam.x(), cam.y(), cam.z() * -1, cam.pos());
             Mat4f tmvm = mvm();
             Mat4f tproj = proj();
             Mat4f tnorm = norm();
@@ -227,7 +234,11 @@ namespace gfx{
             copy(tnorm.val(), tnorm.val() + 16, xf.normal);
          
             xf.toDoubles();
-        }                                          
+        }   
+
+		void onFrame(){
+			updateMatrices();     		
+		}                               	
 
 	};
 	

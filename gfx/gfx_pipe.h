@@ -16,7 +16,6 @@
 #include "gfx_vbo.h"
 #include "gfx_mbo.h"
 #include "gfx_shader.h" 
-
 #include "gfx_xfmatrix.h"
 
 namespace gfx{
