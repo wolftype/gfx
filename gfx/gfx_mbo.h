@@ -32,6 +32,12 @@ namespace gfx{
 			Mesh mesh;
             
             GL::MODE mode;
+
+			MBO& set( GL::MODE m) {
+				mode = m;
+				mesh.mode(m);
+				return *this;
+			}
             
             MBO(){} 
 

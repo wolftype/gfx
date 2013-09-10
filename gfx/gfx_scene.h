@@ -133,10 +133,72 @@ namespace gfx{
 		Vec3f pos()  const{ return mPos; }
 		Vec3f& pos() { return mPos; }
 	};
+	
+	struct View {   
+
+		//Pose pose;
+
+		View(double _l, double _t, double _r, double _b) : l(_l), t(_t), r(_r), b(_b) {}
+
+		// View (Vec3f ta, Vec3f tb, Vec3f tc ) {
+		// 	Vec3f x = tb - ta;
+		// 	Vec3f u = tc - ta;
+		// 	l = x.dot(ta);  //*n/d;
+		// 	r = x.dot(tb);  //*n/d;
+		// 	b = u.dot(ta);
+		// 	t = u.dot(tc);
+		// }
+
+		View (){}
+
+		//Views for multiscreen environments will typically have same eye
+		View( Vec3f eye, const Pose& p, float aspect, float height = 1.0  ){
+			Vec3f br = p.pos() + p.x() * height * aspect; 
+			Vec3f tl = p.pos() + p.y() * height ;
+			set( eye, p.pos(), br, tl, p.z() );	
+		}
+
+		//Views for multiscreen environments will typically have same eye -- center
+		// View( int w, int h, Vec3f eye, float screenAspect, float screenHeight  ){
+		// 	Vec3f xoff = c.x() * screenHeight/2.0 * aspect;
+		// 	Vec3f yoff = c.y() * height/2.0;
+		// 	Vec3f bl = c.pos() - xoff - yoff; 
+		// 	Vec3f br = c.pos() + xoff - yoff;
+		// 	Vec3f tl = c.pos() + c.y() * height ;
+		// 	set( eye, bl, br, tl, c.z() );	
+		// }
+
+		View ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal  = Vec3f(0,0,1) ) {
+			set( eye,bl,br,tl,normal );
+		}	
+
+		View& set ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal = Vec3f(0,0,1) ) {
+
+			Vec3f ta = bl - eye; Vec3f tb = (br - eye); Vec3f tc = (tl -eye);
+			float d =  -(normal.dot(ta));
+
+			Vec3f x = (tb - ta).unit();
+			Vec3f u = (tc - ta).unit();
+
+			l = x.dot(ta) / d;  //*n/d;
+			r = x.dot(tb) / d;  //*n/d;
+			b = u.dot(ta) / d;
+			t = u.dot(tc) / d;
+
+
+			cout << "View INIT\n DIST: " << d << "\n" << ta << tb << tc << endl; 
+
+			return *this;
+		}			
+
+		float l, t, r, b;
+
+	};
 
 	struct Camera : public Pose {     
 		
 		Lens lens;
+		View view;
 		
 		Vec3f eye(){ return mPos; }
 		Vec3f up() { return mY; }
@@ -160,7 +222,7 @@ namespace gfx{
 		 Camera cam;
 		 Pose model;
 		 XformMat xf; 
-		 Pipe pipe; 
+		// Pipe pipe; 
       
 		void fit(int w, int h){
 			cam.lens.width( w ); 
@@ -208,33 +270,46 @@ namespace gfx{
                 return XMat::fovy( tl.mFocal * PI/180.0, tl.mWidth/tl.mHeight, tl.mNear, tl.mFar ); 
 	         }
 	
-			// Mat4f frust() {
-			// 	View& v = camera.view();
-			// 	Lens& tl = camera.lens();
-			//                 return XMat::frustum2( v.l * tl.mNear, v.r*tl.mNear, v.b*tl.mNear, v.t*tl.mNear, tl.mNear, tl.mFar ); 
-			//   	         }
+			Mat4f frust() {
+				View& v = cam.view;
+				Lens& tl = cam.lens;
+                return XMat::frustum2( v.l * tl.mNear, v.r*tl.mNear, v.b*tl.mNear, v.t*tl.mNear, tl.mNear, tl.mFar ); 
+  	         } 
             
 			Mat4f norm(){
                 return (!(mvm().transpose()) );
             }
         
         //ADVANCED PIPELINE -> Update Shader Uniforms
+        // void updateMatrices(){
+        // 
+        //     Mat4f tmod = mod();
+        //     Mat4f tview = XMat::lookAt( cam.x(), cam.y(), cam.z() * -1, cam.pos());
+        //     Mat4f tmvm = mvm();
+        //     Mat4f tproj = proj();
+        //     Mat4f tnorm = norm();
+        //     
+        //     copy(tmod.val(), tmod.val() + 16, xf.model);
+        //     copy(tview.val(), tview.val() + 16, xf.view);
+        //     copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
+        //     copy(tproj.val(), tproj.val() + 16, xf.proj);
+        //     copy(tnorm.val(), tnorm.val() + 16, xf.normal);
+        //  
+        //     xf.toDoubles();
+        // }   
+
         void updateMatrices(){
         
-            Mat4f tmod = mod();
-            Mat4f tview = XMat::lookAt( cam.x(), cam.y(), cam.z() * -1, cam.pos());
-            Mat4f tmvm = mvm();
-            Mat4f tproj = proj();
+			Mat4f tmvm =  mvm();     //     XMat::identity();//
+            Mat4f tproj = frust();  
             Mat4f tnorm = norm();
-            
-            copy(tmod.val(), tmod.val() + 16, xf.model);
-            copy(tview.val(), tview.val() + 16, xf.view);
+
             copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
             copy(tproj.val(), tproj.val() + 16, xf.proj);
             copy(tnorm.val(), tnorm.val() + 16, xf.normal);
          
             xf.toDoubles();
-        }   
+        }  
 
 		void onFrame(){
 			updateMatrices();     		

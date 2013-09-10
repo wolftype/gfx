@@ -146,7 +146,7 @@ namespace gfx{
                 
                 //xm = submodel;
                 
-				gl_PointSize = 3.0;
+				gl_PointSize = 10.0;
                 gl_Position = doVertex(pos);
             }
         );

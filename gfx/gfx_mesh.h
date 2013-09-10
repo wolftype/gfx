@@ -190,7 +190,8 @@ namespace gfx {
 			return *this;
         }
         
-        Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}        
+        Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}      
+  
         Mesh& add(const Vec3f& v) { mVertex.push_back( Vertex(v) ); return *this; }
         Mesh& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( Vertex(v,n) ); return *this; }
         
@@ -326,7 +327,10 @@ namespace gfx {
         static Mesh Point(const T& p);
 
 		template<class T>
-        static Mesh Points(T* p, int num);   
+        static Mesh Points(T* p, int num);  
+		template<class T>
+        static Mesh Points(std::vector<T> p);
+ 
 		template<class T, class S>
         static Mesh Points2(T* p, S*q, int num);
 
@@ -385,7 +389,19 @@ namespace gfx {
 		m.mode( GL::P );    
 		m.store();		
 		return m;
-	} 
+	}            
+	
+	template<class T>
+	inline Mesh Mesh::Points(std::vector<T> p){
+		Mesh m;
+		for (int i = 0; i < p.size(); ++i){
+			m.add(p[i][0],p[i][1],p[i][2]).add();
+		}
+		m.mode( GL::P );    
+		m.store();		
+		return m;
+	}
+	
 	
 	template<class T, class S>
 	inline Mesh Mesh::Points2(T * p, S * q, int num){
