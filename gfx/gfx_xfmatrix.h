@@ -19,6 +19,8 @@ namespace gfx{
     
 //    typedef vsr::Mat4<float> Mat4f;
 //    typedef vsr::Mat4<double> Mat4d; 
+
+
     
     /*! Transformation Matrices Container */
     struct XformMat {

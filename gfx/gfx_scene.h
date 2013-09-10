@@ -94,6 +94,43 @@ namespace gfx{
 	    }    
 
 	};
+    
+	struct Pose {
+		Pose(Vec3f p, Quat q = Quat(1,0,0,0)) : mPos(p), mQuat(q) { orient(); }
+		Pose(float x, float y, float z) : mPos(x,y,z), mQuat(1,0,0,0) { orient(); }
+		Pose() : mX(1,0,0), mY(0,1,0), mZ(0,0,1), mPos(0,0,0), mQuat(1,0,0,0) {}
+	   
+	 	Vec3f mX, mY, mZ, mPos;
+		Quat mQuat;
+		
+		Quat quat() const { return mQuat; }
+		Quat & quat() { return mQuat; }
+		
+		Pose& quat( Quat q ) { mQuat = q; return orient(); }
+
+		Pose& orient() {
+		    mX = Quat::spin( Vec3f(1,0,0), mQuat);
+		    mY = Quat::spin( Vec3f(0,1,0), mQuat);
+		    mZ = Quat::spin( Vec3f(0,0,1), mQuat);			
+			return *this;
+		}
+        
+		Vec3f px()  const{ return mPos + mX; }
+		Vec3f py()  const{ return mPos + mY; }
+		Vec3f pz()  const{ return mPos + mZ; }
+		
+		Vec3f x()  const{ return mX; }
+		Vec3f y()  const{ return mY; }
+		Vec3f z()  const{ return mZ; }
+		
+
+ 		Vec3f& x() { return mX; }
+		Vec3f& y() { return mY; }
+		Vec3f& z() { return mZ; }
+
+		Vec3f pos()  const{ return mPos; }
+		Vec3f& pos() { return mPos; }
+	};
 
 	struct Camera{     
 		
@@ -116,17 +153,20 @@ namespace gfx{
 	
 	struct Scene {
 
-	  Camera cam;
+		 Camera cam;
+		 Pose model;
+		 XformMat xf;  
       
 		void fit(int w, int h){
 			cam.lens.width( w ); 
 			cam.lens.height( h ); 
-		}
+		} 
 
+	  // FIXED FUNCTION PIPELINE ONLY
 	  void push(){
-			
+		
 			GL :: enablePreset();    
-				
+			
 		    glMatrixMode(GL_MODELVIEW);
 		    glPushMatrix();
 		    glLoadIdentity();
@@ -134,11 +174,60 @@ namespace gfx{
 
 		}
 
-		void pop(){
+	  void pop(){
             glPopMatrix();  
-			
 			GL :: disablePreset();  
-	   }                                           
+	   } 
+	
+
+	   	//Mat4f mod() { return model.image(); }
+        //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
+
+ 
+
+          Mat4f mod() { return XMat::rot( model.quat() ); }
+
+		 
+		//	Mat4f mvm() { return XMat::trans(0,0,-2); }// XMat::identity() * mod(); }
+			Mat4f mvm() { 
+			//	cout << camera.pos() << endl; 
+				return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
+			}
+
+			 // Mat4f proj() { return XMat::identity(); }
+            
+			Mat4f proj() {    
+				Lens& tl = camera.lens();
+                return XMat::fovy( tl.mFocal * PI/180.0, tl.mWidth/tl.mHeight, tl.mNear, tl.mFar ); 
+	         }
+	
+			// Mat4f frust() {
+			// 	View& v = camera.view();
+			// 	Lens& tl = camera.lens();
+			//                 return XMat::frustum2( v.l * tl.mNear, v.r*tl.mNear, v.b*tl.mNear, v.t*tl.mNear, tl.mNear, tl.mFar ); 
+			//   	         }
+            
+			Mat4f norm(){
+                return (!(mvm().transpose()) );
+            }
+        
+        //ADVANCED PIPELINE -> Update Shader Uniforms
+        void updateMatrices(){
+        
+            Mat4f tmod = mod();
+            Mat4f tview = XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos());
+            Mat4f tmvm = mvm();
+            Mat4f tproj = proj();
+            Mat4f tnorm = norm();
+            
+            copy(tmod.val(), tmod.val() + 16, xf.model);
+            copy(tview.val(), tview.val() + 16, xf.view);
+            copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
+            copy(tproj.val(), tproj.val() + 16, xf.proj);
+            copy(tnorm.val(), tnorm.val() + 16, xf.normal);
+         
+            xf.toDoubles();
+        }                                          
 
 	};
 	
