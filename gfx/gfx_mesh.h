@@ -6,26 +6,22 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-#ifndef CTL_Mesh_h
-#define CTL_Mesh_h
+#ifndef GFX_Mesh_h
+#define GFX_Mesh_h
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-//#include "vsr/vsr_frame.h"
-
-//#include "ctl_matrix.h" 
-
 #include "gfx_matrix.h"  
-#include "ctl_gl.h"
+#include "gfx_gl.h"
 
-// #include "ctl_mglyph.h"
+
 
 using namespace std;  
-using namespace vsr;  
+ 
 
-namespace ctl {
+namespace gfx {
     
     //VERTEX DATA STRUCT
     struct Vertex {
@@ -191,6 +187,7 @@ namespace ctl {
         Mesh& add(const Mesh& m){
             for (int i = 0; i < m.num(); ++i) { add(m[i]); }
             for (int i = 0; i < m.numIdx(); ++i) { add( m.idx(i) ); }
+			return *this;
         }
         
         Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}        
@@ -226,7 +223,7 @@ namespace ctl {
             return *this;
         }
         /// Add Last 
-        Mesh& add(){ add( num() - 1 ); }
+		Mesh& add(){ add( num() - 1 ); return *this; }
         
         GL::MODE mode() { return mMode; }
         

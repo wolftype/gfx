@@ -485,6 +485,22 @@ namespace gfx {
 				double div = sqrt(1-w*w);	
 				Vec3<> axis = vec()  * (1.0 / div);		
 				return Vec4<>(180 * angle / PI, axis);
+			}  
+			
+			static Quat Rotor(const Vec3<>& v1, const Vec3<>& v2) {
+				// get the normal to the plane (i.e. the unit bivector containing the v1 and v2)
+				Vec3<> n = v1.cross(v2).unit();
+				//n.unit()();	// normalize because the cross product can get slightly denormalized
+
+				// calculate half the angle between v1 and v2
+				float dotmag = v1.dot(v2);
+				float theta = acos(dotmag)*0.5;
+
+				// calculate the scaled actual bivector generaed by v1 and v2
+				Vec3<> biv = n*sin(theta);
+				Quat q(cos(theta), biv[0], biv[1], biv[2]);
+
+				return q;
 			}
 			
 			friend ostream& operator << (ostream& os, const Quat& q) {
