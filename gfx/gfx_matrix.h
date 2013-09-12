@@ -443,7 +443,7 @@ namespace gfx {
 //				w = v.w; x = v.x; y = v.y; z = v.z;
 //			}
 			
-			static Vec3<> spin(Vec3<> v, Quat q) { return Quat(q.unit() * Quat(v) * (~(q.unit()))).vec(); }
+			static Vec3<> spin(Vec3<> v, Quat q) { return Quat( q.unit() * Quat(v) * (~(q.unit()) ) ).vec(); }
 		
 			double sqnorm() { return w*w + x*x + y*y + z*z; }
 			double norm() { return sqrt(sqnorm()); }

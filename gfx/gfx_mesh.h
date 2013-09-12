@@ -16,8 +16,6 @@
 #include "gfx_matrix.h"  
 #include "gfx_gl.h"
 
-
-
 using namespace std;  
  
 
@@ -263,6 +261,15 @@ namespace gfx {
                 mVertex[i].Pos[2] += z;
             }    
 			return *this;
+        }  
+        Mesh& translateA(float x, float y, float z){
+            
+            for (int i = 0; i < num(); ++i){
+                mVertex[i].Pos[0] = mStore[i].Pos[0] + x;
+                mVertex[i].Pos[1] = mStore[i].Pos[1] + y;
+                mVertex[i].Pos[2] = mStore[i].Pos[2] + z;
+            }    
+			return *this;
         }
         
         Mesh&  scale(float s){
@@ -272,6 +279,28 @@ namespace gfx {
             }  
  			   return *this;
         }
+
+        Mesh&  scaleA(float s){
+            
+            for (int i = 0; i < num(); ++i){
+				mStore[i].Pos *= s;
+            }  
+ 			   return *this;
+        }  
+
+		Mesh& rotate( const Quat q ){
+		   for (int i = 0; i < num(); ++i){
+				mVertex[i].Pos = Quat::spin( mVertex[i].Pos, q);
+            }  
+ 			   return *this; 
+		} 
+		
+		Mesh& rotateA( const Quat q ){
+		   for (int i = 0; i < num(); ++i){
+				mVertex[i].Pos = Quat::spin( mStore[i].Pos, q);
+            }  
+ 			   return *this; 
+		}
         
         //LOAD FROM OBJ FILE
         void load(string s) {
