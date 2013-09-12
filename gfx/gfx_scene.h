@@ -131,7 +131,16 @@ namespace gfx{
 		Vec3f& z() { return mZ; }
 
 		Vec3f pos()  const{ return mPos; }
-		Vec3f& pos() { return mPos; }
+		Vec3f& pos() { return mPos; }  
+		                    
+		template<class T>
+		Pose& set( const T& t){
+			mX = t.x();
+			mY = t.y();
+			mZ = t.z();
+			mPos = t.pos(); 
+			mQuat = Quat ( t.rot()[0], t.rot()[1],  t.rot()[2], -t.rot()[3] );//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
+		}
 	};
 	
 	struct View {   
@@ -259,7 +268,8 @@ namespace gfx{
 
 		 
 		//	Mat4f mvm() { return XMat::trans(0,0,-2); }// XMat::identity() * mod(); }
-			Mat4f mvm() { 
+			Mat4f mvm() {
+				//cout << XMat::rot( model.quat() ) << endl; 
 				return XMat::lookAt( cam.x(), cam.y(), cam.z(), cam.pos() ) * mod(); 
 			}
 
