@@ -355,6 +355,8 @@ namespace gfx {
         static Mesh IRect(float w, float h);  
         static Mesh Cylinder(float r, float h, int slices = 20, int stacks = 2);
         
+		static Mesh Frame(float size = 1.0);
+
         /*! A Mesh of Skinned Circles 
             @param Pointer to an Circle array
             @param number of Circles in array
@@ -574,7 +576,9 @@ namespace gfx {
 		m.store(); 
         return m;
     
-    }
+    } 
+
+
 
     inline Mesh Mesh::Disc (double scale){
         
@@ -680,7 +684,16 @@ namespace gfx {
         return m;
     }
     
-
+    inline Mesh Mesh::Frame(float size){
+	  Mesh m;
+	  m.add( Vertex( Vec3f(0,0,0), Vec3f(0,0,1), Vec4f(1,1,1,1) ) ).add();
+  	  m.add( Vertex( Vec3f(size,0,0), Vec3f(0,0,1), Vec4f(1,0,0,1) )).add().add(0);
+  	  m.add( Vertex( Vec3f(0,size,0), Vec3f(0,0,1), Vec4f(0,1,0,1) )).add().add(0); 
+  	  m.add( Vertex( Vec3f(0,0,size), Vec3f(0,0,1), Vec4f(0,0,1,1) )).add().add(0);
+	  m.mode( GL::LS );
+	  m.store();
+	  return m;
+	}
     
 
     // inline Mesh Mesh::Skin (Cir * cir, int num, int res){
