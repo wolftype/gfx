@@ -151,6 +151,15 @@ namespace gfx{
                         m.drawElements();
                         disable();
                         m.unbind();
+                    }  
+
+                    void position( MBO& m ) {
+                        m.bind();
+                        vatt.pos.enable(); 
+                        vatt.pos.pointer();
+                        m.drawElements();
+                        vatt.pos.disable();
+                        m.unbind();
                     }
                         
 					void bind( XformMat& xf ){

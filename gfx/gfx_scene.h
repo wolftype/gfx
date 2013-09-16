@@ -142,11 +142,16 @@ namespace gfx{
 		                    
 		template<class T>
 		Pose& set( const T& t){
+
 			mPos = Vec3f( t.pos()[0], t.pos()[1], t.pos()[2] ); 
-			mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] );//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
+			mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] );  
+
+			return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
 		} 
 		
-		
+		void print(){
+			cout << mPos << mQuat << endl;
+		}
 	   
 	};
 	
@@ -202,7 +207,7 @@ namespace gfx{
 			t = u.dot(tc) / d;
 
 
-			cout << "View INIT\n DIST: " << d << "\n" << ta << tb << tc << endl; 
+			//cout << "View INIT\n DIST: " << d << "\n" << ta << tb << tc << endl; 
 
 			return *this;
 		}			
@@ -214,11 +219,33 @@ namespace gfx{
 	struct Camera : public Pose {     
 		
 		Lens lens;
-		View view;
+		View view;  
+		
+		bool bUseFrust;
+		
+		Camera(float x, float y, float z) : Pose(x,y,z), bUseFrust(true){}
+		Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : Pose(v,q), bUseFrust(true){} 
 		
 		Vec3f eye(){ return mPos; }
 		Vec3f up() { return y(); }
 		Vec3f forward() { return -z(); }
+		
+		Mat4f fovy() {
+			return XMat::fovy( lens.mFocal * PI/180.0, lens.mWidth/lens.mHeight, lens.mNear, lens.mFar );
+		}  
+		
+		Mat4f frust(){
+		   return XMat::frustum2( 
+				view.l * lens.mNear, 
+				view.r * lens.mNear, 
+				view.b * lens.mNear, 
+				view.t * lens.mNear, 
+				lens.mNear, lens.mFar ); 
+		} 
+		
+		Mat4f proj(){
+			return bUseFrust ? frust() : fovy();
+		}
 
 	}; 
 	
@@ -227,26 +254,39 @@ namespace gfx{
 		 Camera camera;
 		 Pose model;
 		 XformMat xf; 
-		// Pipe pipe; 
+	   
+		// Pipe pipe;
+		
+		Scene() : camera(0,0,5) {} 
       
 		void fit(int w, int h){
 			camera.lens.width( w ); 
-			camera.lens.height( h ); 
+			camera.lens.height( h );	 
 		} 
+		
+		void resize(int w, int h){ 
+			camera.lens.width( w ); 
+			camera.lens.height( h ); 
+		    Pose p(-w/2.0,-h/2.0, 0); 
+			camera.view = gfx::View( camera.pos(), p, 1.0 * w/h, h );
+		}
 
-	  // FIXED FUNCTION PIPELINE ONLY 
+	  // FIXED FUNCTION PIPELINE  
 	
 	  #ifdef GL_IMMEDIATE_MODE
 	  void push(){
 		    
-			Pose& cam = camera;
+		   // Pose& cam = camera;
 			
 			GL :: enablePreset();    
 			
 		    glMatrixMode(GL_MODELVIEW);
 		    glPushMatrix();
 		    glLoadIdentity();
-		    gluLookAt( cam.eye().x, cam.eye().y, cam.eye().z, cam.forward().x, cam.forward().y, cam.forward().z, cam.up().x, cam.up().y, cam.up().z);
+		    gluLookAt( 
+				camera.pos().x, camera.pos().y, camera.pos().z, 
+				camera.forward().x, camera.forward().y, camera.forward().z, 
+				camera.up().x, camera.up().y, camera.up().z );
 
 		}
 
@@ -266,19 +306,6 @@ namespace gfx{
 			Mat4f mvm() {
 				return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
 			}
-
-			 // Mat4f proj() { return XMat::identity(); }
-            
-			Mat4f proj() {    
-				Lens& tl = camera.lens;
-                return XMat::fovy( tl.mFocal * PI/180.0, tl.mWidth/tl.mHeight, tl.mNear, tl.mFar ); 
-	         }
-	
-			Mat4f frust() {
-				View& v = camera.view;
-				Lens& tl = camera.lens;
-                return XMat::frustum2( v.l * tl.mNear, v.r*tl.mNear, v.b*tl.mNear, v.t*tl.mNear, tl.mNear, tl.mFar ); 
-  	         } 
             
 			Mat4f norm(){
                 return (!(mvm().transpose()) );
@@ -288,8 +315,8 @@ namespace gfx{
 
         void updateMatrices(){
         
-			Mat4f tmvm =  mvm();     //     XMat::identity();//
-            Mat4f tproj = frust();  
+			Mat4f tmvm =  mvm();    
+            Mat4f tproj = camera.proj();  
             Mat4f tnorm = norm();
 
             copy(tmvm.val(), tmvm.val() + 16, xf.modelView);

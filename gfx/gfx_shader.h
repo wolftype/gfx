@@ -209,6 +209,7 @@ class ShaderProgram {
         ShaderProgram() : bLoaded(0), mId(0) {}
 
         ShaderProgram( string vs, string fs, bool bFile) : bLoaded(0), mId(0) {
+			printf("Shader Program Int\n");
             if (bFile) load(vs,fs);
 			else source(vs, fs);
         }
@@ -530,7 +531,8 @@ class ShaderProgram {
 	inline void ShaderProgram::source( string vs, string fs){
 		bLoaded = false;	
 
-	    mId = glCreateProgram();  
+	    mId = glCreateProgram(); 
+		printf("Program ID: %d", mId);
 	    vert.source(vs.c_str(), Shader::VERTEX);
 	    frag.source(fs.c_str(), Shader::FRAGMENT);
 	

@@ -198,7 +198,7 @@ namespace gfx {
 
 	//	if(mFbo) delete mFbo;
 	//	if(mPbo) delete mPbo;
-		if(mData) delete[] mData;
+	//	if(mData) delete[] mData;
 	}
 
 	//FBO& Texture::fbo()  { return *mFbo; }
@@ -223,7 +223,7 @@ namespace gfx {
 	inline void Texture::alloc(){
 
 		int size = dataSize();
-		if(mData) delete[] mData;
+	  //  if(mData) delete[] mData;
 
 		mData = new unsigned char [ size ];
 		int * ptr = (int*)mData;
@@ -244,7 +244,7 @@ namespace gfx {
 
 	inline GLint Texture :: loadData(void * data){
 
-		if(mData) delete[] mData; 
+	   // if(mData) delete[] mData; 
 		//data lood?
 		generate();
 		return mIdx;
