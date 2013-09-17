@@ -144,11 +144,11 @@ namespace gfx{
                         m.unbind();   
                     }
                     
-                    void line( MBO& m ) {
+                    void line( MBO& m, int num = -1, int off = 0 ) {
                         m.bind();
                         enable(); 
                         pointer();
-                        m.drawElements();
+                        m.drawElements(num, off);
                         disable();
                         m.unbind();
                     }  
