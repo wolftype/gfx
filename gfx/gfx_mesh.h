@@ -389,13 +389,50 @@ namespace gfx {
 		static Mesh Contour(int res);
 		static Mesh Contours(int num, int res);   
 		
+		static Mesh Num(int n);
+		
         /*! A Mesh of Skinned Circles 
             @param Pointer to an Circle array
             @param number of Circles in array
             @param resolution (default 100)
         */
         // static Mesh Skin (Cir * cir, int num, int res = 100);
-    };
+    };              
+
+	inline Mesh Mesh::Num(int n){ 
+		Mesh m;  
+		m.mode(GL::LS); 
+		switch(n){
+			case 0:
+				m.add(-1,-1,0).add();
+				m.add(-1,1,0).add();
+				m.add(1,1,0).add();
+				m.add(1,-1,0).add();
+				m.mode(GL::LL);
+				break;
+			case 1:
+				m.add(0,-1,0).add();
+				m.add(0,1,0).add();
+
+				break;
+			case 2:
+				m.add(-1,1,0).add();
+				m.add(1,1,0).add();
+				m.add(-1,-1,0).add();
+				m.add(1,-1,0).add();
+				break; 
+			case 3:
+				m.add(-1,1,0).add();
+				m.add(1,1,0).add(); 
+				m.add(0,0,0).add();
+				m.add(1,-1,0).add(); 
+				m.add(-1,-1,0).add();    
+				break;
+		} 
+    
+		m.store();	
+		return m;
+	}
     
     
     inline Mesh Mesh::Point(float x, float y, float z){

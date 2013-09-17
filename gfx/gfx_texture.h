@@ -19,7 +19,6 @@
 
 #include "gfx_lib.h"
 #include "gfx_gl.h"  
-//#include "ctl_matrix.h"
 #include "gfx_matrix.h" 
 
 namespace gfx {
