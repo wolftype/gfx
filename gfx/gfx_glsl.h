@@ -13,9 +13,9 @@
 #ifndef gfx_glsl_h
 #define gfx_glsl_h
 
-//#ifndef STRINGIFY
+#ifndef STRINGIFY
 #define STRINGIFY(A) #A
-//#endif
+#endif
 
 namespace gfx{
 
@@ -294,6 +294,10 @@ namespace gfx{
 
             }
         );
+                            
+
+
+
 
          string TFrag = STRINGIFY(   
 
@@ -386,25 +390,58 @@ namespace gfx{
                 textureCube(cubeMap, vTexDir).rgb 
             }
         );   
+           
+
+		string FXDB = STRINGIFY(
+		    uniform sampler2D sampleTexture; 
+			uniform vec2 frameBufSize;
+		   // uniform vec2 frameBufSize;
+
+			varying vec4 colorDst; 
+			varying lowp vec2 texco;
+			  
+			void main(void){
+			   //vec2 frameBufSize = vec2( 1920.0, 1080.0 );
+			    
+				vec3 rgbNW=texture2D(sampleTexture,texco+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
+				vec3 rgbNE=texture2D(sampleTexture,texco+(vec2(1.0,-1.0)/frameBufSize)).xyz;
+				vec3 rgbSW=texture2D(sampleTexture,texco+(vec2(-1.0,1.0)/frameBufSize)).xyz;
+				vec3 rgbSE=texture2D(sampleTexture,texco+(vec2(1.0,1.0)/frameBufSize)).xyz;
+				vec3 rgbM=texture2D(sampleTexture,texco).xyz;
+			    
+				vec3 nc = (rgbNW + rgbNE + rgbSW + rgbSE + rgbM)/5.0;
+				
+				//vec4 texColor = texture2D(sampleTexture, texco); 
+				
+				vec4 litColor = vec4(rgbM,1.0) + colorDst;    //force use of variables!  
+   			
+				gl_FragColor= vec4(rgbM,1.0);//max(texColor, average + average2);
+			}
+			
+		);
 
 		string FXAA = STRINGIFY(
-			uniform sampler2D buf0;
-			uniform vec2 frameBufSize;
-			varying vec2 texCoords;
+			uniform sampler2D sampleTexture;
+		    uniform vec2 frameBufSize;
 
+			varying vec4 colorDst; 
+			varying lowp vec2 texco;  
+			
 			void main(void) {
 				//gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
 				//return;
+                 
+				//vec2 frameBufSize = vec2( 1360.0, 768.0 );
 
 				float FXAA_SPAN_MAX = 8.0;
 				float FXAA_REDUCE_MUL = 1.0/8.0;
 				float FXAA_REDUCE_MIN = 1.0/128.0;
 
-				vec3 rgbNW=texture2D(buf0,texCoords+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
-				vec3 rgbNE=texture2D(buf0,texCoords+(vec2(1.0,-1.0)/frameBufSize)).xyz;
-				vec3 rgbSW=texture2D(buf0,texCoords+(vec2(-1.0,1.0)/frameBufSize)).xyz;
-				vec3 rgbSE=texture2D(buf0,texCoords+(vec2(1.0,1.0)/frameBufSize)).xyz;
-				vec3 rgbM=texture2D(buf0,texCoords).xyz;
+				vec3 rgbNW=texture2D(sampleTexture,texco+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
+				vec3 rgbNE=texture2D(sampleTexture,texco+(vec2(1.0,-1.0)/frameBufSize)).xyz;
+				vec3 rgbSW=texture2D(sampleTexture,texco+(vec2(-1.0,1.0)/frameBufSize)).xyz;
+				vec3 rgbSE=texture2D(sampleTexture,texco+(vec2(1.0,1.0)/frameBufSize)).xyz;
+				vec3 rgbM=texture2D(sampleTexture,texco).xyz;
 
 				vec3 luma=vec3(0.299, 0.587, 0.114);
 				float lumaNW = dot(rgbNW, luma);
@@ -431,17 +468,19 @@ namespace gfx{
 					  dir * rcpDirMin)) / frameBufSize;
 
 				vec3 rgbA = (1.0/2.0) * (
-					texture2D(buf0, texCoords.xy + dir * (1.0/3.0 - 0.5)).xyz +
-					texture2D(buf0, texCoords.xy + dir * (2.0/3.0 - 0.5)).xyz);
+					texture2D(sampleTexture, texco.xy + dir * (1.0/3.0 - 0.5)).xyz +
+					texture2D(sampleTexture, texco.xy + dir * (2.0/3.0 - 0.5)).xyz);
 				vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-					texture2D(buf0, texCoords.xy + dir * (0.0/3.0 - 0.5)).xyz +
-					texture2D(buf0, texCoords.xy + dir * (3.0/3.0 - 0.5)).xyz);
+					texture2D(sampleTexture, texco.xy + dir * (0.0/3.0 - 0.5)).xyz +
+					texture2D(sampleTexture, texco.xy + dir * (3.0/3.0 - 0.5)).xyz);
 				float lumaB = dot(rgbB, luma);
+                
+				vec4 litColor = vec4(rgbA,1.0) + colorDst;    //force use of variables!  
 
 				if((lumaB < lumaMin) || (lumaB > lumaMax)){
-					gl_FragColor.xyz=rgbA;
+					gl_FragColor = vec4(rgbA,1.0);
 				}else{
-					gl_FragColor.xyz=rgbB;
+					gl_FragColor =  vec4(rgbB,1.0);
 				}
 			}
 			);

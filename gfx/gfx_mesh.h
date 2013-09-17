@@ -385,7 +385,10 @@ namespace gfx {
         static Mesh Cylinder(float r, float h, int slices = 20, int stacks = 2);
         
 		static Mesh Frame(float size = 1.0);
-
+		
+		static Mesh Contour(int res);
+		static Mesh Contours(int num, int res);   
+		
         /*! A Mesh of Skinned Circles 
             @param Pointer to an Circle array
             @param number of Circles in array
@@ -420,7 +423,30 @@ namespace gfx {
 		m.mode( GL::P );    
 		m.store();		
 		return m;
-	}            
+	} 
+	
+	inline Mesh Mesh::Contour(int num){
+		Mesh m;
+		for (int i = 0; i < num; ++i){
+			m.add(0,0,0).add();
+		}
+		m.mode( GL::LS );    
+		m.store();		
+		return m;
+	} 
+	
+	inline Mesh Mesh::Contours(int num, int res){
+		Mesh m;
+		for (int i = 0; i < num; ++i){
+			  
+			for (int j = 0; j < res-2; ++j){
+			    m.add(0,0,0).add(); 
+			}       
+		}
+		m.mode( GL::LS );    
+		m.store();		
+		return m;
+	}              
 	
 	template<class T>
 	inline Mesh Mesh::Points(std::vector<T> p){
@@ -440,7 +466,6 @@ namespace gfx {
 		for (int i = 0; i < num; ++i){
 			m.add(p[i][0],p[i][1],p[i][2]).add();
 			m.add(q[i][0],q[i][1],q[i][2]).add();
-			cout << q[i] << endl; 
 		}
 		m.mode( GL::P );    
 		m.store();		
