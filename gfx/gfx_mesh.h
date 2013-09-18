@@ -359,9 +359,15 @@ namespace gfx {
         static Mesh Points(T* p, int num);  
 		template<class T>
         static Mesh Points(std::vector<T> p);
- 
+        
+		//3d vecs in 3d space . . .
 		template<class T, class S>
-        static Mesh Points2(T* p, S*q, int num);
+        static Mesh Points2(T* p, S*q, int num); 
+        
+		//2d vecs in 3d space . . .
+		template<class T, class S>
+        static Mesh Points2D(T* p, S*q, int num);  
+
 
 
         static Mesh Grid(int w = 10, int h = 10, float spacing = .2);
@@ -503,6 +509,18 @@ namespace gfx {
 		for (int i = 0; i < num; ++i){
 			m.add(p[i][0],p[i][1],p[i][2]).add();
 			m.add(q[i][0],q[i][1],q[i][2]).add();
+		}
+		m.mode( GL::P );    
+		m.store();		
+		return m;
+	} 
+	
+	template<class T, class S>
+	inline Mesh Mesh::Points2D(T * p, S * q, int num){
+		Mesh m;
+		for (int i = 0; i < num; ++i){
+			m.add(p[i][0],p[i][1],p[i][2]).add();
+			m.add(q[i][0],q[i][1], 0).add();
 		}
 		m.mode( GL::P );    
 		m.store();		
