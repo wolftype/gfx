@@ -238,7 +238,7 @@ namespace gfx{
                 vec4 texColor = texture2D(sampleTexture, texco);
                 
 				// gl_FragColor = vec4(texColor.rgb, texColor.a * litColor.a);     			
-				gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * litColor.a) );     			
+				gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * .1 * litColor.a) );     			
 
             }
         );
