@@ -98,7 +98,7 @@ namespace gfx{
                         return tmp;
                     }
                     
-                    static int Update(int id, Vertex * val){
+                    static void Update(int id, Vertex * val){
                         mbo[id].vertex.update(val);
                     }
                     

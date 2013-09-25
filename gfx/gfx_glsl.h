@@ -152,7 +152,7 @@ namespace gfx{
                 
                 //xm = submodel;
                 
-				gl_PointSize = 10.0;
+			    gl_PointSize = 10.0;
                 gl_Position = doVertex(pos);
             }
         );
@@ -315,7 +315,7 @@ namespace gfx{
         );   
 
 
-		string ClipSpaceVert = STRINGIFY( 
+		string ClipSpaceVertES = STRINGIFY( 
 
 		    attribute vec3 position; 
 			attribute vec3 normal;
@@ -323,6 +323,25 @@ namespace gfx{
 		    attribute vec2 texCoord;
 
 		    varying lowp vec2 texco;
+		    varying vec4 colorDst;   
+
+			void main(void){  
+				texco = texCoord;
+				colorDst = sourceColor; 
+				vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
+				gl_Position = vec4(position,1.0);
+		    }
+		); 
+		
+		
+		string ClipSpaceVert = STRINGIFY( 
+
+		    attribute vec3 position; 
+			attribute vec3 normal;
+			attribute vec4 sourceColor;
+		    attribute vec2 texCoord;
+
+		    varying vec2 texco;
 		    varying vec4 colorDst;   
 
 			void main(void){  
@@ -418,15 +437,26 @@ namespace gfx{
 				gl_FragColor= vec4(rgbM,1.0);//max(texColor, average + average2);
 			}
 			
-		);
-
-		string FXAA = STRINGIFY(
-			uniform sampler2D sampleTexture;
+		);    
+		
+		string FOGL = STRINGIFY(
+ 			uniform sampler2D sampleTexture;
 		    uniform vec2 frameBufSize;
 
 			varying vec4 colorDst; 
-			varying lowp vec2 texco;  
-			
+			varying vec2 texco;   	
+	   );   
+		
+		string FOGLES = STRINGIFY(
+ 			uniform sampler2D sampleTexture;
+		    uniform vec2 frameBufSize;
+
+			varying vec4 colorDst; 
+			varying lowp vec2 texco;   	
+	   );   	
+                            
+		string FXAA = STRINGIFY(
+  
 			void main(void) {
 				//gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
 				//return;

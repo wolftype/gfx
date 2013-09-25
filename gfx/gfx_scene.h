@@ -278,7 +278,7 @@ namespace gfx{
 		    
 		   // Pose& cam = camera;
 			
-			GL :: enablePreset();    
+		    GL :: enablePreset();    
 			
 		    glMatrixMode(GL_MODELVIEW);
 		    glPushMatrix();
