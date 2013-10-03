@@ -460,6 +460,7 @@ namespace gfx {
 			Quat operator +(const Quat& q) { return Quat(w+q.w, x+q.x, y+q.y, z+q.z);}
 			Quat operator ~() { return Quat(w, -x, -y, -z); } 
 			Quat operator -() { double n = norm();  if (n == 0) n = 1; return Quat(w/n, -x/n, -y/n, -z/n); } 
+			Quat operator !() { return -(*this); }
 			
 			Quat unit() { double n = norm(); if (n == 0) return Quat(1,0,0,0); return Quat(w/n, x/n, y/n, z/n); } 
 
@@ -483,7 +484,7 @@ namespace gfx {
 			Vec4<> axan(){			
 				double angle = 2 * acos(w);
 				double div = sqrt(1-w*w);	
-				Vec3<> axis = vec()  * (1.0 / div);		
+				Vec3<> axis = vec()  *  ( div != 0 ? (1.0 / div) : 0 );		
 				return Vec4<>(180 * angle / PI, axis);
 			}  
 			

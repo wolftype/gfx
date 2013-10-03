@@ -113,30 +113,16 @@ namespace gfx{
 		Pose& quat( Quat q ) { mQuat = q; return *this; }
 		Pose& rot( Quat q ) { mQuat = q; return *this; }         
 
-		// Pose& orient() {
-		//     mX = Quat::spin( Vec3f(1,0,0), mQuat);
-		//     mY = Quat::spin( Vec3f(0,1,0), mQuat);
-		//     mZ = Quat::spin( Vec3f(0,0,1), mQuat);			
-		// 	return *this;
-		// }   
         
 		Vec3f px()  const{ return mPos + x(); }
 		Vec3f py()  const{ return mPos + y(); }
 		Vec3f pz()  const{ return mPos + z(); }
 		
-		// Vec3f x()  const{ return mX; }
-		// Vec3f y()  const{ return mY; }
-		// Vec3f z()  const{ return mZ; } 
 		 
 		Vec3f x()  const{ return Quat::spin( Vec3f(1,0,0), mQuat); }
 		Vec3f y()  const{ return Quat::spin( Vec3f(0,1,0), mQuat); }
 		Vec3f z()  const{ return Quat::spin( Vec3f(0,0,1), mQuat); } 
 		
-
-		//  		Vec3f& x() { return mX; }
-		// Vec3f& y() { return mY; }
-		// Vec3f& z() { return mZ; }  
-
 		Vec3f pos()  const{ return mPos; }
 		Vec3f& pos() { return mPos; }  
 		                    
@@ -147,12 +133,52 @@ namespace gfx{
 			mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] );  
 
 			return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
-		} 
+		}   
+		
+		Pose& reset(){   
+			mPos.set(0,0,0); 
+			mQuat = Quat(1,0,0,0);
+			return *this;
+		}
 		
 		void print(){
 			cout << mPos << mQuat << endl;
 		}
 	   
+	}; 
+	
+	//Moving Pose
+	struct MPose : public Pose {
+		float aBiv, aVec; 
+		Vec3f dVec, dBiv;  
+		
+		float& ab() { return aBiv; }
+		float ab() const { return aBiv; } 
+		float& ax() { return aVec; }
+		float ax() const { return aVec; }
+		Vec3f& db() { return dBiv; }
+		Vec3f db() const { return dBiv; } 
+		Vec3f& dx() { return dVec; }
+		Vec3f dx() const { return dVec; }
+		
+		MPose(Vec3f p, Quat q = Quat(1,0,0,0)) : Pose(p,q) {}// orient(); }
+		MPose(float x, float y, float z) : Pose(x,y,z) {}// orient(); }
+		MPose() : Pose() {}  
+		
+		void move(){     
+			mPos += dVec;
+			dVec *= aVec; 
+		}  
+		
+		void spin(){     
+			mQuat = Quat( dBiv.len(), dBiv.unit() ) * mQuat;
+			dBiv *= aBiv; 
+		}  
+		
+		void step(){
+			move(); spin();
+		}
+		 
 	};
 	
 	struct View {   
@@ -216,18 +242,19 @@ namespace gfx{
 
 	};
 
-	struct Camera : public Pose {     
+	struct Camera : public MPose {     
 		
 		Lens lens;
 		View view;  
 		
 		bool bUseFrust;
 		
-		Camera(float x, float y, float z) : Pose(x,y,z), bUseFrust(true){}
-		Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : Pose(v,q), bUseFrust(true){} 
+		Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
+		Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
 		
 		Vec3f eye(){ return mPos; }
 		Vec3f up() { return y(); }
+		Vec3f right() { return x(); }  
 		Vec3f forward() { return -z(); }
 		
 		Mat4f fovy() {
@@ -252,10 +279,12 @@ namespace gfx{
 	struct Scene {
 
 		 Camera camera;
-		 Pose model;
+		 MPose model;
 		 XformMat xf; 
 	   
-		// Pipe pipe;
+		// Pipe pipe; 
+		
+	   
 		
 		Scene() : camera(0,0,5) {} 
       
@@ -277,29 +306,65 @@ namespace gfx{
 	  void push(){
 		    
 		   // Pose& cam = camera;
+			Vec3f look = camera.pos() + camera.forward(); 
 			
-		    GL :: enablePreset();    
+		    GL :: enablePreset();
+		
+		    glPushAttrib(GL_VIEWPORT_BIT );
+		    glMatrixMode(GL_PROJECTION);
+		    glPushMatrix();
+
+		    glLoadIdentity();
+		    if ( camera.lens.bOrtho ){
+		        float oz =  camera.pos()[2];
+		        glOrtho(-1.0 * oz, 1.0* oz, -1.0* oz, 1.0* oz, -50.0, 50.0); 
+
+		    } else {
+		        gluPerspective( camera.lens.mFocal, camera.lens.mWidth/camera.lens.mHeight, camera.lens.mNear, camera.lens.mFar);				
+		    }
 			
 		    glMatrixMode(GL_MODELVIEW);
 		    glPushMatrix();
 		    glLoadIdentity();
 		    gluLookAt( 
 				camera.pos().x, camera.pos().y, camera.pos().z, 
-				camera.forward().x, camera.forward().y, camera.forward().z, 
-				camera.up().x, camera.up().y, camera.up().z );
+				look.x, look.y, look.z, 
+				camera.up().x, camera.up().y, camera.up().z );   
+			
+			Vec4<> tr = model.quat().axan(); 
+			//cout << model.quat() << endl; 
+			//cout << tr[0] << " " << tr[1] << " " << tr[2] << " " << tr[3] << endl;    
+			
+			glRotatef ( tr[3], tr[0], tr[1], tr[2]  );
 
 		}
 
 	  void pop(){
-            glPopMatrix();  
+			glPopAttrib();
+
+			glMatrixMode(GL_PROJECTION);
+			glPopMatrix();
+
+			glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+		
 			GL :: disablePreset();  
-	   }  	 
+	   }  	
+	
+	   void getMatrices(){
+           glGetDoublev(GL_PROJECTION_MATRIX, xf.projd);	
+           glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd);
+           glGetIntegerv(GL_VIEWPORT, xf.viewport);	
+           
+           xf.toFloats();
+       } 
 	  #endif  
 	
 
 
 	   	//Mat4f mod() { return model.image(); }
         //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
+            Quat cat() { return camera.quat() * model.quat(); } 
 
           	Mat4f mod() { return XMat::rot( model.quat() ); }
 
@@ -324,7 +389,9 @@ namespace gfx{
             copy(tnorm.val(), tnorm.val() + 16, xf.normal);
          
             xf.toDoubles();
-        }  
+        } 
+
+
 
 		void onFrame(){
 			updateMatrices();     		

@@ -14,6 +14,9 @@
 #define GFX_CONSTANTS_H_INCLUDED
 
 namespace gfx{
+
+#ifndef CONSTANTSDEFINED
+#define CONSTANTSDEFINED
     
 #define PI 3.141592653589793
 #define TWOPI 6.283185307179586
@@ -36,7 +39,8 @@ namespace gfx{
 
 #define CLAMP(val,min,max) val<min?min:val>max?max:val
 #define D2R(val) PI*val/180.0
-
+ 
+#endif
 //#define EPSILON
 
 } //vsr::

@@ -11,8 +11,9 @@
 #ifndef GFX_Glyph_h
 #define GFX_Glyph_h
 
-#include "gfx/gfx_lib.h"
-#include "gfx/gfx_matrix.h" 
+#include "gfx_lib.h"
+#include "gfx_matrix.h" 
+#include "gfx_gl.h"
 
 
 namespace gfx {
@@ -831,10 +832,13 @@ template<class V>
 inline void Glyph :: Axes(const V& v1, const V& v2, const V& v3){
 
 	glBegin(GL_LINES);
+	glColor3f(1,0,0);
 		glVertex3f(0,0,0);
-		glVertex3f(v1[0], v1[1], v1[2]);
+		glVertex3f(v1[0], v1[1], v1[2]); 
+		glColor3f(0,1,0);
 		glVertex3f(0,0,0);
-		glVertex3f(v2[0], v2[1], v2[2]);
+		glVertex3f(v2[0], v2[1], v2[2]); 
+		glColor3f(0,0,1);
 		glVertex3f(0,0,0);
 		glVertex3f(v3[0], v3[1], v3[2]);
 	glEnd();

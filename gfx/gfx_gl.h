@@ -393,23 +393,9 @@ namespace gfx {
 
         #ifndef __raspberry__
         static GLenum Lights[8] = { GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3, GL_LIGHT4, GL_LIGHT5, GL_LIGHT6, GL_LIGHT7 };
-		#endif
-        
-//        /// Project TO Screen Coordinates
-//         Vec project(double _x, double _y, double _z, GLdouble*, GLdouble*, GLint*);
-//        /// Project FROM Screen Coordinates
-//         Vec unproject(double _x, double _y, double _z, GLdouble*, GLdouble*, GLint*);
+		#endif 
+		
 
-/*    */       
-//        /// Pass in points and camera return 2d vec
-//         Vec3f project( double _x, double _y, double _z, const XformMat& );//const Camera&);
-//        /// Pass in point on screen, get point in space
-//         Vec3f unproject( double _x, double _y, double _z, const XformMat& );//const Camera&);
-//        
-//        Vec3f project( double * p, const XformMat& );//const Camera&);
-//        Vec3f sproject( double * p, const XformMat& );//onst Camera&);
-//        
-//        Vec3f ratio( double w, double h, const XformMat& xf);//const Camera& c);
         
         
 #ifndef __raspberry__ 
@@ -444,7 +430,11 @@ namespace gfx {
         inline void translate (double x, double y, double z){
             glTranslated(x,y,z);
         }
-    
+        
+        template<class T>
+        inline void rotate( const T& v){
+            glRotatef(v[0],v[1],v[2],v[3]);
+        }
         inline void rotate (float const * p){
         glRotatef(p[0], p[1], p[2],p[3]);
         }
