@@ -163,7 +163,12 @@ namespace gfx{
 			
 			//Define this transformation rule somewhere
 		    template <class A, class B> 
-			void xf ( A * s, const B& pos, float t );
+		   	struct X { 
+				Interface * i;
+				X( Interface * _i) : i (_i ) {}
+				void f ( A * s, const B& pos, float t );
+			};
+		// void xf ( A * s, const B& pos, float t );
 			
 			
 };   
@@ -176,7 +181,7 @@ namespace gfx{
 
     template < class A > void Interface :: select( A * a) {
         stringstream s; s << a;  
-		cout << "selected: " << s.str() << endl; 
+		//cout << "selected: " << s.str() << endl; 
         selectMap[ s.str() ] = true;
     }
 
@@ -227,7 +232,8 @@ template <class A, class B> void Interface :: touch( A& s, const B& x, float t){
             }
             
             if ( isSelected( &s ) ){
-                xf(&s, x, dt);
+				 X<A,B>(this).f(&s, x, dt);
+				//xf(&s, x, dt);
             }
         
         }
