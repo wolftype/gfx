@@ -33,7 +33,7 @@ namespace gfx{
 #define LARGERAD (PI * 108 / 180)
 #define ROOT2 1.41421
 #define ROOT3 1.73205
-#define FPERROR .000001
+#define FPERROR 0.000001f
 #define ERROR(x,y) (x<=y && x>=-y)
 #define MAXRADIUS 100000
 
