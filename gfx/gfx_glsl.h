@@ -176,7 +176,7 @@ namespace gfx{
             }
         );       
         
-         string MFrag = STRINGIFY(
+         string MFragES = STRINGIFY(
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -192,7 +192,7 @@ namespace gfx{
             }
         ); 
 
-         string MFragN = STRINGIFY(
+         string MFrag = STRINGIFY(
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -224,7 +224,7 @@ namespace gfx{
             }
         ); 
 
-         string TFragAlpha = STRINGIFY(
+         string TFragAlphaES = STRINGIFY(
 
             uniform sampler2D sampleTexture;
 			uniform float alpha;
@@ -239,6 +239,25 @@ namespace gfx{
                 
 				// gl_FragColor = vec4(texColor.rgb, texColor.a * litColor.a);     			
 				gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * .1 * litColor.a) );     			
+
+            }
+        );
+
+         string TFragAlpha = STRINGIFY(
+
+            uniform sampler2D sampleTexture;
+			uniform float alpha;
+            varying vec4 colorDst;
+            varying vec2 texco;
+           
+            void main(void){
+                
+                vec4 litColor = colorDst;
+                
+                vec4 texColor = texture2D(sampleTexture, texco);
+                
+				// gl_FragColor = vec4(texColor.rgb, texColor.a * litColor.a);     			
+				gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * litColor.a) );     			
 
             }
         );
@@ -296,10 +315,23 @@ namespace gfx{
         );
                             
 
+          string TFrag = STRINGIFY(   
+
+            uniform sampler2D sampleTexture;  
+            varying vec4 colorDst;
+            varying vec2 texco;
+ 
+            void main(void){               
+                
+                vec4 texColor = texture2D(sampleTexture, texco); 
+				vec4 litColor = texColor + colorDst;    //force use of variables! 
+                
+				gl_FragColor = texColor;//mix(litColor, texColor, 0.0);
+            }
+        );
 
 
-
-         string TFrag = STRINGIFY(   
+         string TFragES = STRINGIFY(   
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;

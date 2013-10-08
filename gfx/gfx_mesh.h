@@ -243,9 +243,11 @@ namespace gfx {
 	            }
 	            glEnd();
 	        }
-	        void drawElements() {
-	            GL::Begin( mMode);
-	            for (int i = 0; i < mIndex.size(); ++i){
+	        void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+	            //glColor4f(r,g,b,a);  
+				GL::Begin( mMode);
+	            for (int i = 0; i < mIndex.size(); ++i){  
+					GL::color( mVertex[ mIndex[i] ].Col );
 	                GL::vertex( mVertex[ mIndex[i] ].Pos );
 	            }
 	            glEnd();

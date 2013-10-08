@@ -113,6 +113,8 @@ namespace gfx {
 			
 			bool mAutoClear;  
 			
+			//for reading
+			
 		
 		public:
 		
@@ -215,7 +217,9 @@ namespace gfx {
             #ifdef IOS_PROJECT
                 glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, (GLenum*)t);
             #endif
-            }
+            } 
+
+			
 	};           
 	
    inline FBO :: FBO() : 
