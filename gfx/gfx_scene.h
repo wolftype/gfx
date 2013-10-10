@@ -125,6 +125,7 @@ namespace gfx{
 		
 		Vec3f pos()  const{ return mPos; }
 		Vec3f& pos() { return mPos; }  
+		Pose& pos(float x, float y, float z) { mPos.set(x,y,z); return *this; }
 		                    
 		template<class T>
 		Pose& set( const T& t){

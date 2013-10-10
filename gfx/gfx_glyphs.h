@@ -841,8 +841,25 @@ inline void Glyph :: Axes(const V& v1, const V& v2, const V& v3){
 		glColor3f(0,0,1);
 		glVertex3f(0,0,0);
 		glVertex3f(v3[0], v3[1], v3[2]);
-	glEnd();
+	glEnd();             
+
 }
+
+// glPushMatrix();
+// glTranslated(0,0,1);
+// glRotated(90,1,0,0);   
+// Glyph::Cone();  
+// glPopMatrix();  
+// glPushMatrix();
+// glTranslated(0,1,0);
+// glRotated(90,1,0,0);   
+// Glyph::Cone();  
+// glPopMatrix();
+// glPushMatrix();
+// glTranslated(1,0,0);
+// glRotated(90,0,0,1);   
+// Glyph::Cone();  
+// glPopMatrix();  
 
 // inline void Glyph :: SegRad( const Cir& k){
 //     Seg( k, TWOPI * Ro::cur(k) );
