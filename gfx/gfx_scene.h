@@ -3,7 +3,7 @@
 
 #include "gfx_gl.h" 
 #include "gfx_xfmatrix.h" 
-#include "gfx_glsl.h" 
+//#include "gfx_glsl.h" 
 
 
 namespace gfx{   

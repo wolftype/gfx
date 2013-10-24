@@ -25,7 +25,10 @@ namespace gfx {
 
 				/* Line Between Two Points */  
 				template<class V>
-				 void Line(const V& v1, const V& v2);
+				 void Line(const V& v1, const V& v2); 
+				/* Line Between Two Points */  
+				template<class V>
+				 void Line2D(const V& v1, const V& v2);
 				/* Line from Origin */ 
 				template<class V>  
 				 void Line(const V& v1);
@@ -82,7 +85,7 @@ namespace gfx {
 								
 				//point in space (origin is default)
 				template<class A> static void Point(const A& );   
-				
+				template<class A> static void Point2D(const A& );  
 				 // void Point(const Vec3<>& );
 				 template<class V> 
 				 void Axes( const V&, const V&, const V&);
@@ -547,6 +550,19 @@ inline void Glyph :: DirDashedSegment (float angle, float radius, bool clockwise
 // 
 // } 
 
+template<class V>
+inline void Glyph :: Line2D(const V& v1, const V& v2) {
+
+	glNormal3f(0, 0, 1);
+
+	glBegin(GL_LINES);
+
+		glVertex2f(v1[0], v1[1]);
+		glVertex2f(v2[0], v2[1]);
+		
+	glEnd();
+		
+}
  
 template<class V>
 inline void Glyph :: Line(const V& v1, const V& v2) {
@@ -687,6 +703,15 @@ inline void Glyph :: Point(const A& v) {
 	glBegin(GL_POINTS);	
 		//glNormal3f(v[0], v[1], v[2]);
 		glVertex3f(v[0], v[1], v[2]);
+	glEnd();
+}  
+
+template<class A>
+inline void Glyph :: Point2D(const A& v) {
+//	glPointSize(5.0);
+	glBegin(GL_POINTS);	
+		//glNormal3f(v[0], v[1], v[2]);
+		glVertex2f(v[0], v[1]);
 	glEnd();
 }
 

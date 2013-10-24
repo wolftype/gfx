@@ -1,4 +1,4 @@
-// Interface container and event handling
+// Interface container and event handling   THIS SHOULD BE IN A SEPARATE LIBRARY  > > >>
 
 #ifndef GFX_INTERFACE_H_INCLUDED
 #define GFX_INTERFACE_H_INCLUDED
@@ -146,7 +146,12 @@ namespace gfx{
 	        void keyboardModelTransform(float acc, bool trigger);
 	        void mouseModelTransform(float acc, bool trigger);
 	        void mouseCamTranslate(float acc, bool trigger);
-	        void mouseCamSpin(float acc, bool trigger);
+	        void mouseCamSpin(float acc, bool trigger);  
+	
+			void mouseNavigate();
+			void mouseNavigateStop();  
+			void keyboardNavigate();
+			void keyboardNavigateStop();
 
 	        virtual void onMouseMove();        
 	        virtual void onMouseDown();
@@ -239,7 +244,7 @@ template <class A, class B> void Interface :: touch( A& s, const B& x, float t){
         }
     }
  
-void Interface::viewCalc(){
+inline void Interface::viewCalc(){
         
         //Assumes data has been copied to (or created from) scene transformation matrices (xf) 
         vd().z  = Quat::spin( Vec3f(0,0,1), !model().quat() * camera().quat() ); 
@@ -266,14 +271,14 @@ void Interface::viewCalc(){
 //        Vec v3(tv3.x, tv3.y, tv3.z);
         
    
-        //Get vec of Mouse Position into Z Space (store as a Dual Line)
-		vd().ray	 = (v1 - v3 ).unit();
+        //Get vec of Mouse Position into Z Space 
+		vd().ray	 = ( v3 - v2 ).unit();
         
 		mouse.projectFar	= v1 ;
 		mouse.projectNear	= v2 ;
 		mouse.projectMid	= v3 ;
 
-        mouse.biv     = mouse.pos.cross( mouse.projectFar ); //not used?
+        mouse.biv     = mouse.pos.cross( vd().ray ); //not used?
 
         //Point on Line Closest to Origin (moved to versor)
         //mouse.origin = Ro::null( Fl::loc( vd().ray, Ori(1), true ) );        
@@ -286,27 +291,6 @@ void Interface::viewCalc(){
             
 	        keyboard.down = true;  
 	
-	        //fullscreen, etc (windowing controls)
-	        windowTransform();
-
-	        //stateTransform();
-	        switch(keyboard.code){
-	            case 'c':
-	                camera().reset(); 
-	                model().reset();
-	                break;
-
-	        }
-
-	        //Camera Controls			
-	        if (keyboard.alt) {	
-	            keyboardModelTransform(1.0, true);
-	        } else if (keyboard.shift){   
-	            keyboardCamTranslate(1.0, true);
-	        } else {                         
-	            keyboardCamSpin(1.0, true);
-	        }        
-
 	    }
 
 
@@ -314,9 +298,7 @@ void Interface::viewCalc(){
 
 	        keyboard.down = false;
 
-	        keyboardModelTransform(.7, false);
-	        keyboardCamTranslate(.7, false);
-	        keyboardCamSpin(.7, false);
+
 
 	    }
 
@@ -390,12 +372,12 @@ void Interface::viewCalc(){
 	        }
 	    } 
 	
-	   void Interface :: mouseModelTransform(float acc, bool trigger){
+	  inline void Interface :: mouseModelTransform(float acc, bool trigger){
 	        model().ab() = acc;
 	        if (trigger) model().db() += mouse.dragBiv * mModelRotVel;
 	    }
 
-	    void Interface :: mouseCamTranslate(float acc, bool trigger){
+	  inline void Interface :: mouseCamTranslate(float acc, bool trigger){
 	        camera().ax() = acc;
 	        if(trigger) {
 
@@ -417,7 +399,7 @@ void Interface::viewCalc(){
 	        }
 	    }
 
-	    void Interface :: mouseCamSpin(float acc, bool trigger){
+	   inline void Interface :: mouseCamSpin(float acc, bool trigger){
 	        camera().ab() = acc; 
 	        if (trigger){
 	            switch(mouse.gesture){
@@ -429,12 +411,12 @@ void Interface::viewCalc(){
 	        }
 	    }  
 	
-		    void Interface :: onMouseMove(){
+		   inline void Interface :: onMouseMove(){
 
 		    }
 
 
-		    void Interface :: onMouseDown(){
+		   inline void Interface :: onMouseDown(){
 
 		        vd().clickray = vd().ray;
 		        mouse.click = mouse.pos;				
@@ -444,16 +426,13 @@ void Interface::viewCalc(){
 		    }
 
 
-		    void Interface :: onMouseUp(){
+		   inline void Interface :: onMouseUp(){
 		        mouse.isDown = 0; 
 		        mouse.newClick = 0;
-		        mouseModelTransform(.7, false);
-		        mouseCamTranslate(.7, false);
-		        mouseCamSpin(.7, false);
 		    }
 
 
-		    void Interface :: onMouseDrag(){			
+		   inline void Interface :: onMouseDrag(){			
          
 			        static float nx;
 		            static float ny; 
@@ -500,16 +479,50 @@ void Interface::viewCalc(){
 		             else if ( fabs(tdx) < fabs(tdy) ) mdir = tdy > 0 ? MouseData::Up : MouseData::Down; 
 
 		             mouse.gesture = mdir;
-					//printf("moust\n");
-
-		            if (keyboard.alt) {	
-		                mouseModelTransform(1.0, true);
-		            } else if (keyboard.shift) {	
-		                mouseCamTranslate(1.0, true);
-		            } else if (keyboard.ctrl){
-		                mouseCamSpin(1.0,true);
-		            }
+   
+		}          
 		
+		inline void Interface :: keyboardNavigate(){
+			//Camera Controls			               
+			
+			//stateTransform();
+	        switch(keyboard.code){
+	            case 'c':
+	                camera().reset(); 
+	                model().reset();
+	                break;
+
+	        }
+			
+	        if (keyboard.alt) {	
+	            keyboardModelTransform(1.0, true);
+	        } else if (keyboard.shift){   
+	            keyboardCamTranslate(1.0, true);
+	        } else {                         
+	            keyboardCamSpin(1.0, true);
+	        }
+		}  
+		
+		inline void Interface :: keyboardNavigateStop(){
+	        keyboardModelTransform(.7, false);
+	        keyboardCamTranslate(.7, false);
+	        keyboardCamSpin(.7, false);
+		}
+		
+		inline void Interface :: mouseNavigate(){
+		        if (keyboard.alt) {	
+	                mouseModelTransform(1.0, true);
+	            } else if (keyboard.shift) {	
+	                mouseCamTranslate(1.0, true);
+	            } else if (keyboard.ctrl){
+	                mouseCamSpin(1.0,true);
+	            }  
+		} 
+		
+		inline void Interface :: mouseNavigateStop(){
+			mouseModelTransform(.7, false);
+	        mouseCamTranslate(.7, false);
+	        mouseCamSpin(.7, false);
 		}
 	
 } //gfx::  
