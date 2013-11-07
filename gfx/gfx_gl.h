@@ -434,6 +434,10 @@ namespace gfx {
         template<class T>
         inline void rotate( const T& v){
             glRotatef(v[0],v[1],v[2],v[3]);
+        } 
+        
+        inline void rotate( float w, float x, float y, float z){
+            glRotatef(w,x,y,z);
         }
         inline void rotate (float const * p){
         glRotatef(p[0], p[1], p[2],p[3]);

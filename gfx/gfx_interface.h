@@ -488,7 +488,7 @@ inline void Interface::viewCalc(){
 			//stateTransform();
 	        switch(keyboard.code){
 	            case 'c':
-	                camera().reset(); 
+	                camera().reset(0,0,5); 
 	                model().reset();
 	                break;
 

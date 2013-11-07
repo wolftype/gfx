@@ -136,9 +136,9 @@ namespace gfx{
 			return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
 		}   
 		
-		Pose& reset(){   
-			mPos.set(0,0,0); 
-			mQuat = Quat(1,0,0,0);
+		Pose& reset(float x = 0.0, float y = 0.0, float z = 0.0, Quat q = Quat(1,0,0,0) ){   
+			mPos.set(x,y,z); 
+			mQuat = q;//Quat(1,0,0,0);
 			return *this;
 		}
 		

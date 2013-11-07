@@ -26,12 +26,17 @@ namespace gfx {
 				/* Line Between Two Points */  
 				template<class V>
 				 void Line(const V& v1, const V& v2); 
+				/* Line from Origin */ 
+				template<class V>  
+				 void Line(const V& v1);              
 				/* Line Between Two Points */  
 				template<class V>
 				 void Line2D(const V& v1, const V& v2);
-				/* Line from Origin */ 
-				template<class V>  
-				 void Line(const V& v1);
+				
+				/* Line Between Two Points */  
+				 template<class V>
+				inline void Line2D(const V& v1){ Line2D(V(), v1);}
+				
                  template<class V>  
 				 void DashedLine(const V& v1, const V& v2, int num = 10); 
 				 template<class V>
