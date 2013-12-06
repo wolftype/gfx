@@ -61,10 +61,15 @@ namespace gfx {
 //        
 //        return os;
 //    }
+//
+   struct Triangle {
+      Vertex a,b,c; //counterclockwise
+
+   };
     
     struct Mesh { //: public Frame {
         
-		typedef unsigned short INDEXTYPE;
+    typedef unsigned short INDEXTYPE;
 
     private:
         
@@ -77,7 +82,7 @@ namespace gfx {
         
         /// Vertices for VertexArray
         vector< Vertex > mVertex;
-        vector< Vertex > mStore; 		//Original Stored copy
+        vector< Vertex > mStore;     //Original Stored copy
    
         ///Indices for ElementArray
         vector< INDEXTYPE > mIndex;
@@ -85,79 +90,79 @@ namespace gfx {
     public:
         
         /// Set Draw Mode
-		Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
-		void store() {
-			mStore = mVertex;
-		}     
-		
-		Mesh& moveTo( double x, double y, double z ){
-			
-			for (int i = 0; i < mVertex.size(); ++i ){
-				
-				mVertex[i].Pos = mStore[i].Pos + Vec3f(x,y,z);
-			}   
-			
-			return *this;
-		}  
+    Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
+    void store() {
+      mStore = mVertex;
+    }     
+    
+    Mesh& moveTo( double x, double y, double z ){
+      
+      for (int i = 0; i < mVertex.size(); ++i ){
+        
+        mVertex[i].Pos = mStore[i].Pos + Vec3f(x,y,z);
+      }   
+      
+      return *this;
+    }  
 
-		Mesh& moveTo( const Vec3f& v ){
-			
-			for (int i = 0; i < mVertex.size(); ++i ){
-				
-				mVertex[i].Pos = mStore[i].Pos + v;
-			}   
-			
-			return *this;
-		}		
+    Mesh& moveTo( const Vec3f& v ){
+      
+      for (int i = 0; i < mVertex.size(); ++i ){
+        
+        mVertex[i].Pos = mStore[i].Pos + v;
+      }   
+      
+      return *this;
+    }    
         
         /// Default Line Loop Mode
         Mesh(GL::MODE m = GL::LL) : mMode(m) {}
         
         Mesh(const Mesh& m){
             
-		 //  cout << "mesh copy constructor " << endl;       
+     //  cout << "mesh copy constructor " << endl;       
 
-			            mMode = m.mMode;
-			            
-			// mVertex = m.mVertex;
-			// 		   // mStore = m.mStore;
-			// mIndex = m.mIndex;
-			//             mStore = m.mVertex;    
-			// 
-			            for (int i = 0; i < m.num(); ++i){
-			                mVertex.push_back( m[i] ); 
-							mStore.push_back( m[i] );
-			            }
-			            
-			            for (int i = 0; i < m.mIndex.size(); ++i){
-			                mIndex.push_back(m.mIndex[i]);
-			            } 
-			   
-			// store();   
+                  mMode = m.mMode;
+                  
+      // mVertex = m.mVertex;
+      //        // mStore = m.mStore;
+      // mIndex = m.mIndex;
+      //             mStore = m.mVertex;    
+      // 
+                  for (int i = 0; i < m.num(); ++i){
+                      mVertex.push_back( m[i] ); 
+              mStore.push_back( m[i] );
+                  }
+                  
+                  for (int i = 0; i < m.mIndex.size(); ++i){
+                      mIndex.push_back(m.mIndex[i]);
+                  } 
+         
+      // store();   
         }  
 
-		Mesh operator = (const Mesh& m){
+    Mesh operator = (const Mesh& m){
             
 
-		 //   cout << "mesh assignment operator " << endl;
-			if (this != &m ){
+     //   cout << "mesh assignment operator " << endl;
+      if (this != &m ){
             mMode = m.mMode;   
 
-			// mVertex = m.mVertex;
-			// 		   // mStore = m.mStore;
-			// mIndex = m.mIndex;
-			//             mStore = m.mStore;  
-	            for (int i = 0; i < m.num(); ++i){
-	                mVertex.push_back( m[i] ); 
-					mStore.push_back( m[i] );			
-	            }
+      // mVertex = m.mVertex;
+      //        // mStore = m.mStore;
+      // mIndex = m.mIndex;
+      //             mStore = m.mStore;  
+              for (int i = 0; i < m.num(); ++i){
+                  mVertex.push_back( m[i] ); 
+          mStore.push_back( m[i] );      
+              }
             
-	            for (int i = 0; i < m.mIndex.size(); ++i){
-	                mIndex.push_back(m.mIndex[i]);
-	            }      
-			// store();  
-			}     
-			return *this;
+              for (int i = 0; i < m.mIndex.size(); ++i){
+                  mIndex.push_back(m.mIndex[i]);
+              }      
+      // store();  
+      }     
+      return *this;
         }
         
         /// Create Mesh from an OBJ file
@@ -174,18 +179,18 @@ namespace gfx {
         int numIdx() const { return mIndex.size(); }
         
         Mesh& color(float r, float g, float b, float a = 1.0) { 
-			   mColor.set(r,g,b,a);   
-			for (int i = 0; i < mVertex.size(); ++i ){
-				mVertex[i].Col = mColor;
-			}   
-			return *this;
-		}
+         mColor.set(r,g,b,a);   
+      for (int i = 0; i < mVertex.size(); ++i ){
+        mVertex[i].Col = mColor;
+      }   
+      return *this;
+    }
         
         //Add  vertices from another Mesh
         Mesh& add(const Mesh& m){
             for (int i = 0; i < m.num(); ++i) { add(m[i]); }
             for (int i = 0; i < m.numIdx(); ++i) { add( m.idx(i) ); }
-			return *this;
+      return *this;
         }
         
         Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}      
@@ -198,8 +203,8 @@ namespace gfx {
         Mesh& add(float x, float y, float z) { mVertex.push_back( Vertex( Vec3f(x,y,z) ) ); return *this; }
         //Mesh& add(const Vec& v) { mVertex.push_back( Vertex( Vec3f(v[0], v[1], v[2]) ) ); return *this; }
         
-		//         template<class T>
-		// Mes
+    //         template<class T>
+    // Mes
         
         /// ADD N VERTICES
         template<typename T>
@@ -222,36 +227,40 @@ namespace gfx {
             return *this;
         }
         /// Add Last 
-		Mesh& add(){ add( num() - 1 ); return *this; }
+    Mesh& add(){ add( num() - 1 ); return *this; }
         
         GL::MODE mode() { return mMode; }
         
         vector<INDEXTYPE>::iterator indices() { return mIndex.begin(); }        
         vector<Vertex>::iterator vertices() { return mVertex.begin(); }
+
+        vector<Vertex>& vertex() { return mVertex; }
+        vector<Vertex>& original() { return mStore; }
         
         Vertex& last() { return mVertex[ mVertex.size() - 1 ]; }
         
         
         #ifdef GL_IMMEDIATE_MODE
         
-	        //immediate mode!
-	        void draw(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-	            glColor4f(r,g,b,a);
-	            GL::Begin( mMode);
-	            for (int i = 0; i < mVertex.size(); ++i){
-	                GL::vertex( mVertex[i].Pos );
-	            }
-	            glEnd();
-	        }
-	        void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-	            //glColor4f(r,g,b,a);  
-				GL::Begin( mMode);
-	            for (int i = 0; i < mIndex.size(); ++i){  
-					GL::color( mVertex[ mIndex[i] ].Col );
-	                GL::vertex( mVertex[ mIndex[i] ].Pos );
-	            }
-	            glEnd();
-	        }
+          //immediate mode!
+          void draw(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+              glColor4f(r,g,b,a);
+              GL::Begin( mMode);
+              for (int i = 0; i < mVertex.size(); ++i){
+                  GL::vertex( mVertex[i].Pos );
+              }
+              glEnd();
+          }
+          void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+              //glColor4f(r,g,b,a);  
+              GL::Begin( mMode);
+              for (int i = 0; i < mIndex.size(); ++i){  
+                  GL::color( mVertex[ mIndex[i] ].Col );
+                  GL::normal( mVertex[ mIndex[i] ].Norm );
+                  GL::vertex( mVertex[ mIndex[i] ].Pos );
+              }
+              glEnd();
+          }
         
         #endif
                 
@@ -262,7 +271,7 @@ namespace gfx {
                 mVertex[i].Pos[1] += y;
                 mVertex[i].Pos[2] += z;
             }    
-			return *this;
+      return *this;
         }  
         Mesh& translateA(float x, float y, float z){
             
@@ -271,38 +280,38 @@ namespace gfx {
                 mVertex[i].Pos[1] = mStore[i].Pos[1] + y;
                 mVertex[i].Pos[2] = mStore[i].Pos[2] + z;
             }    
-			return *this;
+      return *this;
         }
         
         Mesh&  scale(float s){
             
             for (int i = 0; i < num(); ++i){
-				mVertex[i].Pos *= s;
+        mVertex[i].Pos *= s;
             }  
- 			   return *this;
+          return *this;
         }
 
         Mesh&  scaleA(float s){
             
             for (int i = 0; i < num(); ++i){
-				mStore[i].Pos *= s;
+        mStore[i].Pos *= s;
             }  
- 			   return *this;
+          return *this;
         }  
 
-		Mesh& rotate( const Quat q ){
-		   for (int i = 0; i < num(); ++i){
-				mVertex[i].Pos = Quat::spin( mVertex[i].Pos, q);
+    Mesh& rotate( const Quat q ){
+       for (int i = 0; i < num(); ++i){
+        mVertex[i].Pos = Quat::spin( mVertex[i].Pos, q);
             }  
- 			   return *this; 
-		} 
-		
-		Mesh& rotateA( const Quat q ){
-		   for (int i = 0; i < num(); ++i){
-				mVertex[i].Pos = Quat::spin( mStore[i].Pos, q);
+          return *this; 
+    } 
+    
+    Mesh& rotateA( const Quat q ){
+       for (int i = 0; i < num(); ++i){
+        mVertex[i].Pos = Quat::spin( mStore[i].Pos, q);
             }  
- 			   return *this; 
-		}
+          return *this; 
+    }
         
         //LOAD FROM OBJ FILE
         void load(string s) {
@@ -342,32 +351,32 @@ namespace gfx {
             }
             
             printf("# of vertices: %d\n", (int)mVertex.size() );  
-			store();
+            store();
         }    
     
-		// template<class t> 
-		// Mesh& addLine( T a, T b){
-		// 	add(a[0],a[1],a[2]).add();
-		// 	add(b[0],b[1],b[2]).add();
-		// 	return *this;
-		// }
+    // template<class t> 
+    // Mesh& addLine( T a, T b){
+    //   add(a[0],a[1],a[2]).add();
+    //   add(b[0],b[1],b[2]).add();
+    //   return *this;
+    // }
 
         static Mesh Point(float x, float y, float z);
 
-		template<class T>
+    template<class T>
         static Mesh Point(const T& p);
 
-		template<class T>
+    template<class T>
         static Mesh Points(T* p, int num);  
-		template<class T>
+    template<class T>
         static Mesh Points(std::vector<T> p);
         
-		//3d vecs in 3d space . . .
-		template<class T, class S>
+    //3d vecs in 3d space . . .
+    template<class T, class S>
         static Mesh Points2(T* p, S*q, int num); 
         
-		//2d vecs in 3d space . . .
-		template<class T, class S>
+    //2d vecs in 3d space . . .
+    template<class T, class S>
         static Mesh Points2D(T* p, S*q, int num);  
 
 
@@ -378,11 +387,11 @@ namespace gfx {
 
   //      static Mesh Line( Vec3f a, Vec3f b);
 
-		template<class T>
+    template<class T>
         static Mesh Line( T a, T b);
 
-		// template<class T>
-		//         static Mesh Lines( T * a, int num);
+    // template<class T>
+    //         static Mesh Lines( T * a, int num);
 
         static Mesh Cone( double rad = 1.0 , double h = 1.0, int slices = 10, int stacks = 4);
         static Mesh Dir();
@@ -390,15 +399,15 @@ namespace gfx {
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
-        static Mesh Cylinder(float r, float h, int slices = 20, int stacks = 2);
+        static Mesh Cylinder(float r = 1.0, float h = 1.0, int slices = 20, int stacks = 2);
         
-		static Mesh Frame(float size = 1.0);
-		
-		static Mesh Contour(int res);
-		static Mesh Contours(int num, int res);   
-		
-		static Mesh Num(int n);
-		
+    static Mesh Frame(float size = 1.0);
+    
+    static Mesh Contour(int res);
+    static Mesh Contours(int num, int res);   
+    
+    static Mesh Num(int n);
+    
         /*! A Mesh of Skinned Circles 
             @param Pointer to an Circle array
             @param number of Circles in array
@@ -407,135 +416,135 @@ namespace gfx {
         // static Mesh Skin (Cir * cir, int num, int res = 100);
     };              
 
-	inline Mesh Mesh::Num(int n){ 
-		Mesh m;  
-		m.mode(GL::LS); 
-		switch(n){
-			case 0:
-				m.add(-1,-1,0).add();
-				m.add(-1,1,0).add();
-				m.add(1,1,0).add();
-				m.add(1,-1,0).add();
-				m.mode(GL::LL);
-				break;
-			case 1:
-				m.add(0,-1,0).add();
-				m.add(0,1,0).add();
+  inline Mesh Mesh::Num(int n){ 
+    Mesh m;  
+    m.mode(GL::LS); 
+    switch(n){
+      case 0:
+        m.add(-1,-1,0).add();
+        m.add(-1,1,0).add();
+        m.add(1,1,0).add();
+        m.add(1,-1,0).add();
+        m.mode(GL::LL);
+        break;
+      case 1:
+        m.add(0,-1,0).add();
+        m.add(0,1,0).add();
 
-				break;
-			case 2:
-				m.add(-1,1,0).add();
-				m.add(1,1,0).add();
-				m.add(-1,-1,0).add();
-				m.add(1,-1,0).add();
-				break; 
-			case 3:
-				m.add(-1,1,0).add();
-				m.add(1,1,0).add(); 
-				m.add(0,0,0).add();
-				m.add(1,-1,0).add(); 
-				m.add(-1,-1,0).add();    
-				break;
-		} 
+        break;
+      case 2:
+        m.add(-1,1,0).add();
+        m.add(1,1,0).add();
+        m.add(-1,-1,0).add();
+        m.add(1,-1,0).add();
+        break; 
+      case 3:
+        m.add(-1,1,0).add();
+        m.add(1,1,0).add(); 
+        m.add(0,0,0).add();
+        m.add(1,-1,0).add(); 
+        m.add(-1,-1,0).add();    
+        break;
+    } 
     
-		m.store();	
-		return m;
-	}
+    m.store();  
+    return m;
+  }
     
     
     inline Mesh Mesh::Point(float x, float y, float z){
         Mesh m;
         m.add(x,y,z).add();
         m.mode( GL::P );
-		m.store();
+    m.store();
         return m;
     }
-	template<class T>
+  template<class T>
     inline Mesh Mesh::Point(const T& p){
         Mesh m;
         m.add(p[0],p[1],p[2]).add();
         m.mode( GL::P );
-		m.store();
+    m.store();
         return m;
     }
   
-	template<class T>
-	inline Mesh Mesh::Points(T * p, int num){
-		Mesh m;
-		for (int i = 0; i < num; ++i){
-			m.add(p[i][0],p[i][1],p[i][2]).add();
-		}
-		m.mode( GL::P );    
-		m.store();		
-		return m;
-	} 
-	
-	inline Mesh Mesh::Contour(int num){
-		Mesh m;
-		for (int i = 0; i < num; ++i){
-			m.add(0,0,0).add();
-		}
-		m.mode( GL::LS );    
-		m.store();		
-		return m;
-	} 
-	
-	inline Mesh Mesh::Contours(int num, int res){
-		Mesh m;
-		for (int i = 0; i < num; ++i){
-			  
-			for (int j = 0; j < res-2; ++j){
-			    m.add(0,0,0).add(); 
-			}       
-		}
-		m.mode( GL::LS );    
-		m.store();		
-		return m;
-	}              
-	
-	template<class T>
-	inline Mesh Mesh::Points(std::vector<T> p){
-		Mesh m;
-		for (int i = 0; i < p.size(); ++i){
-			m.add(p[i][0],p[i][1],p[i][2]).add();
-		}
-		m.mode( GL::P );    
-		m.store();		
-		return m;
-	}
-	
-	
-	template<class T, class S>
-	inline Mesh Mesh::Points2(T * p, S * q, int num){
-		Mesh m;
-		for (int i = 0; i < num; ++i){
-			m.add(p[i][0],p[i][1],p[i][2]).add();
-			m.add(q[i][0],q[i][1],q[i][2]).add();
-		}
-		m.mode( GL::P );    
-		m.store();		
-		return m;
-	} 
-	
-	template<class T, class S>
-	inline Mesh Mesh::Points2D(T * p, S * q, int num){
-		Mesh m;
-		for (int i = 0; i < num; ++i){
-			m.add(p[i][0],p[i][1],p[i][2]).add();
-			m.add(q[i][0],q[i][1], 0).add();
-		}
-		m.mode( GL::P );    
-		m.store();		
-		return m;
-	}
-	
+  template<class T>
+  inline Mesh Mesh::Points(T * p, int num){
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+      m.add(p[i][0],p[i][1],p[i][2]).add();
+    }
+    m.mode( GL::P );    
+    m.store();    
+    return m;
+  } 
+  
+  inline Mesh Mesh::Contour(int num){
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+      m.add(0,0,0).add();
+    }
+    m.mode( GL::LS );    
+    m.store();    
+    return m;
+  } 
+  
+  inline Mesh Mesh::Contours(int num, int res){
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+        
+      for (int j = 0; j < res-2; ++j){
+          m.add(0,0,0).add(); 
+      }       
+    }
+    m.mode( GL::LS );    
+    m.store();    
+    return m;
+  }              
+  
+  template<class T>
+  inline Mesh Mesh::Points(std::vector<T> p){
+    Mesh m;
+    for (int i = 0; i < p.size(); ++i){
+      m.add(p[i][0],p[i][1],p[i][2]).add();
+    }
+    m.mode( GL::P );    
+    m.store();    
+    return m;
+  }
+  
+  
+  template<class T, class S>
+  inline Mesh Mesh::Points2(T * p, S * q, int num){
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+      m.add(p[i][0],p[i][1],p[i][2]).add();
+      m.add(q[i][0],q[i][1],q[i][2]).add();
+    }
+    m.mode( GL::P );    
+    m.store();    
+    return m;
+  } 
+  
+  template<class T, class S>
+  inline Mesh Mesh::Points2D(T * p, S * q, int num){
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+      m.add(p[i][0],p[i][1],p[i][2]).add();
+      m.add(q[i][0],q[i][1], 0).add();
+    }
+    m.mode( GL::P );    
+    m.store();    
+    return m;
+  }
+  
 
     inline Mesh Mesh::Grid(int w, int h, float spacing){
         Mesh m;
         float tw = spacing * w;
         float th = spacing * h;
         
-		//Vertical Lines
+    //Vertical Lines
         for (int i = 0; i <= w; ++i){
             float tx = (-1.0 + 2.0 * i/w ) * tw/2.0;
             float ty = th/2.0;
@@ -543,7 +552,7 @@ namespace gfx {
             m.add(tx,ty,0).add();
         }
         
-		//Horizontal Lines
+    //Horizontal Lines
         for (int i = 0; i <= h; ++i){
             float ty = (-1.0 + 2.0 * i/h ) * th/2.0;
             float tx = tw/2.0;
@@ -552,10 +561,10 @@ namespace gfx {
         }
 
         m.mode(GL::L);
- 		m.store();
+        m.store();
        return m;
     }
- 
+
        
       inline Mesh Mesh::Sphere(double rad, int slices, int stacks){
           Mesh m;
@@ -568,15 +577,11 @@ namespace gfx {
                   
                   float u = 1.0* j/slices;
 
-                  // Vec tv = Vec::x.sp( Gen::rot( PI * u, PIOVERFOUR * v) ) * rad;
-                  // Vec n = tv.unit();
-				Quat qu = Quat( PI*u, Vec3f(0,1,0));
-//				Vec3f tu = Quat::spin( Vec3f(0,0,1), qu );
-				Quat qv = Quat( PIOVERFOUR * v, Vec3f(0,0,1) ) ;
-				
-				 Vec3f tv = Quat::spin( Vec3f(1,0,0),  qu * qv ) ;
-				//cout << tv << endl;
-                  m.add( tv * rad, tv );
+                   Quat qu = Quat( PI*u, Vec3f(0,1,0));
+                   Quat qv = Quat( PIOVERFOUR * v, Vec3f(0,0,1) ) ;
+        
+                   Vec3f tv = Quat::spin( Vec3f(1,0,0),  qu * qv ) ;
+                   m.add( tv * rad, tv );
       
                   if (i == 0 || i == stacks) {
                       break;
@@ -584,7 +589,6 @@ namespace gfx {
                                   
               }
           }
-          
           
           //BOTTOM 
           for (int j = 0; j < slices; ++j){
@@ -602,7 +606,7 @@ namespace gfx {
                   int a = 1 + i * slices + j;
                   if (a == 0) continue;
                   
-                  int b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Higher Latitue or North Pole
+                  int b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Next Higher Latitude or North Pole
                   
                  // int c = ( j < slices - 1 ) ? a + 1 : 1 + i * slices;
                   
@@ -611,25 +615,24 @@ namespace gfx {
                   m[a].Col.set(color,xcolor,1,1);
                   m[b].Col.set(color,xcolor,1,1);
               }
-              m.add( 1 + i * slices );
+              m.add( 1 + i * slices ); //repeat south pole every strip
           }
-          
           
           m.last().Col.set(0,1,0,1);
           
-          m.mode(GL::P);
-		 m.store(); 
+          m.mode(GL::TS);
+          m.store(); 
          return m;
       }
     
-	template<class T>
+  template<class T>
     inline Mesh Mesh::Line (T a, T b){
     
         Mesh m;
         m.add(a[0], a[1], a[2]).add(b[0], b[1], b[2]);
         m.add(0).add(1);
         m.mode( GL::LS );
-		m.store();
+        m.store();
         return m;
     }
     
@@ -649,7 +652,7 @@ namespace gfx {
         }
         
         m.mode(GL::LL);
-		m.store();
+    m.store();
         return m;
     }
     
@@ -671,7 +674,7 @@ namespace gfx {
         }
         
         m.mode(GL::LL); 
-		m.store(); 
+    m.store(); 
         return m;
     
     }
@@ -684,7 +687,7 @@ namespace gfx {
         m.add( n );
         m.translate(0,0,1);
         m.mode(GL::LS); 
-		m.store(); 
+    m.store(); 
         return m;
     
     } 
@@ -740,7 +743,7 @@ namespace gfx {
         m.add(idx,4);
                 
         m.mode(GL::TS);  
-		m.store(); 
+    m.store(); 
         return m;
     }   
 
@@ -765,7 +768,7 @@ namespace gfx {
         m.add(idx,4);
                 
         m.mode(GL::TS);  
-		m.store(); 
+    m.store(); 
         return m;
     }
     
@@ -790,21 +793,21 @@ namespace gfx {
                 
             }
         }
-		m.mode(GL::TS);
-		m.store(); 
+        m.mode(GL::P);
+        m.store(); 
         return m;
     }
     
     inline Mesh Mesh::Frame(float size){
-	  Mesh m;
-	  m.add( Vertex( Vec3f(0,0,0), Vec3f(0,0,1), Vec4f(1,1,1,1) ) ).add();
-  	  m.add( Vertex( Vec3f(size,0,0), Vec3f(0,0,1), Vec4f(1,0,0,1) )).add().add(0);
-  	  m.add( Vertex( Vec3f(0,size,0), Vec3f(0,0,1), Vec4f(0,1,0,1) )).add().add(0); 
-  	  m.add( Vertex( Vec3f(0,0,size), Vec3f(0,0,1), Vec4f(0,0,1,1) )).add().add(0);
-	  m.mode( GL::LS );
-	  m.store();
-	  return m;
-	}
+    Mesh m;
+    m.add( Vertex( Vec3f(0,0,0), Vec3f(0,0,1), Vec4f(1,1,1,1) ) ).add();
+      m.add( Vertex( Vec3f(size,0,0), Vec3f(0,0,1), Vec4f(1,0,0,1) )).add().add(0);
+      m.add( Vertex( Vec3f(0,size,0), Vec3f(0,0,1), Vec4f(0,1,0,1) )).add().add(0); 
+      m.add( Vertex( Vec3f(0,0,size), Vec3f(0,0,1), Vec4f(0,0,1,1) )).add().add(0);
+    m.mode( GL::LS );
+    m.store();
+    return m;
+  }
     
 
     // inline Mesh Mesh::Skin (Cir * cir, int num, int res){
@@ -943,11 +946,11 @@ namespace gfx {
 //           int mU = res;
 //           int mV = num;
 //                                    
-//            if (!mVertex.empty() ) mVertex.clear();	
+//            if (!mVertex.empty() ) mVertex.clear();  
 //
 //            for (int j = 0; j < mU; ++j){
 //                double t = 2 * PI * j/mU;
-//                for (int i = 0 ; i < mV; ++i){					
+//                for (int i = 0 ; i < mV; ++i){          
 //                    Par p = Ro::par_cir( s[ i ], t );
 //                    Pnt tp =  Ro::cen( Ro::split(p)[0] );
 //                    mVertex.push_back( Vertex( Vec3f(tp[0], tp[1], tp[2]) ) ) ;

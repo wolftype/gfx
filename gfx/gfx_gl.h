@@ -562,6 +562,10 @@ namespace gfx {
         glPolygonMode(GL_FRONT, GL_FILL);
         glPolygonMode(GL_BACK, GL_FILL);
     }
+
+    inline void twoSidedLighting(){
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    }
     
 
     inline void enablePreset(){
@@ -572,7 +576,7 @@ namespace gfx {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
-        glPointSize(10);
+        glPointSize(5);
         glEnable(GL_LINE_SMOOTH);
         
         //frontBackDiff();
