@@ -360,6 +360,9 @@ namespace gfx {
     //   add(b[0],b[1],b[2]).add();
     //   return *this;
     // }
+    //
+        template<class T>
+        static Mesh UV( T* p, int w, int h);
 
         static Mesh Point(float x, float y, float z);
 
@@ -399,7 +402,7 @@ namespace gfx {
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
-        static Mesh Cylinder(float r = 1.0, float h = 1.0, int slices = 20, int stacks = 2);
+        static Mesh Cylinder(float r = 1.0, float h = 2.0, int slices = 20, int stacks = 2);
         
     static Mesh Frame(float size = 1.0);
     
@@ -450,7 +453,42 @@ namespace gfx {
     m.store();  
     return m;
   }
-    
+    template<class T>
+    inline Mesh Mesh::UV( T* p, int w, int h){
+      Mesh m;
+      bool bFlip = false;
+      for (int i = 0; i < w-1; ++i){
+        for (int j = 0; j < h; ++j){
+          int a = bFlip ? (i+1) * (h) - j - 1: i * h + j;
+          int b = a + h;
+          m.add( p[a][0], p[a][1], p[a][2] ).add();
+          m.add( p[b][0], p[b][1], p[b][2] ).add(); 
+        }
+        bFlip = !bFlip;
+        //m.add().add().add();//.add(i*h);//.add(i*h);
+      }
+
+    bFlip = true; int ct = 0;
+     for (int i = 0; i < m.num(); i+=3){
+        int a = i; int b = i + 1; int c = i + 2;
+        Vec3f v = (m[b].Pos - m[a].Pos).cross( m[c].Pos - m[a].Pos).unit();
+        m[a].Norm = bFlip ? v : -v;
+        m[b].Norm =  bFlip ? v : -v;
+        m[c].Norm =  bFlip ? v : -v;
+         bFlip = !bFlip;
+        if ( ct == (h-1) ) {
+          //bFlip = !bFlip;
+         // m[a].Col.set(.2,0,0,1);
+          ct = 0;
+        }
+        ct++;
+      }
+      
+      m.mode(GL::TS);
+      m.store();
+      return m;
+    }
+
     
     inline Mesh Mesh::Point(float x, float y, float z){
         Mesh m;
@@ -775,25 +813,56 @@ namespace gfx {
     inline Mesh Mesh::Cylinder (float r, float height, int slices, int stacks){
    
         Mesh m;
-        m.add( Vec3f(0,0,0) );
+        m.add( Vec3f(0,-height/2.0,0), Vec3f(0,-1,0) );
 
-        for (int j = 0; j < slices; ++ j){
-            float rad = 2.0 * PI * j / slices;
+        for (int i = 0; i <= stacks; ++i){
+                  
+          float y = -height/2.0 + height * i/stacks;
+
+          for (int j = 0; j < slices; ++ j){
+            float rad = TWOPI * j / slices;
             float x = cos(rad) * r;
             float z = -sin(rad) * r;
-        
-            for (int i = 0; i < stacks; ++i){
                 
-                float y = height * i/stacks;
+            m.add( Vec3f(x,y,z), Vec3f(x, 0,z ).unit() );
                 
-                m.add( Vec3f(x,y,z) );
-                
-                int idx[2] = {i,0};
-                m.add(idx, 2);
-                
-            }
+          }
         }
-        m.mode(GL::P);
+
+        m.add( Vec3f(0, height/2.0, 0), Vec3f( 0,1,0 ) );
+        
+
+        //TOP
+        int last = m.vertex().size() -1;
+        m.add( last - slices ).add( last); 
+        for (int j = last - slices + 1; j < last; ++j){
+          int idx[2] = {j,last};
+          m.add(idx,2);
+        }
+        m.add( last - slices).add(last).add(last); //add twice to finish
+
+        //BOTTOM
+        m.add(1).add(1).add(0);                     //add twice to start
+        for (int j = slices; j > 1; --j){
+            int idx[2] = {j,0};
+            m.add(idx, 2);
+        }
+        m.add(1).add(0).add(0); 
+
+        for(int i = 0; i < stacks; ++i){
+          m.add(i*slices+1).add(i*slices+1);
+          for (int j = 0; j < slices; ++j){
+            int ix = i * slices + j + 1;
+            int ixn = (j < slices - 1) ? ix + 1 : i * slices + 1;
+            int nx = ix + slices;
+            int nxn = (j < slices -1 ) ? nx + 1: ixn + slices;
+            int idx[2] = { nxn, ixn };// :  i * slices + slices + 2, (j < slices-1 ) ? ix+1 : i * slices + 2 };// : { i * 2 * slices + 1, i * slices + 1 };
+            m.add(idx,2);
+          }
+          m.add(i*slices+2+slices).add(i*slices+2+slices);
+        }
+        
+        m.mode(GL::TS);
         m.store(); 
         return m;
     }

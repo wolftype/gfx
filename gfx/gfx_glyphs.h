@@ -89,6 +89,8 @@ namespace gfx {
         //static void Helix(float radius = 1.0, float height = 1.0, bool clockwise = 0);
                 
         //point in space (origin is default)
+        inline static void Point() { glBegin(GL_POINTS); glVertex3f(0,0,0); glEnd(); }
+          
         template<class A> static void Point(const A& );   
         template<class A> static void Point2D(const A& );  
          // void Point(const Vec3<>& );
@@ -765,6 +767,18 @@ inline void Glyph :: TriLine(bool down) {
     
   glEnd();
 }
+
+  /* template <class T> */
+/* inline void Glyph::Tri( const T& a, const T& b, const T& c){ */
+/*   glBegin(GL_TRIANGLES); */
+/*     GL::Tri(a,b,c); */
+/*   glEnd(); */
+/*   glColor3f(1,0,0); */
+/*   glBegin(GL_TRIANGLES); */
+
+/*   glBegin(GL_TRIANGLES); */
+
+/* } */
 
 inline void Glyph :: Sphere(double radius, int slices, int stacks) {
   glutWireSphere(radius, slices, stacks);

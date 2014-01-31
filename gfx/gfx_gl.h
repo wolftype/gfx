@@ -9,8 +9,7 @@
 #ifndef gfx_gl_h
 #define gfx_gl_h
 
-using namespace std;
-
+//
 #include <string>
 #include <vector>
 
@@ -22,7 +21,9 @@ using namespace std;
 
 
 namespace gfx {
-    
+
+//    using namespace std;
+
     namespace GL {
         
         enum ATTACH {
