@@ -8,41 +8,41 @@
 
 namespace gfx{   
 
-    struct Slab{
-        Vec3f blu, bru, tru, tlu;
-        Vec3f& operator[] (int i ) { return (&blu)[i]; }
-    };
+    /* struct Slab{ */
+    /*     Vec3f blu, bru, tru, tlu; */
+    /*     Vec3f& operator[] (int i ) { return (&blu)[i]; } */
+    /* }; */
 
-    struct Volume{
-        Vec3f bl, br, tr, tl, blb, brb, trb, tlb; 
-        Vec3f& operator[] (int i ) { return (&bl)[i]; }
-    }; 
+    /* struct Volume{ */
+    /*     Vec3f bl, br, tr, tl, blb, brb, trb, tlb; */ 
+    /*     Vec3f& operator[] (int i ) { return (&bl)[i]; } */
+    /* }; */ 
 
-  struct Frustrum{
-      float width, height, depth;
-      float bwidth, bheight;
+  /* struct Frustrum{ */
+  /*     float width, height, depth; */
+  /*     float bwidth, bheight; */
 
-      Slab dir;
-      Volume box;
+  /*     Slab dir; */
+  /*     Volume box; */
 
-      void calc(){
-          dir.blu = (box.blb - box.bl).unit();
-          dir.tru = (box.trb - box.tr).unit();
-          dir.bru = (box.brb - box.br).unit();
-          dir.tlu = (box.tlb - box.tl).unit();
-          width = box.br[0] - box.bl[0];
-          height = box.tr[1] - box.br[1];
-          depth = box.blb[2] - box.bl[2];
-          bwidth = box.brb[0] - box.blb[0];
-          bheight =box.trb[1] - box.brb[1];
+  /*     void calc(){ */
+  /*         dir.blu = (box.blb - box.bl).unit(); */
+  /*         dir.tru = (box.trb - box.tr).unit(); */
+  /*         dir.bru = (box.brb - box.br).unit(); */
+  /*         dir.tlu = (box.tlb - box.tl).unit(); */
+  /*         width = box.br[0] - box.bl[0]; */
+  /*         height = box.tr[1] - box.br[1]; */
+  /*         depth = box.blb[2] - box.bl[2]; */
+  /*         bwidth = box.brb[0] - box.blb[0]; */
+  /*         bheight =box.trb[1] - box.brb[1]; */
 
-      }
+  /*     } */
 
-      // Pln left(){ return Ro::null(box.tl) ^ Ro::null(box.bl) ^ Ro::null(box.blb) ^ Inf(1); }
-      // Pln right(){ return Ro::null(box.tr) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); }
-      // Pln top(){ return Ro::null(box.tl) ^ Ro::null(box.tr) ^ Ro::null(box.trb) ^ Inf(1); }
-      // Pln bottom(){ return Ro::null(box.bl) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } 
-  };
+  /*     // Pln left(){ return Ro::null(box.tl) ^ Ro::null(box.bl) ^ Ro::null(box.blb) ^ Inf(1); } */
+  /*     // Pln right(){ return Ro::null(box.tr) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */
+  /*     // Pln top(){ return Ro::null(box.tl) ^ Ro::null(box.tr) ^ Ro::null(box.trb) ^ Inf(1); } */
+  /*     // Pln bottom(){ return Ro::null(box.bl) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */ 
+  /* }; */
 
   struct Lens {
 

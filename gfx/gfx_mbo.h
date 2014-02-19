@@ -83,7 +83,7 @@ namespace gfx{
                 vertex.drawArray(mode);
             }
 
-            //Call BEFORE Enabling Vertex Attributes
+            /// Call BEFORE Enabling Vertex Attributes
             void bind() { 
                 vertex.bind(); 
                 index.bind(); 
