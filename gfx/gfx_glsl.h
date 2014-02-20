@@ -1,9 +1,9 @@
 //
-//  vsr_glsl.h
-//  Versor
-/*
+//  gfx_glsl.h
+//  
+/*!
 
-    FOR BUILDING GLSL SHADER PROGRAMS UP FROM COMMONLY USED SMALLER PIECES OF CODE
+    @file FOR BUILDING GLSL SHADER PROGRAMS UP FROM COMMONLY USED SMALLER PIECES OF CODE
 
 */
 //  Created by Pablo Colapinto on 2/28/13.
@@ -65,8 +65,7 @@ namespace gfx{
          *-----------------------------------------------------------------------------*/
         string UMatrix = STRINGIFY(
             uniform mat4 modelView;           // Model * View
-           // uniform mat4 submodel;          // Glyph-specific Transform
-            uniform mat4 projection;          // Projection Matrix (ortho or frustrum)
+            uniform mat4 projection;          // Projection Matrix (ortho or frustum)
             uniform mat4 normalMatrix;        // Normal Matrix (inverse transpose of mvm)
         );
         
@@ -174,7 +173,7 @@ namespace gfx{
                 //Diffusion Coefficient
                 float df = max(0.0, dot(N,L) );
 
-                //Specular Coefficient
+                //Specular Coefficient (not used here)
                 float sf = max(0.0, dot(L,H) );
                     
                 return vec4((sourceColor * df).xyz , 1 );

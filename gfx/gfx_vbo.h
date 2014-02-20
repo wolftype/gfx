@@ -1,11 +1,11 @@
 /*
- *  vsr_gl_vbo.h
- *  cuttlefish
+ *  gfx_vbo.h
+ *  
  *
  *  Created by x on 1/9/11.
  *  Copyright 2011 x. All rights reserved.
  *
-	some ripped from wes smith's muro
+    some things ripped from wes smith's muro
  */
 
 #ifndef GFX_VBO_H_INCLUDED
@@ -17,31 +17,31 @@
 namespace gfx {
 
     ///Vertex Buffer Object. Vertex data can be interleaved with color info, etc, watch for packing bit alignments!
-	class VBO {
-	
-		private:
-		
-			typedef unsigned char uchar;
-		
-			GLuint				mId;			///< Unique buffer ID
+  class VBO {
+  
+    private:
+    
+            typedef unsigned char uchar;
+    
+            GLuint          mId;        ///< Unique buffer ID
 
-            GL::TYPE			mType;			///< type of the buffer (for RTVBO operations)
+            GL::TYPE        mType;      ///< type of the buffer (for RTVBO operations)
         
-            GL::FORMAT			mFormat;		///< format of the buffer (for RTVBO operations)
+            GL::FORMAT      mFormat;    ///< format of the buffer (for RTVBO operations)
             
-            GL::BUFFER			mTarget;		///< Specifies the target buffer object being mapped (vertex or index? or pixel (un)pack)
-            GL::USAGE			mUsage;			///< Specifies how the buffer will be used, dynamic, etc
+            GL::BUFFER      mTarget;    ///< Specifies the target buffer object being mapped (vertex or index? or pixel (un)pack)
+            GL::USAGE       mUsage;     ///< Specifies how the buffer will be used, dynamic, etc
 
-            GLsizeiptr          mDataSize;		///< Size of buffer in bytes
-			
-			GLvoid *			mData;			///< user data
+            GLsizeiptr      mDataSize;  ///< Size of buffer in bytes
+      
+            GLvoid *        mData;      ///< user data
         
-            GLuint              mOffset;            ///< offset into buffer
-			
-           GLuint mNum;                        ///< Number of Vertices
-			
-		public:
-		        
+            GLuint          mOffset;    ///< offset into buffer
+      
+            GLuint mNum;                ///< Number of Vertices
+      
+    public:
+            
             GLuint id() const { return mId; }
         
             VBO() : mId(0) ,
@@ -54,7 +54,7 @@ namespace gfx {
             mDataSize(0),
             mData(NULL)
             { }
-			
+      
 //            VBO(GLvoid * udata, int num,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC);
             VBO(GLvoid * udata, int num, GLsizeiptr s, GL::BUFFER b = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC)
             : mId(0),
@@ -71,33 +71,33 @@ namespace gfx {
                 generate();        
             }   
 
-			//Copy and Assignment
-			
-			void data( GLvoid * d ) { mData = d; }
+      //Copy and Assignment
+      
+          void data( GLvoid * d ) { mData = d; }
         
-            void target(GL::BUFFER t) { mTarget = t; }
+          void target(GL::BUFFER t) { mTarget = t; }
         
-            void generate(GLvoid * udata,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER);
+          void generate(GLvoid * udata,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER);
             
-			void generate() {
-                glGenBuffers(1, &mId);	
+          void generate() {
+                glGenBuffers(1, &mId);  
                 cout << "GENERATING VBO id " << mId << endl; 
                 GL::error( "vbo gen");
                 bind();
                 buffer();
                 unbind();
-            }
-		
-            void bind() {
+          }
+    
+          void bind() {
                 glBindBuffer(mTarget, mId);//arb?
                 GL::error( "vbo bind");
-            }
+          }
 
-            void buffer(){
+          void buffer(){
             //    mDataSize = GL :: dataSize( mFormat, mType, mNum );
                 glBufferData(mTarget, mDataSize, mData, mUsage);
                 GL::error( "vbo buffer data");
-            }    
+          }    
 
             void buffer(GLvoid * data){
                 mData = data;
@@ -138,29 +138,30 @@ namespace gfx {
                 GL::error( "vbo update data");
 
             }
-			
-			template<class T>
+      
+            template<class T>
             void update(int idx, int num, T * d) {
 
                 bind();
                 glBufferSubData( mTarget, idx * sizeof(T), num * sizeof(T), (GLvoid*)d);
                 unbind();
-                GL::error( "vbo update data");
+                GL::error( "vbo update sub data");
 
             }
             
             void offset(GLuint n ) { mOffset = n; }
             
             void usage(GL::USAGE u) { mUsage = u; }
-			
-			void draw(GLenum);
+      
+            //void draw(GLenum);
+            
             void drawArray(GLenum mode = GL_LINE_LOOP){
-                glDrawArrays  (mode, 0, mNum);	
+                glDrawArrays  (mode, 0, mNum);  
                 GL::error("vbo draw arrays");
             }
             
             void drawElements(GLenum mode = GL_TRIANGLES, int num = -1, int off = 0){
-                glDrawElements ( mode, (num==-1) ? mNum - off : num, mType, (GLvoid *) ( sizeof( mType ) * off ) );	
+                glDrawElements ( mode, (num==-1) ? mNum - off : num, mType, (GLvoid *) ( sizeof( mType ) * off ) );  
                 GL::error("vbo draw elements");
             }
             void enable();
@@ -169,11 +170,11 @@ namespace gfx {
             GLsizeiptr size() const { return mDataSize; }
             GLuint num() const { return mNum; }
             
-//			void map(GLenum);
-//			void unmap();
+//      void map(GLenum);
+//      void unmap();
             
-	};
-	
+  };
+  
     
     /// Two Buffer (vertex and elements)
     struct VEBO{

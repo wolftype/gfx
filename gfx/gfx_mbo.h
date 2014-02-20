@@ -29,43 +29,43 @@ namespace gfx{
             VBO vertex;     //vertex buffer container
             VBO index;      //element buffer container
 
-			Mesh mesh;
+            Mesh mesh;
             
             GL::MODE mode;
 
-			MBO& set( GL::MODE m) {
-				mode = m;
-				mesh.mode(m);
-				return *this;
-			}
-            
+            MBO& set( GL::MODE m) {
+              mode = m;
+              mesh.mode(m);
+              return *this;
+            }
+                  
             MBO(){} 
 
-			MBO(const MBO& mbo){
-				idx = mbo.idx;
-				vertex = mbo.vertex;
-				index = mbo.index; 
-				mesh = mbo.mesh;
-				mode = mbo.mode;  
-				
-				vertex.data( &mesh.vertices()[0].Pos[0] );
-				index.data( &mesh.indices()[0] );  		
-			}
-               
-			MBO operator = (const MBO& mbo){    
-				if (this != &mbo ){
-					idx = mbo.idx;
-					vertex = mbo.vertex;
-					index = mbo.index; 
-					mesh = mbo.mesh;
-					mode = mbo.mode;    
-					
-					vertex.data( &mesh.vertices()[0].Pos[0] );
-					index.data( &mesh.indices()[0] );
-				}  
-				return *this;			
-			}           
-			
+            MBO(const MBO& mbo){
+              idx = mbo.idx;
+              vertex = mbo.vertex;
+              index = mbo.index; 
+              mesh = mbo.mesh;
+              mode = mbo.mode;  
+              
+              vertex.data( &mesh.vertices()[0].Pos[0] );
+              index.data( &mesh.indices()[0] );      
+            }
+                     
+            MBO operator = (const MBO& mbo){    
+              if (this != &mbo ){
+                idx = mbo.idx;
+                vertex = mbo.vertex;
+                index = mbo.index; 
+                mesh = mbo.mesh;
+                mode = mbo.mode;    
+                
+                vertex.data( &mesh.vertices()[0].Pos[0] );
+                index.data( &mesh.indices()[0] );
+              }  
+              return *this;      
+            }           
+      
             MBO( Mesh m, GL::USAGE usage = GL::STATIC, int id = -1 ) : mesh(m){
                 mCount +=1;
                 idx = id == -1 ? mCount : id;
@@ -99,15 +99,15 @@ namespace gfx{
                 vertex.update(val);
             }
             
-			void update(){
-				vertex.update();
-			}
-			
-			///Update Specific Vertex
-			template< class T >
-			void update(int idx, int num, const T& val){
-				vertex.update(idx, num, &val);
-			}
+      void update(){
+        vertex.update();
+      }
+      
+      ///Update Specific Vertex
+      template< class T >
+      void update(int idx, int num, const T& val){
+        vertex.update(idx, num, &val);
+      }
 
 //            //static methods to grab quick int
 //            static int Buffer( Mesh& mesh, int id = -1){

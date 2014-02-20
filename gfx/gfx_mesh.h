@@ -1,6 +1,10 @@
+/// @file Vertex Mesh Data structures (geometry, normals, colors, uv textures)
+//    
+//
+//
+//  GFX
 //
 //  Mesh.h
-//  vsr
 //
 //  Created by Pablo Colapinto on 4/5/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
@@ -47,10 +51,7 @@ namespace gfx {
         static GLvoid * on() { return (GLvoid*)sizeof(Vec3f); }
         static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
         static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
-//        static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ); }
-//        static GLvoid * ot() { return (GLvoid*)( 3 * sizeof(Vec3f) ); }
 
-        //friend ostream& operator << (ostream& os, Vertex v);
         void print() { }//cout <<  Tex << endl; }
     };
 //    
@@ -64,7 +65,6 @@ namespace gfx {
 //
    struct Triangle {
       Vertex a,b,c; //counterclockwise
-
    };
     
     struct Mesh { //: public Frame {

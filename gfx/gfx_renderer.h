@@ -27,100 +27,110 @@
 #include "gfx/gfx_glsl.h"    
  
 namespace gfx {
-	
+  
   using namespace GLSL; 
 
   struct Process;
 
   /// CONTEXT BLIND RENDERER (NO WINDOWING . . .)
-	struct Renderer { 
-	    
-		Layout layout; 		  ///< Screen Layout
-	    
-		Scene scene;   		  ///< ModelViewProjection Transformation Matrices  
-		 	
-		Pipe pipe;	   		  ///< Graphics Pipeline Vertex Attribute Binding  
+  struct Renderer { 
+      
+    Layout layout;       ///< Screen Layout
+      
+    Scene scene;         ///< ModelViewProjection Transformation Matrices  
+       
+    Pipe pipe;           ///< Graphics Pipeline Vertex Attribute Binding  
     
     Process * process;  ///< Some EFFECTS 
-		 
-		Vec4f background;  	///< Background Color
-		
-		Mat4f mvm; 			    ///< Temporary save of scene's transformation matrix 
+     
+    Vec4f background;    ///< Background Color
+    
+    Mat4f mvm;           ///< Temporary save of scene's transformation matrix 
 
-    int contextWidth, contextHeight; ///< tbd pixel dimensions of screen (needs to be fed from context)  	    
+    int contextWidth, contextHeight; ///< tbd pixel dimensions of screen (needs to be fed from context)        
          
 
     /// RENDER FOR SINGLE COMPUTER AND SCREEN
-	  Renderer (float w, float h, float z=30.0) : layout(1,1, w, h, 0, 0),
+    Renderer (float w, float h, float z=30.0) : layout(1,1, w, h, 0, 0),
      background(0,0,0,1)
-		{
-			
-			// initialize ES graphics
+    {
+      
+      // initialize ES graphics
       initGLES(); 
 
-      //CALCULATE CAMERA POSE FOR SINGLE SCREEN   		
-			setView(z, false); 
+      //CALCULATE CAMERA POSE FOR SINGLE SCREEN       
+      setView(z, false); 
 
     }
     
-		/// MULTIPLE COMPUTERS AND SCREENS
-		 Renderer( const Layout& l, float z = 30.0 ) : background(0,0,0,1), layout(l) {
-		  	initGLES();
+    /// MULTIPLE COMPUTERS AND SCREENS
+     Renderer( const Layout& l, float z = 30.0 ) : background(0,0,0,1), layout(l) {
+        initGLES();
         setView(z, true);
-		 } 
-		
+     } 
+    
     ~Renderer(){}     
-	 
-		void initGLES(){
+   
+    void initGLES(){
              
-			glClearColor(1,1,1,1);
-	    srand( time(NULL) );  
+      glClearColor(1,1,1,1);
+      srand( time(NULL) );  
 
-		  string V = DefaultVertES;                   ///< These shaders are defined in gfx_glsl.h 
-			string F = DefaultFragES; 
+      string V = DefaultVertES;                   ///< These shaders are defined in gfx_glsl.h 
+      string F = DefaultFragES; 
             
-			pipe.program = new ShaderProgram(V,F,0);    ///< The 0 here means load directly from string, not from file
-			pipe.bindAll();		                          ///< Bind all vertex attributes
-			
-		}
-	     
-    virtual void init() = 0; 
-		virtual void update() = 0;
-		virtual void onDraw() = 0;   
+      pipe.program = new ShaderProgram(V,F,0);    ///< The 0 here means load directly from string, not from file
+      pipe.bindAll();                              ///< Bind all vertex attributes
+      
+    }
        
-		void setView(float z, bool isGrid, int row=0, int col=0){
+    virtual void init() = 0; 
+    virtual void update() = 0;
+    virtual void onDraw() = 0;   
+       
+    void setView(float z, bool isGrid, int row=0, int col=0){
             
-			float w = layout.screenWidth;
-			float h = layout.screenHeight;   
+      float w = layout.screenWidth;
+      float h = layout.screenHeight;   
 
-  		float aspect = w / h;   
+      float aspect = w / h;   
              
-			scene.fit(w,h);
+      scene.fit(w,h);
 
-			Pose p( -w/2.0,-h/2.0, 0);
+      Pose p( -w/2.0,-h/2.0, 0);
 
       
-			layout.speakerL = Vec3f( -w/2.0, 0, 0);
-			layout.speakerR = Vec3f( w/2.0, 0, 0);
+      layout.speakerL = Vec3f( -w/2.0, 0, 0);
+      layout.speakerR = Vec3f( w/2.0, 0, 0);
 
-						              
-			//If we're in multi-screen mode, RE-DO pose positions based on grid layout . . .
-			if (isGrid) {
-				p = layout.poseOf( row, col ); 
+                          
+      //If we're in multi-screen mode, RE-DO pose positions based on grid layout . . .
+      if (isGrid) {
+        p = layout.poseOf( row, col ); 
 
         layout.speakerL = Vec3f( 
-					layout.left( row, col ), 
-					layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
+          layout.left( row, col ), 
+          layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
 
-				layout.speakerR = Vec3f(
-				 	layout.left( row, col ) + layout.screenWidth, 
-					layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
-			 }
-			
-			scene.camera.pos() = Vec3f( 0, 0, z); 
-			scene.camera.view = View( scene.camera.pos(), p, aspect, h );
+        layout.speakerR = Vec3f(
+           layout.left( row, col ) + layout.screenWidth, 
+          layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
+       }
+      
+      scene.camera.pos() = Vec3f( 0, 0, z); 
+      scene.camera.view = View( scene.camera.pos(), p, aspect, h );
 
     }  
+   
+    void modelview(){
+      pipe.program -> uniform("modelView", scene.xf.modelView ); 
+    }
+
+    void modelview( const Mat4f& mat ){ 
+      static float mv[16];
+      (mvm * mat).fill(mv);
+      pipe.program -> uniform("modelView", mv );   
+    }
     
     /// DEFAULT PROCESS just renders the content from ondraw (OVERLOAD THIS for FX...)
     virtual void doProcess(){
@@ -128,22 +138,22 @@ namespace gfx {
     }
 
     virtual void render(){
-		   	mvm = scene.xf.modelViewMatrixf();
-	      pipe.bind( scene.xf );
-	        onDraw();			 
-		    pipe.unbind();  
+         mvm = scene.xf.modelViewMatrixf();
+        pipe.bind( scene.xf );
+          onDraw();       
+        pipe.unbind();  
     }
-	
+  
     void clear(){
        glViewport(0,0, contextWidth, contextHeight); 
-	     glClearColor(background[0],background[1],background[2],background[3]);
-	     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       glClearColor(background[0],background[1],background[2],background[3]);
+       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     /// NOTE context must have a swapBuffers() method
     template<typename T>
-	  void onFrame(T& context){
-   	  
+    void onFrame(T& context){
+       
        clear();               ///< Clear Window
                  
        scene.onFrame();       ///< Apply ModelView and Projection Transformations
@@ -151,17 +161,17 @@ namespace gfx {
        update();              ///< Update Scene Data
 
        doProcess();           ///< Draw Scene Data  
-		
-			 context.swapBuffers(); ///< Call context's swapBuffer() method (NOTE: ASSUMED TO EXIST!)
-			
-		}  
-		
+    
+       context.swapBuffers(); ///< Call context's swapBuffer() method (NOTE: ASSUMED TO EXIST!)
+      
+    }  
+    
     float width() { return layout.screenWidth; }
     float height() { return layout.screenHeight; }
 
-	}; 
-	
-	  
+  }; 
+  
+    
   /*!
    *  A Rendering PROCESS is a type of GRAPHICS PIPELINE
    */
