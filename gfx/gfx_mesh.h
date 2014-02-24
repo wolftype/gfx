@@ -251,11 +251,22 @@ namespace gfx {
               }
               glEnd();
           }
-          void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+          void drawElements() {
               //glColor4f(r,g,b,a);  
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::color( mVertex[ mIndex[i] ].Col );
+                  GL::normal( mVertex[ mIndex[i] ].Norm );
+                  GL::vertex( mVertex[ mIndex[i] ].Pos );
+              }
+              glEnd();
+          }
+
+           void drawElementsColor(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+              glColor4f(r,g,b,a);  
+              GL::Begin( mMode);
+              for (int i = 0; i < mIndex.size(); ++i){  
+                  //GL::color( mVertex[ mIndex[i] ].Col );
                   GL::normal( mVertex[ mIndex[i] ].Norm );
                   GL::vertex( mVertex[ mIndex[i] ].Pos );
               }
@@ -402,7 +413,7 @@ namespace gfx {
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
-        static Mesh Cylinder(float r = 1.0, float h = 2.0, int slices = 20, int stacks = 2);
+        static Mesh Cylinder(float r = 1.0, float h = 2.0, int slices = 20, int stacks = 1);
         
     static Mesh Frame(float size = 1.0);
     
@@ -856,7 +867,7 @@ namespace gfx {
             int ixn = (j < slices - 1) ? ix + 1 : i * slices + 1;
             int nx = ix + slices;
             int nxn = (j < slices -1 ) ? nx + 1: ixn + slices;
-            int idx[2] = { nxn, ixn };// :  i * slices + slices + 2, (j < slices-1 ) ? ix+1 : i * slices + 2 };// : { i * 2 * slices + 1, i * slices + 1 };
+            int idx[2] = { nxn, ixn };
             m.add(idx,2);
           }
           m.add(i*slices+2+slices).add(i*slices+2+slices);

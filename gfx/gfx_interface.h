@@ -1,4 +1,4 @@
-// Interface container and event handling   THIS SHOULD BE IN A SEPARATE LIBRARY  > > >>
+// Interface container and event handling   THIS SHOULD BE IN A SEPARATE LIBRARY > > >>
 
 #ifndef GFX_INTERFACE_H_INCLUDED
 #define GFX_INTERFACE_H_INCLUDED
@@ -119,6 +119,8 @@ namespace gfx{
 		MPose& model() { return scene -> model; }
         
 		template <class A> static Vec3f screenCoord(const A& p, const XformMat& );
+		template <class A> static Vec3f screenCoord2D(const A& p, const XformMat& );
+
         template <class A> bool pntClicked(const A&, float rad = .05);  
 
         Vec3f click(){ return mouse.click;   }
@@ -205,7 +207,15 @@ namespace gfx{
      sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
      
      return sc;
- }       
+ } 
+ 
+  /// Screen Coordinates of Target point
+ template <class A> Vec3f Interface :: screenCoord2D(const A& p, const XformMat& xf){
+     Vec3f sc = GL::project( p[0], p[1], 0, xf );
+     sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
+     
+     return sc;
+ }          
 
  template <class A> bool Interface :: pntClicked( const A& x, float rad ) {
      Vec3f v = mouse.click;  // [0,0] is bottom left corner [1.0,1.0] is top right
