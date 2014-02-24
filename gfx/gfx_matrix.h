@@ -1,6 +1,5 @@
 /*
  *  MATRIX.h
- *  gelatin
  *
  *  Created by x on 10/22/09.
  *  Copyright 2009 x. All rights reserved.
@@ -103,27 +102,8 @@ namespace gfx {
       Vec3& operator += (Vec3 v)  { x += v.x; y += v.y; z += v.z; return *this; }
       Vec3& operator -= (Vec3 v)  { x -= v.x; y -= v.y; z -= v.z; return *this;}
         
-            Vec3 operator -() const { return Vec3(-x, -y, -z); }
-<<<<<<< HEAD
-      
-      Vec3 vec3() { return *this; }
-      //Quat product
-      Quat operator * (Vec3 v) const; 
-      
-      double sq() const { return dot(*this); }
-      double len() const { return sqrt (x * x + y * y + z * z); }
-      Vec3 unit() const { double n = len();  if (n ==0) n = 1; return Vec3(x/n, y/n, z/n); }
-      
-      T dot(Vec3 v) const { return x * v.x + y * v.y + z * v.z; }
-      static double Dot(const Vec3<>& v ) { return v.dot(v); }
-      Vec3 cross(Vec3 v) const { return Vec3( (y * v.z) - (z * v.y), (z * v.x) - (x * v.z), (x * v.y) - (y * v.x) ); }      
-      
-      static Vec3<> ax(double s = 1.0){ return Vec3<>(s,0,0); }
-      static Vec3<> ay(double s = 1.0){ return Vec3<>(0,s,0); }
-      static Vec3<> az(double s = 1.0){ return Vec3<>(0,0,s); }            
-      
-=======
-			
+      Vec3 operator -() const { return Vec3(-x, -y, -z); }
+		
 			Vec3 vec3() { return *this; }
 			//Quat product
 			Quat operator * (Vec3 v) const; 
@@ -141,8 +121,6 @@ namespace gfx {
 			static Vec3<> ay(double s = 1.0){ return Vec3<>(0,s,0); }
 			static Vec3<> az(double s = 1.0){ return Vec3<>(0,0,s); }						
 			
->>>>>>> gfx interface matrix and mesh
-                                                                                                                                                                                                                   
       friend ostream& operator << (ostream&, const Vec3<>&);
         
         int size() const { return 3; } 
