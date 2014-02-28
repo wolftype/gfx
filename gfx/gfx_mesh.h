@@ -25,7 +25,11 @@ using namespace std;
 
 namespace gfx {
     
-    //VERTEX DATA STRUCT
+
+    
+  /*!
+   *  \brief  VERTEX DATA Interleaved
+   */
     struct Vertex {
         Vec3<float> Pos;        ///< 3d Position
         Vec3<float> Norm;       ///< 3d normal
@@ -52,21 +56,23 @@ namespace gfx {
         static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
         static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
 
-        void print() { }//cout <<  Tex << endl; }
-    };
-//    
-//    inline ostream& operator << (ostream& os, Vertex v){
-// //       stringstream td;
-//        os << v.Pos; os << v.Norm; os << v.Col;
-////        os << "pos: " << v.Pos << "norm: " << v.Norm << "col: " << v.Col;
-//        
-//        return os;
-//    }
-//
-   struct Triangle {
+        void print() { }
+     };
+
+
+
+  /*!
+   *  \brief  Triangle of three Vertices
+   */
+  struct Triangle {
       Vertex a,b,c; //counterclockwise
    };
+   
+   
     
+/*!
+ *  \brief  MESH DATA CONTAINER FOR VERTEX AND INDEX INFORMATION
+ */
     struct Mesh { //: public Frame {
         
     typedef unsigned short INDEXTYPE;
@@ -90,79 +96,80 @@ namespace gfx {
     public:
         
         /// Set Draw Mode
-    Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
-    void store() {
-      mStore = mVertex;
-    }     
-    
-    Mesh& moveTo( double x, double y, double z ){
-      
-      for (int i = 0; i < mVertex.size(); ++i ){
+        Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
+        void store() {
+          mStore = mVertex;
+        }     
         
-        mVertex[i].Pos = mStore[i].Pos + Vec3f(x,y,z);
-      }   
-      
-      return *this;
-    }  
-
-    Mesh& moveTo( const Vec3f& v ){
-      
-      for (int i = 0; i < mVertex.size(); ++i ){
-        
-        mVertex[i].Pos = mStore[i].Pos + v;
-      }   
-      
-      return *this;
-    }    
-        
-        /// Default Line Loop Mode
-        Mesh(GL::MODE m = GL::LL) : mMode(m) {}
-        
-        Mesh(const Mesh& m){
+        ///Move To x,y,z
+        Mesh& moveTo( double x, double y, double z ){
+          
+          for (int i = 0; i < mVertex.size(); ++i ){
             
-     //  cout << "mesh copy constructor " << endl;       
-
-                  mMode = m.mMode;
-                  
-      // mVertex = m.mVertex;
-      //        // mStore = m.mStore;
-      // mIndex = m.mIndex;
-      //             mStore = m.mVertex;    
-      // 
-                  for (int i = 0; i < m.num(); ++i){
-                      mVertex.push_back( m[i] ); 
-              mStore.push_back( m[i] );
-                  }
-                  
-                  for (int i = 0; i < m.mIndex.size(); ++i){
-                      mIndex.push_back(m.mIndex[i]);
-                  } 
-         
-      // store();   
+            mVertex[i].Pos = mStore[i].Pos + Vec3f(x,y,z);
+          }   
+          
+          return *this;
         }  
 
-    Mesh operator = (const Mesh& m){
+        ///Move to Vec3f v
+        Mesh& moveTo( const Vec3f& v ){
+          
+          for (int i = 0; i < mVertex.size(); ++i ){
             
+            mVertex[i].Pos = mStore[i].Pos + v;
+          }   
+          
+          return *this;
+        }    
+        
+        /// Default Draw Mode is Line Loop
+        Mesh(GL::MODE m = GL::LL) : mMode(m) {}
+        
 
-     //   cout << "mesh assignment operator " << endl;
-      if (this != &m ){
-            mMode = m.mMode;   
-
-      // mVertex = m.mVertex;
-      //        // mStore = m.mStore;
-      // mIndex = m.mIndex;
-      //             mStore = m.mStore;  
+        ///Copy Constructor
+        Mesh(const Mesh& m){
+            
+              mMode = m.mMode;
+              
+          // mVertex = m.mVertex;
+          //        // mStore = m.mStore;
+          // mIndex = m.mIndex;
+          //             mStore = m.mVertex;    
+          // 
               for (int i = 0; i < m.num(); ++i){
                   mVertex.push_back( m[i] ); 
-          mStore.push_back( m[i] );      
+                  mStore.push_back( m[i] );
               }
-            
+              
               for (int i = 0; i < m.mIndex.size(); ++i){
                   mIndex.push_back(m.mIndex[i]);
-              }      
-      // store();  
-      }     
-      return *this;
+              } 
+     
+             // store();   
+        }  
+
+      ///Assignment Operator
+       Mesh operator = (const Mesh& m){
+          
+          if (this != &m ){
+                mMode = m.mMode;   
+
+              // mVertex = m.mVertex;
+              //        // mStore = m.mStore;
+              // mIndex = m.mIndex;
+              //             mStore = m.mStore;  
+                  for (int i = 0; i < m.num(); ++i){
+                      mVertex.push_back( m[i] ); 
+                      mStore.push_back( m[i] );      
+                  }
+                
+                  for (int i = 0; i < m.mIndex.size(); ++i){
+                      mIndex.push_back(m.mIndex[i]);
+                  }      
+              // store();  
+              }     
+          return *this;
         }
         
         /// Create Mesh from an OBJ file
@@ -179,32 +186,27 @@ namespace gfx {
         int numIdx() const { return mIndex.size(); }
         
         Mesh& color(float r, float g, float b, float a = 1.0) { 
-         mColor.set(r,g,b,a);   
-      for (int i = 0; i < mVertex.size(); ++i ){
-        mVertex[i].Col = mColor;
-      }   
-      return *this;
-    }
+          mColor.set(r,g,b,a);   
         
-        //Add  vertices from another Mesh
+          for (int i = 0; i < mVertex.size(); ++i ){
+            mVertex[i].Col = mColor;
+          }   
+        
+          return *this;
+        }
+        
+        //Add vertices from another Mesh
         Mesh& add(const Mesh& m){
             for (int i = 0; i < m.num(); ++i) { add(m[i]); }
             for (int i = 0; i < m.numIdx(); ++i) { add( m.idx(i) ); }
-      return *this;
+            return *this;
         }
         
         Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}      
-  
         Mesh& add(const Vec3f& v) { mVertex.push_back( Vertex(v) ); return *this; }
         Mesh& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( Vertex(v,n) ); return *this; }
-        
-        // Mesh& add(const Vec& p, const Vec& n) { mVertex.push_back( Vertex( Vec3f(p), Vec3f(n) ) ); return *this; }
-        
         Mesh& add(float x, float y, float z) { mVertex.push_back( Vertex( Vec3f(x,y,z) ) ); return *this; }
-        //Mesh& add(const Vec& v) { mVertex.push_back( Vertex( Vec3f(v[0], v[1], v[2]) ) ); return *this; }
-        
-    //         template<class T>
-    // Mes
+        //Mesh& color( float x, float y, float z, float a= 1.0){ mVertex.last()
         
         /// ADD N VERTICES
         template<typename T>
@@ -227,7 +229,7 @@ namespace gfx {
             return *this;
         }
         /// Add Last 
-    Mesh& add(){ add( num() - 1 ); return *this; }
+        Mesh& add(){ add( num() - 1 ); return *this; }
         
         GL::MODE mode() { return mMode; }
         
@@ -239,11 +241,16 @@ namespace gfx {
         
         Vertex& last() { return mVertex[ mVertex.size() - 1 ]; }
         
-        
+        void clear() {
+            mVertex.clear();
+            mIndex.clear();
+        }
+
+        //GL_IMMEDIATE_MODE DEFAULT = 1
         #ifdef GL_IMMEDIATE_MODE
         
           //immediate mode!
-          void draw(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+          void drawVertices(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
               glColor4f(r,g,b,a);
               GL::Begin( mMode);
               for (int i = 0; i < mVertex.size(); ++i){
@@ -251,8 +258,8 @@ namespace gfx {
               }
               glEnd();
           }
-          void drawElements() {
-              //glColor4f(r,g,b,a);  
+
+          void drawElementsColor() {
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::color( mVertex[ mIndex[i] ].Col );
@@ -262,11 +269,10 @@ namespace gfx {
               glEnd();
           }
 
-           void drawElementsColor(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+           void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
               glColor4f(r,g,b,a);  
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
-                  //GL::color( mVertex[ mIndex[i] ].Col );
                   GL::normal( mVertex[ mIndex[i] ].Norm );
                   GL::vertex( mVertex[ mIndex[i] ].Pos );
               }
@@ -274,6 +280,8 @@ namespace gfx {
           }
         
         #endif
+
+
                 
         Mesh& translate(float x, float y, float z){
             
@@ -282,8 +290,9 @@ namespace gfx {
                 mVertex[i].Pos[1] += y;
                 mVertex[i].Pos[2] += z;
             }    
-      return *this;
+            return *this;
         }  
+
         Mesh& translateA(float x, float y, float z){
             
             for (int i = 0; i < num(); ++i){
@@ -291,38 +300,41 @@ namespace gfx {
                 mVertex[i].Pos[1] = mStore[i].Pos[1] + y;
                 mVertex[i].Pos[2] = mStore[i].Pos[2] + z;
             }    
-      return *this;
+            return *this;
         }
         
         Mesh&  scale(float s){
             
             for (int i = 0; i < num(); ++i){
-        mVertex[i].Pos *= s;
-            }  
+               mVertex[i].Pos *= s;
+            } 
+             
           return *this;
         }
 
+
         Mesh&  scaleA(float s){
             
-            for (int i = 0; i < num(); ++i){
-        mStore[i].Pos *= s;
+          for (int i = 0; i < num(); ++i){
+              mStore[i].Pos *= s;
             }  
+          
           return *this;
         }  
 
-    Mesh& rotate( const Quat q ){
-       for (int i = 0; i < num(); ++i){
-        mVertex[i].Pos = Quat::spin( mVertex[i].Pos, q);
-            }  
-          return *this; 
-    } 
-    
-    Mesh& rotateA( const Quat q ){
-       for (int i = 0; i < num(); ++i){
-        mVertex[i].Pos = Quat::spin( mStore[i].Pos, q);
-            }  
-          return *this; 
-    }
+        Mesh& rotate( const Quat q ){
+           for (int i = 0; i < num(); ++i){
+            mVertex[i].Pos = Quat::spin( mVertex[i].Pos, q);
+                }  
+              return *this; 
+        } 
+        
+        Mesh& rotateA( const Quat q ){
+           for (int i = 0; i < num(); ++i){
+            mVertex[i].Pos = Quat::spin( mStore[i].Pos, q);
+                }  
+              return *this; 
+        }
         
         //LOAD FROM OBJ FILE
         void load(string s) {
