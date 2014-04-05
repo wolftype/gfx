@@ -25,10 +25,8 @@ using namespace std;
 
 namespace gfx {
     
-
-    
   /*!
-   *  \brief  VERTEX DATA Interleaved
+   *  VERTEX DATA Interleaved
    */
     struct Vertex {
         Vec3<float> Pos;        ///< 3d Position
@@ -60,26 +58,24 @@ namespace gfx {
      };
 
 
-
   /*!
-   *  \brief  Triangle of three Vertices
+   *  Triangle of three Vertices
    */
   struct Triangle {
       Vertex a,b,c; //counterclockwise
    };
    
    
-    
-/*!
- *  \brief  MESH DATA CONTAINER FOR VERTEX AND INDEX INFORMATION
- */
-    struct Mesh { //: public Frame {
+      
+  /*!
+   *  MESH DATA CONTAINER FOR VERTEX AND INDEX INFORMATION
+   */
+    struct Mesh { 
         
     typedef unsigned short INDEXTYPE;
 
     private:
         
-
         /// Draw Mode
         GL::MODE mMode;
         
@@ -97,26 +93,26 @@ namespace gfx {
         
         /// Set Draw Mode
         Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
+        
+        /// Store a Copy for absolute transformations
         void store() {
           mStore = mVertex;
         }     
         
-        ///Move To x,y,z
+        ///Move To absolute x,y,z
         Mesh& moveTo( double x, double y, double z ){
           
           for (int i = 0; i < mVertex.size(); ++i ){
-            
             mVertex[i].Pos = mStore[i].Pos + Vec3f(x,y,z);
           }   
           
           return *this;
         }  
 
-        ///Move to Vec3f v
+        ///Move to absolute Vec3f v
         Mesh& moveTo( const Vec3f& v ){
           
           for (int i = 0; i < mVertex.size(); ++i ){
-            
             mVertex[i].Pos = mStore[i].Pos + v;
           }   
           
@@ -126,27 +122,16 @@ namespace gfx {
         /// Default Draw Mode is Line Loop
         Mesh(GL::MODE m = GL::LL) : mMode(m) {}
         
-
         ///Copy Constructor
         Mesh(const Mesh& m){
-            
-              mMode = m.mMode;
-              
-          // mVertex = m.mVertex;
-          //        // mStore = m.mStore;
-          // mIndex = m.mIndex;
-          //             mStore = m.mVertex;    
-          // 
-              for (int i = 0; i < m.num(); ++i){
-                  mVertex.push_back( m[i] ); 
-                  mStore.push_back( m[i] );
-              }
-              
-              for (int i = 0; i < m.mIndex.size(); ++i){
-                  mIndex.push_back(m.mIndex[i]);
-              } 
-     
-             // store();   
+          mMode = m.mMode;
+          for (int i = 0; i < m.num(); ++i){
+              mVertex.push_back( m[i] ); 
+              mStore.push_back( m[i] );
+          }
+          for (int i = 0; i < m.mIndex.size(); ++i){
+              mIndex.push_back(m.mIndex[i]);
+          } 
         }  
 
       ///Assignment Operator
@@ -155,10 +140,6 @@ namespace gfx {
           if (this != &m ){
                 mMode = m.mMode;   
 
-              // mVertex = m.mVertex;
-              //        // mStore = m.mStore;
-              // mIndex = m.mIndex;
-              //             mStore = m.mStore;  
                   for (int i = 0; i < m.num(); ++i){
                       mVertex.push_back( m[i] ); 
                       mStore.push_back( m[i] );      
@@ -206,7 +187,6 @@ namespace gfx {
         Mesh& add(const Vec3f& v) { mVertex.push_back( Vertex(v) ); return *this; }
         Mesh& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( Vertex(v,n) ); return *this; }
         Mesh& add(float x, float y, float z) { mVertex.push_back( Vertex( Vec3f(x,y,z) ) ); return *this; }
-        //Mesh& color( float x, float y, float z, float a= 1.0){ mVertex.last()
         
         /// ADD N VERTICES
         template<typename T>
@@ -377,32 +357,26 @@ namespace gfx {
             store();
         }    
     
-    // template<class t> 
-    // Mesh& addLine( T a, T b){
-    //   add(a[0],a[1],a[2]).add();
-    //   add(b[0],b[1],b[2]).add();
-    //   return *this;
-    // }
-    //
         template<class T>
         static Mesh UV( T* p, int w, int h);
 
         static Mesh Point(float x, float y, float z);
 
-    template<class T>
+        template<class T>
         static Mesh Point(const T& p);
 
-    template<class T>
+        template<class T>
         static Mesh Points(T* p, int num);  
-    template<class T>
+    
+        template<class T>
         static Mesh Points(std::vector<T> p);
         
-    //3d vecs in 3d space . . .
-    template<class T, class S>
+        //3d vecs in 3d space . . .
+        template<class T, class S>
         static Mesh Points2(T* p, S*q, int num); 
         
-    //2d vecs in 3d space . . .
-    template<class T, class S>
+        //2d vecs in 3d space . . .
+        template<class T, class S>
         static Mesh Points2D(T* p, S*q, int num);  
 
 
@@ -411,13 +385,13 @@ namespace gfx {
 
         static Mesh Sphere(double rad = 1.0, int slices = 20, int stacks = 20);
 
-  //      static Mesh Line( Vec3f a, Vec3f b);
+  //    static Mesh Line( Vec3f a, Vec3f b);
 
-    template<class T>
+        template<class T>
         static Mesh Line( T a, T b);
 
     // template<class T>
-    //         static Mesh Lines( T * a, int num);
+    // static Mesh Lines( T * a, int num);
 
         static Mesh Cone( double rad = 1.0 , double h = 1.0, int slices = 10, int stacks = 4);
         static Mesh Dir();
@@ -427,19 +401,13 @@ namespace gfx {
         static Mesh IRect(float w, float h);  
         static Mesh Cylinder(float r = 1.0, float h = 2.0, int slices = 20, int stacks = 1);
         
-    static Mesh Frame(float size = 1.0);
+        static Mesh Frame(float size = 1.0);
+        
+        static Mesh Contour(int res);
+        static Mesh Contours(int num, int res);   
+        
+        static Mesh Num(int n);
     
-    static Mesh Contour(int res);
-    static Mesh Contours(int num, int res);   
-    
-    static Mesh Num(int n);
-    
-        /*! A Mesh of Skinned Circles 
-            @param Pointer to an Circle array
-            @param number of Circles in array
-            @param resolution (default 100)
-        */
-        // static Mesh Skin (Cir * cir, int num, int res = 100);
     };              
 
   inline Mesh Mesh::Num(int n){ 
