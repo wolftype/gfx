@@ -3,7 +3,7 @@
  *
  *       Filename:  gfx_renderer.h
  *
- *    Description:  render to OpenGL or OpenGLES
+ *    Description:  context blind (windowless) renderer for OpenGL or OpenGLES
  *
  *        Version:  1.0
  *        Created:  02/17/2014 19:44:26
@@ -34,22 +34,19 @@ namespace gfx {
 
   /// CONTEXT BLIND RENDERER (NO WINDOWING . . .)
   struct Renderer { 
-      
-    Layout layout;       ///< Screen Layout
-      
-    Scene scene;         ///< ModelViewProjection Transformation Matrices  
-       
-    Pipe pipe;           ///< Graphics Pipeline Vertex Attribute Binding  
-    
-    Process * process;  ///< Some EFFECTS 
-     
+  
     Vec4f background;    ///< Background Color
-    
-    Mat4f mvm;           ///< Temporary save of scene's transformation matrix 
+    Mat4f mvm;           ///< Temporary memoization of scene's current transformation matrix 
+    Scene scene;         ///< ModelViewProjection Transformation Matrices  
+  
+    Layout layout;       ///< Screen Layout (for creating multiple screen frusta)
+          
+    Pipe pipe;           ///< Default Graphics Pipeline Vertex Attribute Binding  
+        
+    Process * process;  ///< Some optional EFFECTS 
 
-    int contextWidth, contextHeight; ///< tbd pixel dimensions of screen (needs to be fed from context)        
+    int contextWidth, contextHeight; ///< t.b.d. pixel dimensions of screen (will be fed info from application's window context)        
          
-
     /// RENDER FOR SINGLE COMPUTER AND SCREEN
     Renderer (float w, float h, float z=30.0) : layout(1,1, w, h, 0, 0),
      background(0,0,0,1)
