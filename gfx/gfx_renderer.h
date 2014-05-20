@@ -19,12 +19,12 @@
 #ifndef GFX_RENDERER_H_INCLUDED
 #define GFX_RENDERER_H_INCLUDED
 
-#include "gfx/gfx_layout.h"
-#include "gfx/gfx_scene.h" 
-#include "gfx/gfx_pipe.h"
-#include "gfx/gfx_fbo.h"
-#include "gfx/gfx_gl.h"
-#include "gfx/gfx_glsl.h"    
+#include "gfx_layout.h"
+#include "gfx_scene.h" 
+#include "gfx_pipe.h"
+#include "gfx_fbo.h"
+#include "gfx_gl.h"
+#include "gfx_glsl.h"    
  
 namespace gfx {
   
