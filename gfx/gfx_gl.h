@@ -582,7 +582,7 @@ namespace gfx {
         
         //frontBackDiff();
         
-        //	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
         
         GLushort gs = 1024 + 512 + 256 + 128 + 64 + 32 + 16 + 8 + 4 + 2;
         glLineStipple(1,gs);

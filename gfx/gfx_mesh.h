@@ -54,6 +54,8 @@ namespace gfx {
         static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
         static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
 
+        float operator[] (int idx) { return ((float*)&(Pos[0]))[idx]; }
+
         void print() { }
      };
 
@@ -405,6 +407,7 @@ namespace gfx {
         
         static Mesh Contour(int res);
         static Mesh Contours(int num, int res);   
+        static Mesh Grid2D(int, int, float);
         
         static Mesh Num(int n);
     
@@ -592,6 +595,21 @@ namespace gfx {
         m.mode(GL::L);
         m.store();
        return m;
+    }
+
+    inline Mesh Mesh::Grid2D(int w, int h, float spacing){
+     Mesh m; 
+     int offsetU = -(w*spacing)/2.0;
+     int offsetV = -(h*spacing)/2.0;
+      for (int u=0; u<w; ++u){
+          for (int v=0; v<w; ++v){
+          m.add( Vertex(offsetU + u * spacing, offsetV + v*spacing,0) ).add();
+        }
+      }
+      m.mode(GL::P);
+      m.store();
+      return m;
+
     }
 
        
