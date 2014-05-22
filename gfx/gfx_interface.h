@@ -61,38 +61,31 @@ namespace gfx{
     /*! Abstract Interface Class */  
     class Interface {
 
-        int mMode;  ///< Edit Mode State (not implemented)   
-		float mRotVel, mVel, mModelRotVel;
+      int mMode;  ///< Edit Mode State (not implemented)   
+      float mRotVel, mVel, mModelRotVel;
 
-    public:     
+     public:     
 	
         Scene * scene; 
 
+        /// Map of object addresses
         typedef std::map<string,bool> SBMap;      
-
         /// Map of object addresses and whether they are selected
         SBMap selectMap;                            
 
-
         /*! Abstract View Implementation Data to store info from Windowing System */ 
- 
         struct Impl {                      
 
             Interface * interface;  
-			
             Impl(Interface * i) : interface(i) {}          // App must register with Interface  upon construction       
-
             virtual ~Impl(){}
             
-			// MPose * camera;
-			// MPose * model; 
-
             // All implementations should define fullScreenToggle method and getData methods
             virtual void fullScreenToggle() {};            
             virtual void getViewData( void * udata){};  
             virtual void getKeyboardData( void * udata){};
             virtual void getMouseData( void * udata){};
-			virtual void getHIDData( void * udata ){}; //other input devic
+			      virtual void getHIDData( void * udata ){}; //other input devic
         };
 
 		
@@ -105,22 +98,19 @@ namespace gfx{
 
         Impl * impl;       		 ///< Implementation of Window Information (Width, Height) and Inputs (Keyboard, Mouse)  
 
-		ViewData		view;
+		    ViewData		view;
         MouseData       mouse;
         KeyboardData    keyboard; 
 
-		ViewData& vd() { return view; }//vimpl -> data; }
-        //ViewData vd() const { return vimpl -> data; }
+		    ViewData& vd()      { return view; }
+        KeyboardData& kd()  { return keyboard; }
+        MouseData& md()     { return mouse; }
 
-        KeyboardData& kd() { return keyboard; }
-        MouseData& md() { return mouse; }
-
-		Camera& camera() { return scene -> camera; }		
-		MPose& model() { return scene -> model; }
+		    Camera& camera() { return scene -> camera; }		
+		    MPose& model() { return scene -> model; }
         
-		template <class A> static Vec3f screenCoord(const A& p, const XformMat& );
-		template <class A> static Vec3f screenCoord2D(const A& p, const XformMat& );
-
+		    template <class A> static Vec3f screenCoord(const A& p, const XformMat& );
+		    template <class A> static Vec3f screenCoord2D(const A& p, const XformMat& );
         template <class A> bool pntClicked(const A&, float rad = .05);  
 
         Vec3f click(){ return mouse.click;   }
@@ -132,7 +122,7 @@ namespace gfx{
         int mode() const { return mMode; }
         /// Check Interface Mode
         bool mode(int q) { return mMode & q; }  
-       /// Enable Mode    
+        /// Enable Mode    
         void enable(int bitflag) { mMode |= bitflag; }
         void disable(int bitflag) { mMode &= ~bitflag; }
         void toggle(int bitflag)  { mMode & bitflag ? disable(bitflag) : enable(bitflag); }  
@@ -142,45 +132,42 @@ namespace gfx{
         template <class A > void deselect( A * );
         template <class A > void toggleSelect( A * );  
 
-	        //NAVIGATION
-	        void keyboardCamSpin(float acc, bool trigger);
-	        void keyboardCamTranslate(float acc, bool trigger);
-	        void keyboardModelTransform(float acc, bool trigger);
-	        void mouseModelTransform(float acc, bool trigger);
-	        void mouseCamTranslate(float acc, bool trigger);
-	        void mouseCamSpin(float acc, bool trigger);  
+        //NAVIGATION
+        void keyboardCamSpin(float acc, bool trigger);
+        void keyboardCamTranslate(float acc, bool trigger);
+        void keyboardModelTransform(float acc, bool trigger);
+        void mouseModelTransform(float acc, bool trigger);
+        void mouseCamTranslate(float acc, bool trigger);
+        void mouseCamSpin(float acc, bool trigger);  
 	
-			void mouseNavigate();
-			void mouseNavigateStop();  
-			void keyboardNavigate();
-			void keyboardNavigateStop();
+        void mouseNavigate();
+        void mouseNavigateStop();  
+        void keyboardNavigate();
+        void keyboardNavigateStop();
 
-	        virtual void onMouseMove();        
-	        virtual void onMouseDown();
-	        virtual void onMouseDrag();
-	        virtual void onMouseUp();        
-	        virtual void onKeyDown();
-	        virtual void onKeyUp();  
+        virtual void onMouseMove();        
+        virtual void onMouseDown();
+        virtual void onMouseDrag();
+        virtual void onMouseUp();        
+        virtual void onKeyDown();
+        virtual void onKeyUp();  
 	
-			virtual void windowTransform(){}     
+			  virtual void windowTransform(){}     
 			
+		    /// What happens when you touch an Object . . .	
+        template<class A, class B> 
+        void touch( A& s, const B& b, float t = .1 ); 
 			
-			template<class A, class B> 
-			void touch( A& s, const B& b, float t = .1 ); 
-			
-			//Define this transformation rule somewhere
+			  /// Define this transformation rule somewhere in your implementation
 		    template <class A, class B> 
 		   	struct X { 
-				Interface * i;
-				X( Interface * _i) : i (_i ) {}
-				void f ( A * s, const B& pos, float t );
-			};
-		// void xf ( A * s, const B& pos, float t );
-			
-			
+          Interface * i;
+          X( Interface * _i) : i (_i ) {}
+          void f ( A * s, const B& pos, float t );
+        };
 };   
 
-      template< class A > bool Interface :: isSelected ( A * a ){
+    template< class A > bool Interface :: isSelected ( A * a ){
         stringstream s; s << a;
         bool tmp = selectMap[ s.str() ];
         return tmp;
@@ -188,7 +175,6 @@ namespace gfx{
 
     template < class A > void Interface :: select( A * a) {
         stringstream s; s << a;  
-		//cout << "selected: " << s.str() << endl; 
         selectMap[ s.str() ] = true;
     }
 
@@ -201,34 +187,29 @@ namespace gfx{
         stringstream s; s << a;
         selectMap[ s.str() ] = !selectMap[ s.str() ];
     }
- /// Screen Coordinates of Target point
- template <class A> Vec3f Interface :: screenCoord(const A& p, const XformMat& xf){
-     Vec3f sc = GL::project( p[0], p[1], p[2], xf );
-     sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
-     
-     return sc;
- } 
+    /// Screen Coordinates of Target point
+    template <class A> Vec3f Interface :: screenCoord(const A& p, const XformMat& xf){
+       Vec3f sc = GL::project( p[0], p[1], p[2], xf );
+       sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
+       
+       return sc;
+    } 
  
-  /// Screen Coordinates of Target point
- template <class A> Vec3f Interface :: screenCoord2D(const A& p, const XformMat& xf){
-     Vec3f sc = GL::project( p[0], p[1], 0, xf );
-     sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
-     
-     return sc;
- }          
+    /// Screen Coordinates of Target point
+    template <class A> Vec3f Interface :: screenCoord2D(const A& p, const XformMat& xf){
+         Vec3f sc = GL::project( p[0], p[1], 0, xf );
+         sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;
+         
+         return sc;
+    }          
 
- template <class A> bool Interface :: pntClicked( const A& x, float rad ) {
-     Vec3f v = mouse.click;  // [0,0] is bottom left corner [1.0,1.0] is top right
-     Vec3f p = Vec3f( x[0], x[1], x[2] );
-     
-   // cout << "mouse: " << v << endl; 
-  //  cout << "x: " << p << endl; 
-
-     Vec3f sc = screenCoord( p, scene -> xf );
-   // cout << "Screen: " << sc << endl ;
-     Vec3f dist = (v - sc);
-     return (dist.len() < rad) ? true : false;
- } 
+    template <class A> bool Interface :: pntClicked( const A& x, float rad ) {
+      Vec3f v = mouse.click;  // [0,0] is bottom left corner [1.0,1.0] is top right
+      Vec3f p = Vec3f( x[0], x[1], x[2] );
+      Vec3f sc = screenCoord( p, scene -> xf );
+      Vec3f dist = (v - sc);
+      return (dist.len() < rad) ? true : false;
+    } 
 
 template <class A, class B> void Interface :: touch( A& s, const B& x, float t){
         
@@ -246,11 +227,10 @@ template <class A, class B> void Interface :: touch( A& s, const B& x, float t){
                 }
             }
             
-            if ( isSelected( &s ) ){
-				 X<A,B>(this).f(&s, x, dt);
+          if ( isSelected( &s ) ){
+				    X<A,B>(this).f(&s, x, dt);
 				//xf(&s, x, dt);
-            }
-        
+          }
         }
     }
  
@@ -282,11 +262,11 @@ inline void Interface::viewCalc(){
         
    
         //Get vec of Mouse Position into Z Space 
-		vd().ray	 = ( v3 - v2 ).unit();
-        
-		mouse.projectFar	= v1 ;
-		mouse.projectNear	= v2 ;
-		mouse.projectMid	= v3 ;
+        vd().ray	 = ( v3 - v2 ).unit();
+            
+        mouse.projectFar	= v1 ;
+        mouse.projectNear	= v2 ;
+        mouse.projectMid	= v3 ;
 
         mouse.biv     = mouse.pos.cross( vd().ray ); //not used?
 
@@ -295,21 +275,12 @@ inline void Interface::viewCalc(){
 
     }
 
-
-
 	    inline void Interface :: onKeyDown(){
-            
 	        keyboard.down = true;  
-	
 	    }
 
-
-	   inline void Interface :: onKeyUp(){
-
+	    inline void Interface :: onKeyUp(){
 	        keyboard.down = false;
-
-
-
 	    }
 
 	   inline void Interface :: keyboardModelTransform(float acc, bool trigger){
@@ -317,9 +288,8 @@ inline void Interface::viewCalc(){
 	        model().ab() = acc;
 
 	        if (trigger) {
-			   //printf("1\n");
 	            // Get Rotor Ratio between camera and model view
-				Quat ryz = Quat::Rotor( model().x(), camera().x() );
+				      Quat ryz = Quat::Rotor( model().x(), camera().x() );
 	            Quat rxz = Quat::Rotor( model().y(), camera().y() );
 
 	            // Rotate By said Rotor
@@ -484,11 +454,11 @@ inline void Interface::viewCalc(){
 		            mouse.newClick = 0;
 
 
-		             int mdir = 0;
-		             if ( fabs(tdx) > fabs(tdy) ) mdir = tdx > 0 ? MouseData::Right : MouseData::Left;
-		             else if ( fabs(tdx) < fabs(tdy) ) mdir = tdy > 0 ? MouseData::Up : MouseData::Down; 
+		            int mdir = 0;
+		            if ( fabs(tdx) > fabs(tdy) ) mdir = tdx > 0 ? MouseData::Right : MouseData::Left;
+		            else if ( fabs(tdx) < fabs(tdy) ) mdir = tdy > 0 ? MouseData::Up : MouseData::Down; 
 
-		             mouse.gesture = mdir;
+		            mouse.gesture = mdir;
    
 		}          
 		

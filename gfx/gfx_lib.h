@@ -19,6 +19,8 @@
         #include <OpenGLES/ES2/gl.h>
         #include <OpenGLES/ES2/glext.h>
 
+        #define GFX_USE_GLES
+
 //        #define glGenFramebuffers glGenFramebuffersOES
 //        #define glBindFramebuffer glBindFramebufferOES
 //        #define GL_FRAMEBUFFERbobobb GL_FRAMEBUFFER_OES
@@ -32,17 +34,15 @@
         #define glClearDepth glClearDepthf
         #define GL_RGBA8 GL_RGBA8_OES
 
-        //#include "vsr_gl.h"
-
 	#elif defined(__linux__)
 		
 		#include <GL/glew.h>
 		#include <GL/gl.h>
-        #include <GL/glu.h>
+    #include <GL/glu.h>
 		#include <GL/glut.h>
 		#include <GL/glext.h>
         
-        #define GL_IMMEDIATE_MODE
+    #define GL_IMMEDIATE_MODE
         
     #elif defined(__raspberry__)
 
@@ -51,6 +51,8 @@
         #include "GLES2/gl2ext.h"
         #include "EGL/egl.h"
         #include "EGL/eglext.h"
+
+        #define GFX_USE_GLES
         
     #else //defined(__APPLE__) || defined(__OSX__)
 
@@ -58,7 +60,7 @@
         #include <OpenGL/OpenGL.h>
         #include <GLUT/GLUT.h>
 
-        #define GL_IMMEDIATE_MODE
+        #define GFX_GL_IMMEDIATE_MODE
 
     #endif
 

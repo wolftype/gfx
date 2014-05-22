@@ -1,6 +1,8 @@
-/*
- *  vsr_gl_fbo.h
- *  CONGA_07
+/*!
+ * @file gfx_fbo.h
+ *  
+ *  frame buffer and render buffer objects
+ *  
  *
  *  Created by x on 1/8/11.
  *  Copyright 2011 x. All rights reserved.
@@ -13,35 +15,30 @@
 
 
 /*
-Basic render-to-texture setup and use
+for basic render-to-texture setup and use see gfx_process R2T
 
-in INIT code:
-create an empty textureA
-
-create custom fboA
-
-***
+here for reference, in short:
 
 in RENDER loop code: {
 
-bind the fboA
+  bind the fboA
 
-bind textureA to the color attachment of the fboA
+  bind textureA to the color attachment of the fboA
 
-set the viewport to be the size of textureA
+  set the viewport to be the size of textureA
 
- --now anything you draw you will be drawn onto this textureA--
+   --now anything you draw you will be drawn onto this textureA--
 
-unbind the fboA
+  unbind the fboA
 
-bind the default EAGL_fbo
-set the viewport to be the size of the window
+  bind the default fbo
+  set the viewport to be the size of the window
 
---now we are back to normal clip space and you can use textureA in
-other shaders, etc--
+  --now we are back to normal clip space and you can use textureA in
+  other shaders, etc--
 
-then call iOS's "presentFramebuffer" to transfer the color attachement
-of the default EAGL_fbo to the screen
+  (with ios, you then call iOS's "presentFramebuffer" to transfer the color attachement
+  of the default EAGL_fbo to the screen)
 
 }
 */
@@ -361,26 +358,18 @@ namespace gfx {
 
 	//Attaches texture t to framebuffer f at buffer _buf (color, depth, etc)
    inline void FBO :: Attach(FBO *f, Texture *t, GL::ATTACH _buf) {
-
-	//    GLint tmp = FBO::Current();
-
-		//set texture's fbo attachment point buffer (color, depth, or stencil)
-	//	t->fbo().attachment(_buf);
-
 		//call forth buffer
 		glBindFramebuffer(GL_FRAMEBUFFER, f->id());
-
 		//wipe out texture
 		t->nullBind();
 		//attach
 		glFramebufferTexture2D(GL_FRAMEBUFFER, _buf, t->target(), t->idx(), 0);
 		//back
 		t->unbind();
-
 		//increment attachments of FBO
 		f -> numAttachments() += 1;
-
-	    GL::error("FBO ATTACH");
+    //check for errors
+	  GL::error("FBO ATTACH");
 	}  
 	
  

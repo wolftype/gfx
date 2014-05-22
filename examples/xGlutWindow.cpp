@@ -25,7 +25,7 @@
 using namespace std;
 
 struct WindowData {
-  WindowData(int width = 100, int height = 100, id = 0) : 
+  WindowData(int width = 100, int height = 100, int id = 0) : 
     mWidth(width), mHeight(height), mID(id){}
   int mWidth, mHeight, mID;
   float ratio() { return (float) mWidth/mHeight; }
@@ -103,7 +103,6 @@ int main(int argc, char ** argv){
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 
   Window::Create(100,100,0,1000);
-  Window::Create(100,100,500,100);
 
   glutMainLoop();
 

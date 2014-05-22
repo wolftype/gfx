@@ -397,7 +397,7 @@ namespace gfx {
 
         static Mesh Cone( double rad = 1.0 , double h = 1.0, int slices = 10, int stacks = 4);
         static Mesh Dir();
-        static Mesh Circle(double scale = 1);
+        static Mesh Circle(double radius = 1, double res = 10);
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
@@ -683,15 +683,15 @@ namespace gfx {
         return m;
     }
     
-    inline Mesh Mesh::Circle (double scale){
+    inline Mesh Mesh::Circle (double radius, double _res){
         
-        int res = floor( scale * 100);
+        int res = floor( _res * 100);
         Mesh m;
         
         for (int i = 0; i <= res; ++i){
             float rad = 2.0 * PI * i / res;
-            float x = cos(rad);
-            float y = sin(rad);
+            float x = cos(rad) * radius;
+            float y = sin(rad) * radius;
             
             m.add( Vec3f(x,y,0) );
             m.add(i);
@@ -699,7 +699,7 @@ namespace gfx {
         }
         
         m.mode(GL::LL);
-    m.store();
+        m.store();
         return m;
     }
     

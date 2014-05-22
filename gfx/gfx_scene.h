@@ -8,45 +8,7 @@
 
 namespace gfx{   
 
-    /* struct Slab{ */
-    /*     Vec3f blu, bru, tru, tlu; */
-    /*     Vec3f& operator[] (int i ) { return (&blu)[i]; } */
-    /* }; */
-
-    /* struct Volume{ */
-    /*     Vec3f bl, br, tr, tl, blb, brb, trb, tlb; */ 
-    /*     Vec3f& operator[] (int i ) { return (&bl)[i]; } */
-    /* }; */ 
-
-  /* struct Frustrum{ */
-  /*     float width, height, depth; */
-  /*     float bwidth, bheight; */
-
-  /*     Slab dir; */
-  /*     Volume box; */
-
-  /*     void calc(){ */
-  /*         dir.blu = (box.blb - box.bl).unit(); */
-  /*         dir.tru = (box.trb - box.tr).unit(); */
-  /*         dir.bru = (box.brb - box.br).unit(); */
-  /*         dir.tlu = (box.tlb - box.tl).unit(); */
-  /*         width = box.br[0] - box.bl[0]; */
-  /*         height = box.tr[1] - box.br[1]; */
-  /*         depth = box.blb[2] - box.bl[2]; */
-  /*         bwidth = box.brb[0] - box.blb[0]; */
-  /*         bheight =box.trb[1] - box.brb[1]; */
-
-  /*     } */
-
-  /*     // Pln left(){ return Ro::null(box.tl) ^ Ro::null(box.bl) ^ Ro::null(box.blb) ^ Inf(1); } */
-  /*     // Pln right(){ return Ro::null(box.tr) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */
-  /*     // Pln top(){ return Ro::null(box.tl) ^ Ro::null(box.tr) ^ Ro::null(box.trb) ^ Inf(1); } */
-  /*     // Pln bottom(){ return Ro::null(box.bl) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */ 
-  /* }; */
-
   struct Lens {
-
-
       /* Lens Parameters */
       bool bOrtho;
       float mFocal, mNear, mFar, mWidth, mHeight; 
@@ -64,7 +26,7 @@ namespace gfx{
       void   width ( float w )  { mWidth = w;}            ///< set width
       void   height( float h )  { mHeight = h;}            ///< set height
       
-    float   ratio()   const { return width()/ height(); }
+      float   ratio()   const { return width()/ height(); }
       float   width()    const {return mWidth;}              ///< get width
       float   height()  const {return mHeight;}              ///< get height
       float   depth()     const { return mFar - mNear; }     
@@ -102,7 +64,7 @@ namespace gfx{
     Pose(float x, float y, float z) : mPos(x,y,z), mQuat(1,0,0,0) {}// orient(); }
     Pose() : mPos(0,0,0), mQuat(1,0,0,0) {}
      
-     Vec3f mPos; //mX, mY, mZ, 
+    Vec3f mPos; //mX, mY, mZ, 
     Quat mQuat;
     
     Quat quat() const { return mQuat; }
@@ -183,8 +145,6 @@ namespace gfx{
   };
   
   struct View {   
-
-    //Pose pose;
 
     View(double _l, double _t, double _r, double _b) : l(_l), t(_t), r(_r), b(_b) {}
 
@@ -285,26 +245,55 @@ namespace gfx{
 
      Vec3f light;
      
-    // Pipe pipe; 
-    
-     
-    
-    Scene() : camera(0,0,5), light(3,3,3) {} 
+    Scene() : camera(0,0,1), light(3,3,3) {} 
       
     void fit(int w, int h){
       camera.lens.width( w ); 
       camera.lens.height( h );   
     } 
     
-    void resize(int w, int h){ 
+    void resize(int _w, int _h){
+      float w = (float)_w/100;
+      float h = (float)_h/100; 
       camera.lens.width( w ); 
       camera.lens.height( h ); 
-        Pose p(-w/2.0,-h/2.0, 0); 
+      Pose p(-w/2.0,-h/2.0, 0); 
       camera.view = gfx::View( camera.pos(), p, 1.0 * w/h, h );
+      updateMatrices();
     }
 
+      //Mat4f mod() { return model.image(); }
+      //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
+      Quat cat() { return camera.quat() * model.quat(); } 
+
+      Mat4f mod() { return XMat::rot( model.quat() ); }
+
+      Mat4f mvm() {
+        return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
+      }
+            
+      Mat4f norm(){
+        return (!(mvm().transpose()) );
+      }
+
+      void updateMatrices(){      
+        Mat4f tmvm =  mvm();    
+        Mat4f tproj = camera.proj();  
+        Mat4f tnorm = norm();
+
+        copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
+        copy(tproj.val(), tproj.val() + 16, xf.proj);
+        copy(tnorm.val(), tnorm.val() + 16, xf.normal);
+       
+        xf.toDoubles();
+      } 
+
+    void onFrame(){
+      updateMatrices();         
+    }    
+    
+                                 
     // FIXED FUNCTION PIPELINE  
-  
     #ifdef GL_IMMEDIATE_MODE
     void push(){
         
@@ -323,7 +312,8 @@ namespace gfx{
             float oz =  camera.pos()[2];
             //glOrtho(-1.0 * oz, 1.0* oz, -1.0* oz, 1.0* oz, -50.0, 50.0); 
             float aspect = camera.lens.mWidth/camera.lens.mHeight;
-            glOrtho(-aspect* oz, aspect* oz,-1.0 * oz, 1.0 * oz, -50.0, 50.0);//camera.lens.mWidth, camera.lens.mHeight, 0.f, -50.0, 50.0); 
+            glOrtho(-aspect* oz, aspect* oz,-1.0 * oz, 1.0 * oz, -50.0, 50.0);
+            //camera.lens.mWidth, camera.lens.mHeight, 0.f, -50.0, 50.0); 
 
         } else {
             gluPerspective( camera.lens.mFocal, camera.lens.mWidth/camera.lens.mHeight, camera.lens.mNear, camera.lens.mFar);        
@@ -363,44 +353,6 @@ namespace gfx{
            xf.toFloats();
        } 
     #endif  
-  
-
-
-       //Mat4f mod() { return model.image(); }
-        //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
-            Quat cat() { return camera.quat() * model.quat(); } 
-
-            Mat4f mod() { return XMat::rot( model.quat() ); }
-
-      Mat4f mvm() {
-        return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
-      }
-            
-      Mat4f norm(){
-                return (!(mvm().transpose()) );
-            }
-        
-
-
-        void updateMatrices(){
-        
-      Mat4f tmvm =  mvm();    
-            Mat4f tproj = camera.proj();  
-            Mat4f tnorm = norm();
-
-            copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
-            copy(tproj.val(), tproj.val() + 16, xf.proj);
-            copy(tnorm.val(), tnorm.val() + 16, xf.normal);
-         
-            xf.toDoubles();
-        } 
-
-
-
-    void onFrame(){
-      updateMatrices();         
-    }                                 
-
   };
       
       //ADVANCED PIPELINE -> Update Shader Uniforms
@@ -420,6 +372,42 @@ namespace gfx{
         //  
         //     xf.toDoubles();
         // }
+        //
+        //     /* struct Slab{ */
+    /*     Vec3f blu, bru, tru, tlu; */
+    /*     Vec3f& operator[] (int i ) { return (&blu)[i]; } */
+    /* }; */
+
+    /* struct Volume{ */
+    /*     Vec3f bl, br, tr, tl, blb, brb, trb, tlb; */ 
+    /*     Vec3f& operator[] (int i ) { return (&bl)[i]; } */
+    /* }; */ 
+
+  /* struct Frustrum{ */
+  /*     float width, height, depth; */
+  /*     float bwidth, bheight; */
+
+  /*     Slab dir; */
+  /*     Volume box; */
+
+  /*     void calc(){ */
+  /*         dir.blu = (box.blb - box.bl).unit(); */
+  /*         dir.tru = (box.trb - box.tr).unit(); */
+  /*         dir.bru = (box.brb - box.br).unit(); */
+  /*         dir.tlu = (box.tlb - box.tl).unit(); */
+  /*         width = box.br[0] - box.bl[0]; */
+  /*         height = box.tr[1] - box.br[1]; */
+  /*         depth = box.blb[2] - box.bl[2]; */
+  /*         bwidth = box.brb[0] - box.blb[0]; */
+  /*         bheight =box.trb[1] - box.brb[1]; */
+
+  /*     } */
+
+  /*     // Pln left(){ return Ro::null(box.tl) ^ Ro::null(box.bl) ^ Ro::null(box.blb) ^ Inf(1); } */
+  /*     // Pln right(){ return Ro::null(box.tr) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */
+  /*     // Pln top(){ return Ro::null(box.tl) ^ Ro::null(box.tr) ^ Ro::null(box.trb) ^ Inf(1); } */
+  /*     // Pln bottom(){ return Ro::null(box.bl) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */ 
+  /* }; */
 }     
 
 #endif

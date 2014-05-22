@@ -25,12 +25,10 @@
 
 using namespace std;
 
-
 template<class T>
 struct Drawable{
   
 };
-
 
 /*!
  *  Singleton initializer
@@ -70,18 +68,34 @@ struct WindowData {
 /*!
  *  Window can have a bunch of windows, templated on anything that has an onDraw() method ...
  */
-template<class T>
 struct Window {
-    
+  
+  static Glut * System;
+
+  static void * app;
   static vector<WindowData*> mWindows;
   static int currentWindow;
 
-  static int Create(int w, int h, int offsetW = 0, int offsetH = 0){
+  template<class APPLICATION>
+  static void Bind(APPLICATION * _app) {
+    app = _app;
+  }
+
+  template<class APPLICATION>
+  static int Create(APPLICATION * _app, 
+                    int w, int h, int offsetW = 0, int offsetH = 0){
     
+    //Glut::Initialize(0,"");
+
     int id = glutCreateWindow("glut");
     
-    glutDisplayFunc(Draw);
-    glutReshapeFunc(Reshape);
+    Bind(_app);                                   //<-- Bind App to void *
+    
+    glutDisplayFunc(Draw<APPLICATION>);           //<-- Callbacks Bind to Application
+    //glutIdleFunc(Draw<APPLICATION>);
+    glutTimerFunc(10, Animate<APPLICATION>, 1);
+    glutReshapeFunc(Reshape<APPLICATION>);
+
     glutReshapeWindow(w,h);
     glutPositionWindow(offsetW, offsetH);
 
@@ -102,26 +116,38 @@ struct Window {
     return *mWindows[currentWindow];
   }
 
+
+  template<class APPLICATION>
+  static void Animate(int){
+    glutPostRedisplay();
+    ((APPLICATION*)(app)) -> drawFunc();
+    glutSwapBuffers();
+    glutTimerFunc(10, Animate<APPLICATION>, 1);
+  }
+
+
+  template<class APPLICATION>
   static void Draw(void){
-
-    glClearColor(1,.3,0,1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    T::onDraw( window().mWidth, window().mHeight );
-
+    ((APPLICATION*)(app)) -> drawFunc();
     glutSwapBuffers();
   }
 
+  static void SwapBuffers(){
+    glutSwapBuffers();
+  }
+
+  template<class APPLICATION>
   static void Reshape(int width, int height){
     currentWindow = glutGetWindow()-1;
     reshape(width,height);
+    ((APPLICATION*)(app)) -> onResize(width,height);//((float)width)/100,((float)height)/100);
   }
 };
 
-template<class T>
-vector<WindowData*> Window<T>::mWindows;
-template<class T>
-int Window<T>::currentWindow;
+Glut * Window::System;
+void * Window::app;
+vector<WindowData*> Window::mWindows;
+int Window::currentWindow;
 
 
 

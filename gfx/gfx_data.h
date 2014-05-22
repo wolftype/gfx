@@ -1,22 +1,19 @@
-/*
- *  vsr_graphicsdata.h
- *  CONGA_07
+/*! @file
  *
- *  Created by x on 8/23/10.
+ *  gfx_data.h
+ *
+ *  graphics0-related data structs
+ *
+ * Created by x on 8/23/10.
  *  Copyright 2010 x. All rights reserved.
  *
- 
-	graphics data structs
- 
  */
 
 #ifndef GFX_GRAPHICS_INCLUDED
 #define GFX_GRAPHICS_INCLUDED
-//#include "ctl_matrix.h"
-
-#include "gfx_matrix.h"  
 
 #include <iostream>
+#include "gfx_matrix.h"  
 
 using std::ostream;
 
@@ -81,10 +78,8 @@ struct Poly3 {
 
 
 struct AxisAngle{
-
 	float a;
 	Vec3<> v;
-
 };
 
 /// Info Container for Euler integration of a 2d Field
@@ -177,11 +172,7 @@ inline ostream& operator << (ostream& os, const Vxl& m){
 	os << "VXL: \n" << m[0] << " " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << " " << m[7] << "\n";		
 	return os;	
 }
-
     
-
-    
-    
-} //con::
+} //gfx::
 
 #endif
