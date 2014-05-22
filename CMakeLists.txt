@@ -34,6 +34,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake_modules/
 if(${RPI})
   find_package(GLES REQUIRED)
   find_package(EGL REQUIRED)
+  message( ${EGL_LIBRARY} )
+message( ${GLES_LIBRARY} )
+message( ${EGL_INCLUDE_DIR} )
+message( ${GLES_INCLUDE_DIR} )
   include_directories($ENV{HOME}/pi-root/opt/vc/include)
   include_directories($ENV{HOME}/pi-root/opt/vc/include/interface/vcos/pthreads)
   include_directories($ENV{HOME}/pi-root/opt/vc/include/interface/vmcs_host/linux)
@@ -65,10 +69,7 @@ elseif(${LINUX})
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -ftemplate-depth-1200 -Wno-switch -Wint-to-pointer-cast")
 endif() 
 
-message( ${EGL_LIBRARY} )
-message( ${GLES_LIBRARY} )
-message( ${EGL_INCLUDE_DIR} )
-message( ${GLES_INCLUDE_DIR} )
+
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
 foreach(dir ${dirs})
