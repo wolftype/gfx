@@ -1,3 +1,4 @@
+
 /*
  * =====================================================================================
  *
@@ -27,16 +28,17 @@ using namespace gfx;
  * Call Re:nderer::initGL() after initializing window context 
  *-----------------------------------------------------------------------------*/
 //template<class CONTEXT>
-struct App : Renderer<Window> {
+struct App : Renderer {
 
   MBO * mbo;
   float time = 0;
-
+  
   App(int w, int h, int argc, char ** argv) : Renderer(w,h) {
       Window::System -> Initialize(argc, argv);
       Window::template Create(this,w,h);
       Renderer::initGL(Renderer::GL, Renderer::BUFFERED);
       init();
+      process = new gfx::MotionTrace(w,h,this);  
   }
 
   void start(){
@@ -55,6 +57,8 @@ struct App : Renderer<Window> {
 
   void onResize(int w, int h){
     scene.resize(w, h);
+    if(process) delete process;
+    process = new gfx::MotionTrace(w,h,this);
   }
 
   void onDraw(){
@@ -63,6 +67,10 @@ struct App : Renderer<Window> {
     pipe.line(*mbo);
   }
 
+  virtual void onFrame(){
+    clear(Window::window().width(), Window::window().height() );
+    (*process)();
+  }
 };
 
 int main(int argc, char ** argv){

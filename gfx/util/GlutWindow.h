@@ -62,6 +62,8 @@ struct WindowData {
   void reshape(int w, int h){
     mWidth = w; mHeight =h;
   }
+  int width() const { return mWidth; }
+  int height() const { return mHeight; }
 };
 
 

@@ -16,8 +16,8 @@ namespace gfx{
    */
   struct Process : public Pipe {
       
-      Process(int w, int h, Renderer * r = NULL) : 
-      Pipe(), renderer(r), bEnable(true), amt(1), width(w), height(h), bES(false) {
+      Process(int w, int h) ://, Renderer * r = NULL) : 
+      Pipe(), bEnable(true), amt(1), width(w), height(h), bES(false) {
         #ifdef GFX_USE_GLES
           bES = true;
         #endif  
@@ -29,7 +29,7 @@ namespace gfx{
 
       int width, height;            ///< Number of Pixels Width and Height
 
-      Renderer * renderer;          ///< Pointer to Parent Renderer (which has the onFrame<T>(T&context) method)
+     // Renderer * renderer;          ///< Pointer to Parent Renderer (which has the onFrame<T>(T&context) method)
 
       bool bEnable;                 ///< Enable this Process
      
@@ -176,7 +176,9 @@ namespace gfx{
     Texture * textureA;                         ///< Texture into which to render
     Texture * textureB;                         ///< Secondary Texture for swapping buffers
 
-    R2T(int w, int h, Renderer * r) : Process(w,h,r) { init(); }
+    Renderer * renderer;
+
+    R2T(int w, int h, Renderer * r) : Process(w,h), renderer(r) { init(); }
     
     virtual void init(){
       cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; 
@@ -188,7 +190,7 @@ namespace gfx{
       fbo.attach(*textureA, GL::COLOR);          
     }
 
-    virtual void operator()(){
+    void operator()(){
       fbo.attach(*textureA, GL::COLOR);  
       fbo.bind();               
       
@@ -199,7 +201,7 @@ namespace gfx{
         //do any preprocessing in the stack (i.e. motion blur)
         preProcess();
         //And add a new frame on top
-        renderer -> render(); 
+        renderer->render(); 
         //do any postprocessing in the stack
         postProcess();
         
@@ -215,13 +217,13 @@ namespace gfx{
    */
   struct MotionTrace : public Process {
       
-      R2T   r2t;
+      R2T r2t;
       Alpha trace;
       Slab  slab;
      // Blur blur;
 
-      MotionTrace(int w, int h, Renderer * r ) : 
-      Process(w,h,r), r2t(w,h,r), trace(w,h), slab(w,h) { init(); } 
+      MotionTrace(int w, int h, Renderer * r) : 
+      Process(w,h), r2t(w,h,r), trace(w,h), slab(w,h) { init(); } 
       
       virtual void init(){
         ///Add alpha as a PreProcess to the r2t  
@@ -236,12 +238,10 @@ namespace gfx{
         trace.amt = .99;
       }
 
-      virtual void operator()(){
-        
+     // template<class REND>
+      void operator()(){
         r2t();
-
         slab();
-
         r2t.swap();
         trace.texture = r2t.textureB;
       }

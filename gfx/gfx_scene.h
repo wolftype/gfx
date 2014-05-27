@@ -262,8 +262,6 @@ namespace gfx{
       updateMatrices();
     }
 
-      //Mat4f mod() { return model.image(); }
-      //Mat4f mvm() { return  XMat::lookAt( camera.x(), camera.y(), camera.z() * -1, camera.pos()) * XMat::rot( model.rot() ) ; }
       Quat cat() { return camera.quat() * model.quat(); } 
 
       Mat4f mod() { return XMat::rot( model.quat() ); }

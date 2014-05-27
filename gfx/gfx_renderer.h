@@ -43,7 +43,6 @@ namespace gfx {
       IMMEDIATE = 1
     };
 
-
     bool bES;            ///< OpenGL or OpenGLES 
     bool bImmediate;     ///< Immediate Mode or Buffered Mode
   
@@ -58,7 +57,6 @@ namespace gfx {
     Pipe pipe;           ///< Default Graphics Pipeline Vertex Attribute Binding  
     Process * process;   ///< Some optional EFFECTS (see gfx_process.h) 
 
- //   int contextWidth, contextHeight; ///< t.b.d. pixel dimensions of screen (will be fed info from application's window context)               
     /// RENDER FOR SINGLE COMPUTER AND SCREEN
     Renderer (float w, float h, float z=30.0) : 
       background(0,0,0,1), layout(1,1, w, h, 0, 0) {
@@ -73,10 +71,10 @@ namespace gfx {
     
     ~Renderer(){}     
   
-    //Constructor's Boolean specifies GL or GLES pipeline ...
+    //Boolean specifies GL or GLES pipeline ...
     void initGL(bool ES, bool Immediate){
       bES = ES; bImmediate = Immediate;
-             
+       
       glClearColor(1,1,1,1);
       srand( time(NULL) );  
 
@@ -92,14 +90,14 @@ namespace gfx {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
-      /* glPointSize(5); */
-      /* glEnable(GL_LINE_SMOOTH); */
+      glLineWidth(5);
       
     }
        
     virtual void init(){}; 
     virtual void update(){};
-    virtual void onDraw() = 0; 
+    virtual void onDraw() = 0;
+    virtual void onFrame() = 0;  
     
     virtual void onResize(int w, int h){
       if (!bImmediate){
@@ -114,15 +112,17 @@ namespace gfx {
     }
 
     virtual void render(){
+        scene.updateMatrices();
         mvm = scene.xf.modelViewMatrixf();
         pipe.bind( scene.xf );
           onDraw();       
         pipe.unbind();  
     }
 
-    /// DEFAULT PROCESS just renders the content from ondraw (OVERLOAD THIS for FX...)
-    virtual void onFrame(){
-      render();
+    void clear(int w, int h){
+       glViewport(0,0,w,h);
+       glClearColor(background[0],background[1],background[2],background[3]);
+       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
   
     void setView(float z, bool isGrid, int row=0, int col=0){
@@ -166,30 +166,7 @@ namespace gfx {
       (mvm * mat).fill(mv);
       pipe.program -> uniform("modelView", mv );   
     }
-    
-  
-    void clear(){
-      // glViewport(0,0, contextWidth, contextHeight); 
-       glClearColor(background[0],background[1],background[2],background[3]);
-       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    /* /// NOTE context must have a swapBuffers() method */
-    /* template<typename T> */
-    /* void onFrame(T& context){ */
-       
-    /*    clear();               ///< Clear Window */
-                 
-    /*    scene.onFrame();       ///< Apply ModelView and Projection Transformations */
-              
-    /*    update();              ///< Update Scene Data */
-
-    /*    doProcess();           ///< Draw Scene Data */  
-    
-    /*    context.swapBuffers(); ///< Call context's swapBuffer() method (NOTE: ASSUMED TO EXIST!) */
-      
-    /* } */  
-    
+        
     float width() { return layout.screenWidth; }
     float height() { return layout.screenHeight; }
 

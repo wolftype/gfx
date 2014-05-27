@@ -12,6 +12,6 @@ echo RPI: ${EMBEDDED}
 mkdir build
 cd build
 rm bin/${TARGET}
-cmake .. -DSRC=../$1 -DRPI=0 
+cmake .. -DSRC=../$1 -DRPI=$2 
 make
 bin/${TARGET}

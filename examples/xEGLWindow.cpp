@@ -69,6 +69,10 @@ struct RPIContext {
      delete mWindow;
      delete System;
    }
+
+   static void SwapBuffers(){
+     mWindow -> swapBuffers();
+   }
 };
 
 EGL::Window * RPIContext::mWindow;
@@ -78,17 +82,18 @@ BCM * RPIContext::System;
  * example use of gfx_renderer with mesh buffer objects
  * Call Renderer::initGL() after initializing window context 
  *-----------------------------------------------------------------------------*/
-template<class CONTEXT>
+//template<class CONTEXT>
 struct App : Renderer {
 
   MBO * mbo;
   float time = 0;
 
   App(int w, int h, int argc, char ** argv) : Renderer(w,h) {
-      CONTEXT::System -> Initialize(argc, argv);
-      CONTEXT::template Create(this,w,h);
-      int _w = CONTEXT::window().width();
-      int _h = CONTEXT::window().height();
+      RPIContext::System -> Initialize(argc, argv);
+      RPIContext::Create(this,w,h);
+      int _w = RPIContext::window().width();
+      int _h = RPIContext::window().height();
+      cout << _w << " " << _h << " DIM!!!"<<endl;
       Renderer::initGL(Renderer::GLES, Renderer::BUFFERED);
       init();
       process = new gfx::MotionTrace(_w,_h,this);  
@@ -96,39 +101,33 @@ struct App : Renderer {
 
 
   void start(){
-    CONTEXT::System -> Start(this);
+    RPIContext::System -> Start(this);
   }
 
   void init(){
     mbo = new MBO( Mesh::Circle(1,10) );  
-    scene.camera.pos(0,0,5);
   }
   
   void update(){
     mbo -> mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
     mbo -> update();
   }
-
-  void onResize(int w, int h){
-    scene.resize(w, h);
-    if(process) delete process;
-    process = new gfx::MotionTrace(w,h,this);
-  }
-
+  
   void onDraw(){
-    time+=.005;    
+    time+=.015;      
     update();
     pipe.line(*mbo);
   }
 
   virtual void onFrame(){
-    clear();
+    clear( RPIContext::window().width(), RPIContext::window().height() );
     (*process)();
+    RPIContext::SwapBuffers();
   }
 };
 
 int main(int argc, char ** argv){
-  App<RPIContext> app(500,500, argc, argv);
+  App app(21,14, argc, argv);
   app.start();
   return 0;
 }
