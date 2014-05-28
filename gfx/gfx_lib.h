@@ -60,7 +60,7 @@
         #include <OpenGL/OpenGL.h>
         #include <GLUT/GLUT.h>
 
-        #define GFX_GL_IMMEDIATE_MODE
+        #define GL_IMMEDIATE_MODE
 
     #endif
 
