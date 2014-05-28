@@ -245,7 +245,7 @@ namespace gfx{
 
      Vec3f light;
      
-    Scene() : camera(0,0,1), light(3,3,3) {} 
+    Scene() : camera(0,0,5), light(3,3,3) {} 
       
     void fit(int w, int h){
       camera.lens.width( w ); 
