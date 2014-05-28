@@ -94,8 +94,8 @@ namespace gfx {
       
     }
        
-    virtual void init(){}; 
-    virtual void update(){};
+    /* virtual void init(){}; */ 
+    /* virtual void update(){}; */
     virtual void onDraw() = 0;
     virtual void onFrame() = 0;  
     

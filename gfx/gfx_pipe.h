@@ -122,6 +122,10 @@ namespace gfx{
                 enable(); pointer(); 
             }       
 
+            void draw(MBO& m, int num =-1, int off = 0){
+              m.drawElements(num,off);
+            }
+
             void end( MBO& m) { 
                 disable(); 
                 m.unbind();   
@@ -147,10 +151,10 @@ namespace gfx{
                         
           void bind( XformMat& xf ){
             program -> bind();
-               program -> uniform("lightPosition", 2.0, 2.0, 2.0);  
-                 program  -> uniform("projection",  xf.proj);
-                 program  -> uniform("normalMatrix", xf.normal);  
-             program  -> uniform("modelView",  xf.modelView );     
+                program -> uniform("lightPosition", 2.0, 2.0, 2.0);  
+                program -> uniform("projection",  xf.proj);
+                program -> uniform("normalMatrix", xf.normal);  
+                program -> uniform("modelView",  xf.modelView );     
           }   
           
           void bind(){
