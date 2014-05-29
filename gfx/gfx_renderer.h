@@ -52,10 +52,12 @@ namespace gfx {
     Mat4f mvm;           ///< Temporary memoization of scene's current transformation matrix 
     Scene scene;         ///< ModelViewProjection Transformation Matrices  
     Layout layout;       ///< Screen Layout (for creating multiple screen frusta)
+
+    int contextWidth, contextHeight; ///< Pixel width and height of screen
      
     // GRAPHICS BINDING:     
     Pipe pipe;           ///< Default Graphics Pipeline Vertex Attribute Binding  
-    Process * process;   ///< Some optional EFFECTS (see gfx_process.h) 
+   // Process * process;   ///< Some optional EFFECTS (see gfx_process.h) 
 
     /// RENDER FOR SINGLE COMPUTER AND SCREEN
     Renderer (float w, float h, float z=30.0) : 
@@ -72,8 +74,10 @@ namespace gfx {
     ~Renderer(){}     
   
     //Boolean specifies GL or GLES pipeline ...
-    void initGL(bool ES, bool Immediate){
+    void initGL(bool ES, bool Immediate, int pw = 0, int ph = 0){
       bES = ES; bImmediate = Immediate;
+      contextWidth = pw;
+      contextHeight = ph;
        
       glClearColor(1,1,1,1);
       srand( time(NULL) );  
@@ -167,8 +171,8 @@ namespace gfx {
       pipe.program -> uniform("modelView", mv );   
     }
         
-    float width() { return layout.screenWidth; }
-    float height() { return layout.screenHeight; }
+    /* float width() { return layout.screenWidth; } */
+    /* float height() { return layout.screenHeight; } */
 
   }; 
   

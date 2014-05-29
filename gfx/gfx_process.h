@@ -16,8 +16,8 @@ namespace gfx{
    */
   struct Process : public Pipe {
       
-      Process(int w, int h) ://, Renderer * r = NULL) : 
-      Pipe(), bEnable(true), amt(1), width(w), height(h), bES(false) {
+      Process(int w, int h, Renderer * r = NULL) : 
+      Pipe(), bEnable(true), width(w), height(h), renderer(r), bES(false) {
         #ifdef GFX_USE_GLES
           bES = true;
         #endif  
@@ -29,7 +29,7 @@ namespace gfx{
 
       int width, height;            ///< Number of Pixels Width and Height
 
-     // Renderer * renderer;          ///< Pointer to Parent Renderer (which has the onFrame<T>(T&context) method)
+      Renderer * renderer;          ///< Pointer to Parent Renderer (which has the onFrame<T>(T&context) method)
 
       bool bEnable;                 ///< Enable this Process
      
@@ -45,7 +45,7 @@ namespace gfx{
       virtual void init() = 0;
       virtual void operator()() = 0;
 
-      float amt;                    ///< Some Variable
+    //  float amt;                    ///< Some Variable
 
   };
 
@@ -91,6 +91,7 @@ namespace gfx{
 
       MBO * rect;
       Texture * texture;
+      float amt;
 
     Alpha(int w, int h) : Process(w,h){ init(); }
      
@@ -128,9 +129,9 @@ namespace gfx{
       MBO * rect;
       Texture * texture;
 
-      float ux, uy;
+      float ux, uy, amt;
 
-      Blur(int w, int h) : Process(w,h), ux(.1), uy(.1) { init(); }
+      Blur(int w, int h) : Process(w,h), ux(.1), uy(.1), amt(1) { init(); }
      
      virtual void init(){
        initShader();
@@ -149,15 +150,20 @@ namespace gfx{
        texture = new Texture( width, height );
      }
 
-     virtual void operator()(){
-        this->bind();      
+    virtual void update(){
          this->program->uniform("ux",ux);
          this->program->uniform("uy",uy);
          this->program->uniform("bluramt",amt);
-          texture -> bind();
-            this->line( *rect );
-          texture -> unbind();
-        this->unbind(); 
+    }
+
+
+     virtual void operator()(){
+       this->bind();
+        update();
+        texture->bind();
+        this->line( *rect );
+       texture -> unbind();
+      this->unbind(); 
      }
 
   };
@@ -176,9 +182,9 @@ namespace gfx{
     Texture * textureA;                         ///< Texture into which to render
     Texture * textureB;                         ///< Secondary Texture for swapping buffers
 
-    Renderer * renderer;
+    //Renderer * renderer;
 
-    R2T(int w, int h, Renderer * r) : Process(w,h), renderer(r) { init(); }
+    R2T(int w, int h, Renderer * r = NULL) : Process(w,h,r) { init(); }
     
     virtual void init(){
       cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; 
@@ -212,6 +218,55 @@ namespace gfx{
   };
 
 
+    /*!
+   *  A ALT RENDER TO TEXTURE Process renders some other process into a texture bound to the framebuffer colorbuffer
+   *
+   *  NO shader required for this step . . .
+
+   */
+  struct RP2T : public Process { 
+    
+    FBO fbo;                                    ///< A Framebuffer
+    Texture * textureA;                         ///< Texture into which to render
+    Texture * textureB;                         ///< Secondary Texture for swapping buffers
+
+    //Renderer * renderer;
+    Process * process;
+
+    RP2T(int w, int h, Process * p = NULL) : Process(w,h), process(p) { init(); }
+    
+    virtual void init(){
+      cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; 
+      //initialize texture
+      textureA = new Texture( width, height );
+      textureB = new Texture( width, height );
+
+      // Attach texture to FrameBuffer's ColorBuffer  
+      fbo.attach(*textureA, GL::COLOR);          
+    }
+
+    void operator()(){
+      fbo.attach(*textureA, GL::COLOR);  
+      fbo.bind();               
+      
+        glViewport(0, 0, width, height ); 
+        glClearColor(0,0,0,1);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        //do any preprocessing in the stack (i.e. motion blur)
+        preProcess();
+        //And add a new frame on top
+        (*process)(); 
+        //do any postprocessing in the stack
+        postProcess();
+        
+      fbo.unbind(); 
+    }
+
+    void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };
+  };
+
+
   /*!
    *  MOTION TRACE Process combines a R2T and an Alpha Slab
    */
@@ -222,8 +277,8 @@ namespace gfx{
       Slab  slab;
      // Blur blur;
 
-      MotionTrace(int w, int h, Renderer * r) : 
-      Process(w,h), r2t(w,h,r), trace(w,h), slab(w,h) { init(); } 
+      MotionTrace(int w, int h, Renderer * r = NULL) : 
+      Process(w,h,r), r2t(w,h,r), trace(w,h), slab(w,h) { init(); } 
       
       virtual void init(){
         ///Add alpha as a PreProcess to the r2t  

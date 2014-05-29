@@ -21,7 +21,6 @@ namespace gfx{
 
     namespace GLSL{
         
-
       /*-----------------------------------------------------------------------------
        *  TEST VERTEX SHADER
        *-----------------------------------------------------------------------------*/
@@ -149,10 +148,23 @@ namespace gfx{
          *-----------------------------------------------------------------------------*/
         string VCalc = STRINGIFY(
             vec4 doVertex (vec4 v) {
-              mat4 m = projection * modelView;// * submodel;
+              mat4 m = projection * modelView;
               return m * v;
             }
         );
+
+         /*-----------------------------------------------------------------------------
+         *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON SAMPLER 
+         *-----------------------------------------------------------------------------*/
+        string VDisplaceCalc = STRINGIFY(
+            vec4 doVertex (vec4 v) {
+              float z = texture2D(sampleTexture, texco).r;
+              vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
+              mat4 m = projection * modelView;
+              return m * nv;
+            }
+        );
+
 
         
         /*-----------------------------------------------------------------------------
@@ -515,7 +527,8 @@ namespace gfx{
      *-----------------------------------------------------------------------------*/
     string DefaultVertES =  AVertex + VaryingES + UMatrix + NTransform + VLighting + VCalc + MVert;
     string DefaultVert =  AVertex + Varying + UMatrix + NTransform + VLighting + VCalc + MVert;
-    
+   
+    string DisplacementVertES = USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
     // string TFragBasic = STRINGIFY(     
     // 

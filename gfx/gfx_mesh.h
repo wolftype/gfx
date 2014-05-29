@@ -602,8 +602,10 @@ namespace gfx {
      int offsetU = -(w*spacing)/2.0;
      int offsetV = -(h*spacing)/2.0;
       for (int u=0; u<w; ++u){
-          for (int v=0; v<w; ++v){
-          m.add( Vertex(offsetU + u * spacing, offsetV + v*spacing,0) ).add();
+          for (int v=0; v<h; ++v){
+            Vertex nv( offsetU + u * spacing, offsetV + v*spacing,0 );
+            nv.Tex = Vec2f((float)u/w, (float)v/h);
+            m.add(nv).add();
         }
       }
       m.mode(GL::P);
