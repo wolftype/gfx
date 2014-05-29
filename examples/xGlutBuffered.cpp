@@ -3,7 +3,7 @@
  *
  *       Filename:  xGlut.h
  *
- *    Description:  glut windowing advanced
+ *    Description:  glut windowing
  *
  *        Version:  1.0
  *        Created:  05/19/2014 19:28:08
@@ -17,6 +17,8 @@
  */
 
 #include "util/GlutWindow.h"
+#include "gfx_app.h"
+
 #include "gfx_renderer.h"
 #include "gfx_mbo.h"
 #include "gfx_process.h"
@@ -26,21 +28,13 @@ using namespace gfx;
  * example use of gfx_renderer with mesh buffer objects
  * Call Re:nderer::initGL() after initializing window context 
  *-----------------------------------------------------------------------------*/
-//template<class CONTEXT>
-struct App : Renderer<Window> {
+struct MyApp : App<Window> {
 
   MBO * mbo;
   float time = 0;
 
-  App(int w, int h, int argc, char ** argv) : Renderer(w,h) {
-      Window::System -> Initialize(argc, argv);
-      Window::template Create(this,w,h);
-      Renderer::initGL(Renderer::GL, Renderer::BUFFERED);
+  MyApp(int w, int h, int argc, char ** argv) : App<Window>(w,h,argc,argv) {
       init();
-  }
-
-  void start(){
-    Window::System -> Start();
   }
 
   void init(){
@@ -48,16 +42,12 @@ struct App : Renderer<Window> {
     scene.camera.pos(0,0,5);
   }
   
-  void update(){
+  virtual void update(){
     mbo -> mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
     mbo -> update();
   }
 
-  void onResize(int w, int h){
-    scene.resize(w, h);
-  }
-
-  void onDraw(){
+  virtual void onDraw(){
     time+=.005;    
     update();
     pipe.line(*mbo);
@@ -66,7 +56,7 @@ struct App : Renderer<Window> {
 };
 
 int main(int argc, char ** argv){
-  App app(1600,1200, argc, argv);
+  MyApp app(500,500, argc, argv);
   app.start();
   return 0;
 }

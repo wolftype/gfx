@@ -3,7 +3,8 @@
  *
  *       Filename:  gfx_renderer.h
  *
- *    Description:  context blind renderer for OpenGL or OpenGLES
+ *    Description:  context-blind renderer for OpenGL or OpenGLES
+ *                  Subclassed Application or Window context must define onDraw and onFrame
  *
  *        Version:  1.0
  *        Created:  02/17/2014 19:44:26
@@ -30,7 +31,7 @@ namespace gfx {
   
   using namespace GLSL; 
 
-  struct Process;
+ // struct Process;
 
   struct Renderer { 
 
@@ -98,16 +99,19 @@ namespace gfx {
       
     }
        
-    /* virtual void init(){}; */ 
-    /* virtual void update(){}; */
+    // Subclassed Application or Window must define onDraw and onFrame
     virtual void onDraw() = 0;
     virtual void onFrame() = 0;  
     
     virtual void onResize(int w, int h){
       if (!bImmediate){
         scene.resize(w, h);
+        printf("renderer resize to: %d %d\n", w, h);
       }
-      printf("renderer resize to: %d %d\n", w, h);
+
+        contextWidth = w;
+        contextHeight =h;
+
     }
    
     void drawFunc(){
@@ -123,8 +127,8 @@ namespace gfx {
         pipe.unbind();  
     }
 
-    void clear(int w, int h){
-       glViewport(0,0,w,h);
+    void clear(){
+       glViewport(0,0,contextWidth,contextHeight);
        glClearColor(background[0],background[1],background[2],background[3]);
        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }

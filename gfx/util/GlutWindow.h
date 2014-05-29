@@ -16,6 +16,12 @@
  * =====================================================================================
  */
 
+
+#ifndef  GlutWindow_INC
+#define  GlutWindow_INC
+
+#include <iostream>
+
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/glu.h>
 #include <GLUT/GLUT.h>
@@ -25,10 +31,6 @@
 
 using namespace std;
 
-template<class T>
-struct Drawable{
-  
-};
 
 /*!
  *  Singleton initializer
@@ -89,8 +91,10 @@ struct Window {
     
     //Glut::Initialize(0,"");
 
+
     int id = glutCreateWindow("glut");
-    
+    cout <<"INITIALIZING WINDOW " << id << " " <<  w << " " << h << endl;  
+       
     Bind(_app);                                   //<-- Bind App to void *
     
     glutDisplayFunc(Draw<APPLICATION>);           //<-- Callbacks Bind to Application
@@ -102,7 +106,7 @@ struct Window {
     glutPositionWindow(offsetW, offsetH);
 
     mWindows.push_back( new WindowData(w,h,id) );
-    currentWindow = id;
+    currentWindow = id-1;
     return currentWindow;
   }
 
@@ -154,3 +158,4 @@ int Window::currentWindow;
 
 
 
+#endif   /* ----- #ifndef GlutWindow_INC  ----- */

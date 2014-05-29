@@ -12,13 +12,15 @@
 namespace gfx{
     
   /*!
-   *  A Rendering PROCESS is a type of GRAPHICS PIPELINE
+   *  A Rendering PROCESS is a type of GRAPHICS PIPELINE meant to throw together
+   *  easy experiments in shader and rendering to textures, etc
    */
   struct Process : public Pipe {
       
       Process(int w, int h, Renderer * r = NULL) : 
       Pipe(), bEnable(true), width(w), height(h), renderer(r), bES(false) {
         #ifdef GFX_USE_GLES
+          cout << "PROCESS USES GLES" << endl;
           bES = true;
         #endif  
       }
@@ -45,8 +47,6 @@ namespace gfx{
       virtual void init() = 0;
       virtual void operator()() = 0;
 
-    //  float amt;                    ///< Some Variable
-
   };
 
   /*!
@@ -71,8 +71,13 @@ namespace gfx{
       texture = new Texture( width, height );
     }
     virtual void initShader(){
-      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, bES ? TFragES : TFrag, 0);
+      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
+                                         bES ? TFragES : TFrag, 0 );
       this->bindAll();
+    }
+
+    virtual void draw(){
+      this->line( *rect );
     }
 
     virtual void operator()(){
@@ -106,7 +111,8 @@ namespace gfx{
       texture = new Texture( width, height );
     }
     virtual void initShader(){
-      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, bES ? TFragAlphaES : TFragAlpha, 0);
+      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
+                                         bES ? TFragAlphaES : TFragAlpha, 0);
       this->bindAll();
     }
 
@@ -138,7 +144,8 @@ namespace gfx{
      }
 
      virtual void initShader(){
-      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, bES ? TFragBlurES : TFragBlur, 0);
+      this->program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
+                                         bES ? TFragBlurES : TFragBlur, 0);
       this->bindAll();
      }
 

@@ -20,7 +20,13 @@
 namespace gfx{
 
     namespace GLSL{
-        
+
+
+      /*-----------------------------------------------------------------------------
+       *  uniform variable
+       *-----------------------------------------------------------------------------*/
+       string UVar = "uniform float amt;";
+
       /*-----------------------------------------------------------------------------
        *  TEST VERTEX SHADER
        *-----------------------------------------------------------------------------*/
@@ -158,7 +164,7 @@ namespace gfx{
          *-----------------------------------------------------------------------------*/
         string VDisplaceCalc = STRINGIFY(
             vec4 doVertex (vec4 v) {
-              float z = texture2D(sampleTexture, texco).r;
+              float z = texture2D(sampleTexture, texco).r * amt;
               vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
               mat4 m = projection * modelView;
               return m * nv;
@@ -527,8 +533,9 @@ namespace gfx{
      *-----------------------------------------------------------------------------*/
     string DefaultVertES =  AVertex + VaryingES + UMatrix + NTransform + VLighting + VCalc + MVert;
     string DefaultVert =  AVertex + Varying + UMatrix + NTransform + VLighting + VCalc + MVert;
-   
-    string DisplacementVertES = USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
+
+    string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
+    string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
     // string TFragBasic = STRINGIFY(     
     // 

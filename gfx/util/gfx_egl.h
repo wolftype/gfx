@@ -322,6 +322,63 @@ namespace gfx {
           bool onResize(){}             
         }; 
     } //egl ::
+
+    
+//SINGLETON
+struct BCM {
+  
+  static BCM& Initialize(int argc, char**argv){
+    static BCM TheBCM;
+    return TheBCM;
+  }
+
+  template<class APP>
+  void Start(APP * app){
+    while(true){       
+         app -> drawFunc();
+         usleep(166);
+      }    
+  }
+
+   ~BCM() {
+     bcm_host_deinit();
+     cout << "bcm_host_deinit()\n";
+   }
+
+  private: 
+    BCM() {
+      bcm_host_init();
+      cout << "bcm_host_init()\n";
+    }
+};
+
+//Context
+struct RPIContext {
+
+   static BCM * System;
+   static EGL::Window * mWindow;
+  
+   template<class APPLICATION>
+   static void Create(APPLICATION * _app, int w, int h){
+     mWindow = new EGL::Window();
+   }
+
+   static EGL::Window& window() { return *mWindow; }
+
+   ~RPIContext(){
+     delete mWindow;
+     delete System;
+   }
+
+   static void SwapBuffers(){
+     mWindow -> swapBuffers();
+   }
+};
+
+EGL::Window * RPIContext::mWindow;
+BCM * RPIContext::System;
+
+
 } //gfx ::
 
 
