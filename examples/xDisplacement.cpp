@@ -40,7 +40,22 @@ struct Displacement : public Process {
 
     virtual void init(){
      initShader();
-     grid = new MBO( Mesh::Grid2D(width,height,spacing) );
+
+    int w = 40; int h = 20;
+    float tw = w * spacing; float th = h * spacing;
+
+    Vec3f * vec = new Vec3f[w*h];
+
+    for (int i=0; i<w; ++i){
+      float u = -tw/2.0 + (float)i/w * tw;
+      for (int j=0; j<h; ++j){
+       float v = -th/2.0 + (float)i/h * th;
+         vec[i*h+j] = Vec3f(u,v,0);
+      }  
+    }
+
+  //  Mesh m = Mesh::UV(vec, w, h);
+    grid = new MBO( Mesh::HexaGrid(width,height, .2) );// Mesh::Grid2D(w,h,.1) );//
    }
 
    virtual void initShader(){
@@ -96,28 +111,36 @@ struct MyProcess : public Process {
   virtual void init(){
 
     slab.initRect();                // Initialze a rectangle
-    slab.texture = r2t.textureA;
+    slab.texture = r2t.textureB;
     blur.rect = slab.rect;          // Share resources
     blur.texture = slab.texture;  
 
-    r2t.post(blur);
-
-
+   // r2t.post(blur);
 
   }
 
   void operator()(){
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     r2t();        // Render to Offscreen Texture 
+
+   // r2t.swap();
+   // r2t.fbo.attach(*r2t.textureB, GL::COLOR);
+    r2t.fbo.bind();
+      blur();
+    r2t.fbo.unbind();
     
     //switch to original viewport
     glViewport(0, 0, renderer -> contextWidth, renderer -> contextHeight ); 
-    
+    //renderer -> clear();
+
     if (bDrawDispMap){
       slab();
     }
     else {
       slab.texture->bind();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         dispmap();
       slab.texture->unbind();
     }

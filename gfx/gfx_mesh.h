@@ -360,7 +360,7 @@ namespace gfx {
         }    
     
         template<class T>
-        static Mesh UV( T* p, int w, int h);
+        static Mesh UV( T* p, int w, int h, int tw =1, int th =1);
 
         static Mesh Point(float x, float y, float z);
 
@@ -410,6 +410,8 @@ namespace gfx {
         static Mesh Grid2D(int, int, float);
         
         static Mesh Num(int n);
+
+        static Mesh HexaGrid(int w, int h, float spacing);
     
     };              
 
@@ -448,20 +450,28 @@ namespace gfx {
     return m;
   }
     template<class T>
-    inline Mesh Mesh::UV( T* p, int w, int h){
+    inline Mesh Mesh::UV( T* p, int w, int h, int tw, int th){
       Mesh m;
+
+      //MESH ORDER FOR TRIANGLE STRIP
       bool bFlip = false;
       for (int i = 0; i < w-1; ++i){
         for (int j = 0; j < h; ++j){
           int a = bFlip ? (i+1) * (h) - j - 1: i * h + j;
           int b = a + h;
-          m.add( p[a][0], p[a][1], p[a][2] ).add();
-          m.add( p[b][0], p[b][1], p[b][2] ).add(); 
+
+          Vertex va(p[a][0], p[a][1], p[a][2]);
+          va.Tex = Vec2f(p[a][0] / tw, p[a][1] / th );
+          Vertex vb(p[b][0], p[b][1], p[b][2]);
+          vb.Tex = Vec2f(p[b][0] / tw, p[b][1] / th );
+          m.add( va ).add();
+          m.add( vb ).add(); 
         }
-        bFlip = !bFlip;
+        bFlip = !bFlip; //FLIP EACH COLUMN
         //m.add().add().add();//.add(i*h);//.add(i*h);
       }
 
+    //NORMALS
     bFlip = true; int ct = 0;
      for (int i = 0; i < m.num(); i+=3){
         int a = i; int b = i + 1; int c = i + 2;
@@ -482,6 +492,28 @@ namespace gfx {
       m.store();
       return m;
     }
+    
+
+   inline Mesh Mesh::HexaGrid(int w, int h, float spacing){
+    float tw = spacing * w;
+    float th = spacing * h;
+
+    Vec3f * vec = new Vec3f[w*h];
+
+    bool bFlip =0;
+    for (int i=0; i<w; ++i){
+      for (int j=0; j<h; ++j){
+       float u = -tw/2.0 + (float)i/w * tw + (bFlip?spacing/2.0:0);
+       float v = -th/2.0 + (float)j/h * th;
+       vec[i*h+j] = Vec3f(u,v,0);
+       bFlip = !bFlip;
+      }  
+    }
+
+    Mesh m = Mesh::UV(vec, w, h,tw,th);
+    delete[] vec;
+    return m;
+  }
 
     
     inline Mesh Mesh::Point(float x, float y, float z){
