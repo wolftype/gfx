@@ -43,7 +43,7 @@ struct Displacement : public Process {
 
   //  Mesh m = Mesh::UV(vec, w, h);
     grid = new MBO( Mesh::HexaGrid(width,height,spacing) );//Mesh::Grid2D(width,height,spacing) );//
-    grid -> mode = GL::LS;
+    grid -> mode = GL::L;
     // Mesh::Grid2D(w,h,.1) );//
    }
 
@@ -61,7 +61,8 @@ struct Displacement : public Process {
 
   virtual void enter(){
       this->bind();
-       this->bind( renderer -> scene.xf );  
+       this->bind( renderer -> scene.xf ); 
+       //this->bindModelViewIdentity();
   }
 
   virtual void leave(){
@@ -69,8 +70,7 @@ struct Displacement : public Process {
   }
 
   virtual void operator()(){
-      this->bind();
-       this->bind( renderer -> scene.xf );  
+      enter();
        update();     
        this->line(*grid); 
       this->unbind();    
@@ -165,7 +165,7 @@ struct MyApp : public App<Window> {
     process -> blur.ux = sin(time) * .2;
     process -> blur.uy = cos(time) * .2;
     process -> blur.amt = .1;// fabs(sin(time));
-    process -> dispmap.amt = sin(time) * 10;
+    process -> dispmap.amt = sin(time) * 5;
 
   }
   

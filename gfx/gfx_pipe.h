@@ -148,7 +148,24 @@ namespace gfx{
                 vatt.pos.disable();
                 m.unbind();
             }
-                        
+
+          void bindOrtho(float w, float h, float near, float far){
+              static float xf[16];
+              Mat4f tmvm =  XMat::ortho(w,h,near,far);
+              copy(tmvm.val(), tmvm.val() + 16, xf);
+              program -> uniform("projection", xf );
+          }
+
+          void bindModelViewIdentity(){
+             program -> uniform("modelView", XformMat::Identity );  
+          }
+          
+          void bindIdentity(){
+                program -> uniform("lightPosition", 2.0, 2.0, 2.0);  
+                program -> uniform("projection",  XformMat::Identity);
+                program -> uniform("normalMatrix", XformMat::Identity);  
+                program -> uniform("modelView",  XformMat::Identity );  
+          }
           void bind( XformMat& xf ){
             program -> bind();
                 program -> uniform("lightPosition", 2.0, 2.0, 2.0);  

@@ -24,6 +24,8 @@ namespace gfx{
     
     /*! Transformation Matrices Container */
     struct XformMat {
+
+        static float Identity[16];
         float model[16];
         float view[16];
         float modelView[16];
@@ -111,10 +113,16 @@ namespace gfx{
             return os;
         }
     };
+
+    float XformMat::Identity[] = {1,0,0,0,
+                                     0,1,0,0,
+                                     0,0,1,0,
+                                     0,0,0,1};
     
     struct XMat {
       
-        static Mat4f ortho (float X, float Y0); 
+        static Mat4f ortho (float X, float Y0);
+        static Mat4f ortho(float X, float Y, float near, float far); 
         // static Mat4f rot( Rot );
         static Mat4f rotXY(float rad) ;
 
@@ -275,6 +283,15 @@ namespace gfx{
                     0, 1.0f / Y,  0,0,
                     0,  0,  -1,     0,
                     0,  0,  0,      1
+                );          
+    }
+
+   inline Mat4f XMat::ortho(float X, float Y, float near, float far) {
+                return Mat4f(
+                    1.0f / X ,  0,0,0,
+                    0, 1.0f / Y,  0,0,
+                    0,  0,  -2/(far-near), 0,
+                    0,  0,  -(far+near)/(far-near),      1
                 );          
     }
 

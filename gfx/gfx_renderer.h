@@ -175,8 +175,8 @@ namespace gfx {
       pipe.program -> uniform("modelView", mv );   
     }
         
-    /* float width() { return layout.screenWidth; } */
-    /* float height() { return layout.screenHeight; } */
+    float width() { return layout.screenWidth; }
+    float height() { return layout.screenHeight; }
 
   }; 
   
