@@ -94,9 +94,9 @@ namespace gfx{
    */
   struct Alpha : public Process {
 
-      MBO * rect;
-      Texture * texture;
-      float amt;
+    MBO * rect;
+    Texture * texture;
+    float amt;
 
     Alpha(int w, int h) : Process(w,h){ init(); }
      
@@ -203,10 +203,13 @@ namespace gfx{
       fbo.attach(*textureA, GL::COLOR);          
     }
 
+
+
     void operator()(){
       fbo.attach(*textureA, GL::COLOR);  
       fbo.bind();               
-      
+     
+        glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE); 
         glViewport(0, 0, width, height ); 
         glClearColor(0,0,0,1);
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -215,10 +218,22 @@ namespace gfx{
         preProcess();
         //And add a new frame on top
         renderer->render(); 
-        //do any postprocessing in the stack (i.e. gaussian blur)
-        postProcess();
         
       fbo.unbind(); 
+
+    }
+
+    void post(){
+     // fbo.attach(*textureB, GL::COLOR);
+      fbo.bind();
+        /* glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE); */ 
+        /* glViewport(0, 0, width, height ); */ 
+        /* glClearColor(0,0,0,1); */
+        /* glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+        
+        postProcess();
+
+      fbo.unbind();
     }
 
     void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };

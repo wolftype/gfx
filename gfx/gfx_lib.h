@@ -34,6 +34,16 @@
         #define glClearDepth glClearDepthf
         #define GL_RGBA8 GL_RGBA8_OES
 
+  #elif defined(__raspberry__)
+
+      #include "bcm_host.h"
+      #include "GLES2/gl2.h"
+      #include "GLES2/gl2ext.h"
+      #include "EGL/egl.h"
+      #include "EGL/eglext.h"
+
+      #define GFX_USE_GLES
+
 	#elif defined(__linux__)
 		
 		#include <GL/glew.h>
@@ -44,25 +54,17 @@
         
     #define GL_IMMEDIATE_MODE
         
-    #elif defined(__raspberry__)
 
-        #include "bcm_host.h"
-        #include "GLES2/gl2.h"
-        #include "GLES2/gl2ext.h"
-        #include "EGL/egl.h"
-        #include "EGL/eglext.h"
-
-        #define GFX_USE_GLES
         
-    #else //defined(__APPLE__) || defined(__OSX__)
+  #else //defined(__APPLE__) || defined(__OSX__)
 
-        //printf("APPLE SYSTEM\n");
-        #include <OpenGL/OpenGL.h>
-        #include <GLUT/GLUT.h>
+      //printf("APPLE SYSTEM\n");
+      #include <OpenGL/OpenGL.h>
+      #include <GLUT/GLUT.h>
 
-        #define GL_IMMEDIATE_MODE
+      #define GL_IMMEDIATE_MODE
 
-    #endif
+  #endif
 
 #endif
 

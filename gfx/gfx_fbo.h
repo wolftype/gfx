@@ -87,97 +87,97 @@ namespace gfx {
     };
 
 
-	class FBO {
-	
-		private:
+  class FBO {
+  
+    private:
 
-			int mWidth;
-			int mHeight;
-			
-			
-			GL::TYPE    mType;
-			GL::FORMAT  mFormat;
-			GL::ATTACH  mAttachment;
-			
+      int mWidth;
+      int mHeight;
+      
+      
+      GL::TYPE    mType;
+      GL::FORMAT  mFormat;
+      GL::ATTACH  mAttachment;
+      
             int mNumAttachments;
-			
-			GLuint mId;
+      
+      GLuint mId;
         
             GLuint mDepthId, mColorId, mStencilId;
-						
-			float mClearColor[4];		///< clear color for bind()
-			float mClearDepth;          ///< clear depth for unbind()
-			
-			bool mAutoClear;  
-			
-			//for reading
-			
-		
-		public:
-		
-			FBO();
             
-			   /// Get GL status
-			GLenum status();
+      float mClearColor[4];    ///< clear color for bind()
+      float mClearDepth;          ///< clear depth for unbind()
+      
+      bool mAutoClear;  
+      
+      //for reading
+      
+    
+    public:
+    
+        FBO();
+            
+        /// Get GL status
+        GLenum status();
 
-            //Create From Texture Parameters
-            FBO( Texture& t, GL::ATTACH att = GL::COLOR);
-			
-            void generate();
+        //Create From Texture Parameters
+        FBO( Texture& t, GL::ATTACH att = GL::COLOR);
+      
+        void generate();
         
-			GLuint id() const { return mId; }
-			
-			void bind(){
-				glBindFramebuffer(GL_FRAMEBUFFER, mId);
+        GLuint id() const { return mId; }
+      
+        void bind(){
 
-			    GL::error("FBO BIND");
-			}
-			void unbind() {
+          glBindFramebuffer(GL_FRAMEBUFFER, mId);
+          GL::error("FBO BIND");
+        }
+      
+        void unbind() {
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);  
-
-				GL::error("FBO UNBIND"); 
-            }			
+              GL::error("FBO UNBIND"); 
+        }      
             
-            //attach to texture
-            void init();
-            void init(Texture*, GL::ATTACH = GL::COLOR);
-			
- 
+        //attach to texture
+        void init();
+        void init(Texture*, GL::ATTACH = GL::COLOR);
+      
         
-			void attachRenderBuffer(int width, int height, GL::ATTACH = GL::COLOR );
-            GLint attachTextureBuffer(int width, int height, GL::ATTACH = GL::COLOR );
+        void attachRenderBuffer(int width, int height, GL::ATTACH = GL::COLOR );
+            
+        GLint attachTextureBuffer(int width, int height, GL::ATTACH = GL::COLOR );
         
-			void attachment(GL::ATTACH g) { mAttachment = g; }
+        void attachment(GL::ATTACH g) { mAttachment = g; }
             
             /// Get Number of Attachments
             int numAttachments() const { return mNumAttachments; }
             int& numAttachments() { return mNumAttachments; }
            
             /// Set Clear Color 
-			void clearColor(float r, float g, float b, float a) {
-				mClearColor[0] = r; mClearColor[1] = g;
-				mClearColor[2] = b; mClearColor[3] = a;
-			}
+            void clearColor(float r, float g, float b, float a) {
+              mClearColor[0] = r; mClearColor[1] = g;
+              mClearColor[2] = b; mClearColor[3] = a;
+            }
 
             //typically att = GL::DEPTH
             void attach(const RBO& rbo, GL::ATTACH att){
                 bind();    
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, att, GL_RENDERBUFFER, rbo.id());  
-              	GL::error("FBO RenderBuffer"); 
+                GL::error("FBO RenderBuffer"); 
                 mNumAttachments += 1;
                 unbind();
             }
 
             //typically att = GL::COLOR, note exception for cubemap
             void attach(const Texture& t, GL::ATTACH att = GL::COLOR){
-               	bind();
+                 bind();
                 glFramebufferTexture2D(GL_FRAMEBUFFER, att, t.target(), t.idx(), 0);   
-				GL::error("FBO texture attach");  
+                GL::error("FBO texture attach");  
                 unbind();
             }
             
             void attachCubeMap(const Texture& t, GL::ATTACH att = GL::COLOR){
-               	bind();
+                 bind();
                 for (int i = 0; i < 6; ++i){
                     glFramebufferTexture2D(GL_FRAMEBUFFER, att+i, GL::CUBEMAPX+i, t.idx(), 0);
                 }
@@ -185,7 +185,7 @@ namespace gfx {
             }
 
             /// should be an operation GLOB :: Attach ( )...
-			static void Attach(FBO*, Texture*,  GL::ATTACH);
+            static void Attach(FBO*, Texture*,  GL::ATTACH);
             
             static const GLint Current(){
                 GLint tmp_id;
@@ -194,10 +194,10 @@ namespace gfx {
             }
             
             static const void Unbind(){
-                    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    GL::error("FBO unbind");
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                GL::error("FBO unbind");
             }
-			
+      
             static const GLuint Gen(){
                 GLuint tmp;
                 glGenFramebuffers(1, &tmp);
@@ -215,165 +215,164 @@ namespace gfx {
                 glDiscardFramebufferEXT(GL_FRAMEBUFFER, 1, (GLenum*)t);
             #endif
             } 
-
-			
-	};           
-	
+      
+  };           
+  
    inline FBO :: FBO() : 
-	mAutoClear(true),
-	mId(0),
-	mWidth(0),
-	mHeight(0),
-	mNumAttachments(0),
-	mAttachment(GL::COLOR),
-	mClearDepth(1)
-	{
-		clearColor(0,0,0,1);
-	    generate();
-	}
+   mAutoClear(true),
+   mId(0),
+   mWidth(0),
+   mHeight(0),
+   mNumAttachments(0),
+   mAttachment(GL::COLOR),
+   mClearDepth(1)
+   {
+     clearColor(0,0,0,1);
+     generate();
+   }
 
-	inline FBO :: FBO(Texture& texture, GL::ATTACH att) : 
-	mAutoClear(true),
-	mId(0),
-	mWidth(0),
-	mHeight(0),
-	mNumAttachments(0),
-	mAttachment(att),
-	mClearDepth(1)
-	{
-		clearColor(0,0,0,1);
-	    init(&texture, att);
-	}
+  inline FBO :: FBO(Texture& texture, GL::ATTACH att) : 
+  mAutoClear(true),
+  mId(0),
+  mWidth(0),
+  mHeight(0),
+  mNumAttachments(0),
+  mAttachment(att),
+  mClearDepth(1)
+  {
+    clearColor(0,0,0,1);
+      init(&texture, att);
+  }
 
-	inline void FBO :: init(){
-	    generate();
-	    bind();
-	}
+  inline void FBO :: init(){
+      generate();
+      bind();
+  }
 
-	//Init from Texture or elsewhere
-	inline void FBO :: init(Texture *t, GL::ATTACH att) {
+  //Init from Texture or elsewhere
+  inline void FBO :: init(Texture *t, GL::ATTACH att) {
 
-	    mAttachment = att;
+      mAttachment = att;
 
-		mWidth = t->width();
-		mHeight = t->height();
+    mWidth = t->width();
+    mHeight = t->height();
 
-	    generate();
+      generate();
 
-		Attach(this, t, mAttachment);	
+    Attach(this, t, mAttachment);  
 
-		attachRenderBuffer(mWidth, mHeight, att);
-	}
+    attachRenderBuffer(mWidth, mHeight, att);
+  }
 
-	inline void FBO :: generate(){
-	    glGenFramebuffers(1, &mId);
-	    GL::error("FBO Generate");    
-	}
+  inline void FBO :: generate(){
+      glGenFramebuffers(1, &mId);
+      GL::error("FBO Generate");    
+  }
 
    
-	inline void FBO :: attachRenderBuffer(int width, int height, GL::ATTACH type) {
+  inline void FBO :: attachRenderBuffer(int width, int height, GL::ATTACH type) {
 
-	    GLuint * tIdx;
+      GLuint * tIdx;
 
-	    GL::IFORMAT tFormat;
-	    GL::ATTACH tAttach;
+      GL::IFORMAT tFormat;
+      GL::ATTACH tAttach;
 
-	    switch (type){
-	        case GL::DEPTH:
-	            tIdx = &mDepthId;
-	            tFormat = GL::DEPTHCOMP;
-	            tAttach = GL::DEPTH;
-	            break;
-	        case GL::STENCIL:
-	            tIdx = &mStencilId;
-	            tFormat = GL::STENCILIDX;
-	            tAttach = GL::STENCIL;            
-	            break;
-	        case GL::COLOR:
-	            tIdx = &mColorId;
-	            tFormat = GL::RGBA4;
-	            tAttach = GL::COLOR;
-	            break;
-	    }
+      switch (type){
+          case GL::DEPTH:
+              tIdx = &mDepthId;
+              tFormat = GL::DEPTHCOMP;
+              tAttach = GL::DEPTH;
+              break;
+          case GL::STENCIL:
+              tIdx = &mStencilId;
+              tFormat = GL::STENCILIDX;
+              tAttach = GL::STENCIL;            
+              break;
+          case GL::COLOR:
+              tIdx = &mColorId;
+              tFormat = GL::RGBA4;
+              tAttach = GL::COLOR;
+              break;
+      }
 
-		// generate a new renderbuffer at tIdx
-		glGenRenderbuffers(1, tIdx);
-		glBindRenderbuffer(GL_RENDERBUFFER, *tIdx);
+    // generate a new renderbuffer at tIdx
+    glGenRenderbuffers(1, tIdx);
+    glBindRenderbuffer(GL_RENDERBUFFER, *tIdx);
 
-	    //allocate storage
-		glRenderbufferStorage(GL_RENDERBUFFER, tFormat, width, height);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      //allocate storage
+    glRenderbufferStorage(GL_RENDERBUFFER, tFormat, width, height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	    //Bind in this and attach to render buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, mId);    
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, tAttach, GL_RENDERBUFFER, *tIdx);
+      //Bind in this and attach to render buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, mId);    
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, tAttach, GL_RENDERBUFFER, *tIdx);
 
-	    mNumAttachments += 1;
+      mNumAttachments += 1;
 
-	}
+  }
 
-	inline GLint FBO :: attachTextureBuffer(int width, int height, GL::ATTACH type) {
+  inline GLint FBO :: attachTextureBuffer(int width, int height, GL::ATTACH type) {
 
-	    GLuint * tIdx;
+      GLuint * tIdx;
 
-	    GL::IFORMAT tFormat;
-	    GL::ATTACH tAttach;
+      GL::IFORMAT tFormat;
+      GL::ATTACH tAttach;
 
-	    switch (type){
-	        case GL::DEPTH:
-	            tIdx = &mDepthId;
-	            tFormat = GL::DEPTHCOMP;
-	            tAttach = GL::DEPTH;
-	            break;
-	        case GL::STENCIL:
-	            tIdx = &mStencilId;
-	            tFormat = GL::STENCILIDX;
-	            tAttach = GL::STENCIL;            
-	            break;
-	        case GL::COLOR:
-	            tIdx = &mColorId;
-	            tFormat = GL::RGBA4;
-	            tAttach = GL::COLOR;
-	            break;
-	    }
+      switch (type){
+          case GL::DEPTH:
+              tIdx = &mDepthId;
+              tFormat = GL::DEPTHCOMP;
+              tAttach = GL::DEPTH;
+              break;
+          case GL::STENCIL:
+              tIdx = &mStencilId;
+              tFormat = GL::STENCILIDX;
+              tAttach = GL::STENCIL;            
+              break;
+          case GL::COLOR:
+              tIdx = &mColorId;
+              tFormat = GL::RGBA4;
+              tAttach = GL::COLOR;
+              break;
+      }
 
-	    GLint texid = Texture::Gen(mWidth, mHeight, tFormat);
+      GLint texid = Texture::Gen(mWidth, mHeight, tFormat);
 
-	    //Bind in this and attach to render buffer
-	    glBindFramebuffer(GL_FRAMEBUFFER, mId);    
-	    glFramebufferTexture2D(GL_FRAMEBUFFER, tAttach, GL_TEXTURE_2D, texid, 0); 
-	 	GL::error("FBO ATTACH"); 
-	    mNumAttachments += 1;
-	    return texid;
+      //Bind in this and attach to render buffer
+      glBindFramebuffer(GL_FRAMEBUFFER, mId);    
+      glFramebufferTexture2D(GL_FRAMEBUFFER, tAttach, GL_TEXTURE_2D, texid, 0); 
+     GL::error("FBO ATTACH"); 
+      mNumAttachments += 1;
+      return texid;
 
-	}
+  }
 
-	inline GLenum FBO :: status() {
-		GLenum stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	    if (stat != GL_FRAMEBUFFER_COMPLETE){
-	        printf("fbo fail/n");
-	    }
-	    return stat;
-	}
+  inline GLenum FBO :: status() {
+    GLenum stat = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      if (stat != GL_FRAMEBUFFER_COMPLETE){
+          printf("fbo fail/n");
+      }
+      return stat;
+  }
 
-	//Attaches texture t to framebuffer f at buffer _buf (color, depth, etc)
+  //Attaches texture t to framebuffer f at buffer _buf (color, depth, etc)
    inline void FBO :: Attach(FBO *f, Texture *t, GL::ATTACH _buf) {
-		//call forth buffer
-		glBindFramebuffer(GL_FRAMEBUFFER, f->id());
-		//wipe out texture
-		t->nullBind();
-		//attach
-		glFramebufferTexture2D(GL_FRAMEBUFFER, _buf, t->target(), t->idx(), 0);
-		//back
-		t->unbind();
-		//increment attachments of FBO
-		f -> numAttachments() += 1;
+    //call forth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, f->id());
+    //wipe out texture
+    t->nullBind();
+    //attach
+    glFramebufferTexture2D(GL_FRAMEBUFFER, _buf, t->target(), t->idx(), 0);
+    //back
+    t->unbind();
+    //increment attachments of FBO
+    f -> numAttachments() += 1;
     //check for errors
-	  GL::error("FBO ATTACH");
-	}  
-	
+    GL::error("FBO ATTACH");
+  }  
+  
  
-	
+  
 
 } // ctl::
 

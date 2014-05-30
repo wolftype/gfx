@@ -24,16 +24,16 @@
 
 namespace gfx{
 
- 	  /// MONITORS Row-Column GRID layout, use 1 x 1 for a single screen
+     /// MONITORS Row-Column GRID layout, use 1 x 1 for a single screen
     struct Layout{  
   
-      ///Constructor defaults width of 21.5 and height of 14.5 (asus)	
+      ///Constructor defaults width of 21.5 and height of 14.5 (asus)  
       Layout( int M, int N, float w = 21.5, float h = 14.5, float wb = 1.0, float hb = 1.0) :
       numRow(M), numCol(N), screenWidth(w), screenHeight(h), wPitch(wb), hPitch(hb) {}
     
       int numRow; int numCol;                 ///< Number of Rows and Columns in Multidisplay
-      float screenWidth; float screenHeight; 	///< Width of individual screens in inches
-      float wPitch; float hPitch;  			      ///< Bezel
+      float screenWidth; float screenHeight;   ///< Width of individual screens in inches
+      float wPitch; float hPitch;              ///< Bezel
 
       Vec3f speakerL, speakerR;               ///< Speaker positions      
     
@@ -62,10 +62,10 @@ namespace gfx{
          
       //absolute (GL coord) position of right speaker on M, N monitor
       float bottom(int M, int N){
-        return - totalHeight() / 2.0 + M * screenHeight + M * hPitch;
+        return totalHeight() / 2.0 - M * screenHeight + M * hPitch;
       }
-		
-	};
+    
+  };
 
 
 } //gfx::
