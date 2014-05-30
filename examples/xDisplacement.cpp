@@ -41,21 +41,10 @@ struct Displacement : public Process {
     virtual void init(){
      initShader();
 
-    int w = 40; int h = 20;
-    float tw = w * spacing; float th = h * spacing;
-
-    Vec3f * vec = new Vec3f[w*h];
-
-    for (int i=0; i<w; ++i){
-      float u = -tw/2.0 + (float)i/w * tw;
-      for (int j=0; j<h; ++j){
-       float v = -th/2.0 + (float)i/h * th;
-         vec[i*h+j] = Vec3f(u,v,0);
-      }  
-    }
-
   //  Mesh m = Mesh::UV(vec, w, h);
-    grid = new MBO( Mesh::HexaGrid(width,height, .2) );// Mesh::Grid2D(w,h,.1) );//
+    grid = new MBO( Mesh::HexaGrid(width,height,spacing) );//Mesh::Grid2D(width,height,spacing) );//
+    grid -> mode = GL::LS;
+    // Mesh::Grid2D(w,h,.1) );//
    }
 
    virtual void initShader(){
@@ -121,7 +110,7 @@ struct MyProcess : public Process {
 
   void operator()(){
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     r2t();        // Render to Offscreen Texture 
 
@@ -140,7 +129,8 @@ struct MyProcess : public Process {
     }
     else {
       slab.texture->bind();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glLineWidth(1);
         dispmap();
       slab.texture->unbind();
     }
@@ -167,7 +157,7 @@ struct MyApp : public App<Window> {
     grid = new MBO( Mesh::Grid2D(40,40,.1) );
 
     cout <<  Window::window().width() << " WIDTH " << endl;
-    process = new MyProcess( Window::window().width(), Window::window().height(), this );
+    process = new MyProcess( Window::window().width()/10, Window::window().height()/10, this );
   }
 
   virtual void update(){

@@ -360,7 +360,7 @@ namespace gfx {
         }    
     
         template<class T>
-        static Mesh UV( T* p, int w, int h, int tw =1, int th =1);
+        static Mesh UV( T* p, int w, int h, float tw =1, float th =1);
 
         static Mesh Point(float x, float y, float z);
 
@@ -450,7 +450,7 @@ namespace gfx {
     return m;
   }
     template<class T>
-    inline Mesh Mesh::UV( T* p, int w, int h, int tw, int th){
+    inline Mesh Mesh::UV( T* p, int w, int h, float tw, float th){
       Mesh m;
 
       //MESH ORDER FOR TRIANGLE STRIP
@@ -461,9 +461,13 @@ namespace gfx {
           int b = a + h;
 
           Vertex va(p[a][0], p[a][1], p[a][2]);
-          va.Tex = Vec2f(p[a][0] / tw, p[a][1] / th );
+          va.Tex = Vec2f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th );
+         // cout << va.Tex << endl; 
+          //va.Col = Vec4f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th, 1- ( p[a][0] + tw/2.0) /tw, 1 );
           Vertex vb(p[b][0], p[b][1], p[b][2]);
-          vb.Tex = Vec2f(p[b][0] / tw, p[b][1] / th );
+          va.Tex = Vec2f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th );
+          //va.Col = Vec4f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th, 1- ( p[b][0] + tw/2.0) /tw, 1 );
+
           m.add( va ).add();
           m.add( vb ).add(); 
         }
@@ -495,6 +499,9 @@ namespace gfx {
     
 
    inline Mesh Mesh::HexaGrid(int w, int h, float spacing){
+
+   // Mesh m;
+
     float tw = spacing * w;
     float th = spacing * h;
 
@@ -510,7 +517,7 @@ namespace gfx {
       }  
     }
 
-    Mesh m = Mesh::UV(vec, w, h,tw,th);
+    Mesh m = Mesh::UV(vec, w, h,tw+spacing/2.0,th);
     delete[] vec;
     return m;
   }
