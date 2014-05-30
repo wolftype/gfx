@@ -219,22 +219,18 @@ namespace gfx{
         //And add a new frame on top
         renderer->render(); 
         
+        postProcess();
+
       fbo.unbind(); 
 
     }
 
-    void post(){
-     // fbo.attach(*textureB, GL::COLOR);
-      fbo.bind();
-        /* glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE); */ 
-        /* glViewport(0, 0, width, height ); */ 
-        /* glClearColor(0,0,0,1); */
-        /* glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-        
-        postProcess();
-
-      fbo.unbind();
-    }
+    /* void post(){ */
+    /*  // fbo.attach(*textureB, GL::COLOR); */
+    /*   fbo.bind(); */
+    /*     postProcess(); */
+    /*   fbo.unbind(); */
+    /* } */
 
     void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };
   };
@@ -246,47 +242,47 @@ namespace gfx{
    *  NO shader required for this step . . .
 
    */
-  /* struct RP2T : public Process { */ 
+  struct RP2T : public Process { 
     
-  /*   FBO fbo;                                    ///< A Framebuffer */
-  /*   Texture * textureA;                         ///< Texture into which to render */
-  /*   Texture * textureB;                         ///< Secondary Texture for swapping buffers */
+    FBO fbo;                                    ///< A Framebuffer
+    Texture * textureA;                         ///< Texture into which to render
+    Texture * textureB;                         ///< Secondary Texture for swapping buffers
 
-  /*   //Renderer * renderer; */
-  /*   Process * process; */
+    //Renderer * renderer;
+    Process * process;
 
-  /*   RP2T(int w, int h, Process * p = NULL) : Process(w,h), process(p) { init(); } */
+    RP2T(int w, int h, Process * p = NULL) : Process(w,h), process(p) { init(); }
     
-  /*   virtual void init(){ */
-  /*     cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; */ 
-  /*     //initialize texture */
-  /*     textureA = new Texture( width, height ); */
-  /*     textureB = new Texture( width, height ); */
+    virtual void init(){
+      cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; 
+      //initialize texture
+      textureA = new Texture( width, height );
+      textureB = new Texture( width, height );
 
-  /*     // Attach texture to FrameBuffer's ColorBuffer */  
-  /*     fbo.attach(*textureA, GL::COLOR); */          
-  /*   } */
+      // Attach texture to FrameBuffer's ColorBuffer  
+      fbo.attach(*textureA, GL::COLOR);          
+    }
 
-  /*   void operator()(){ */
-  /*     fbo.attach(*textureA, GL::COLOR); */  
-  /*     fbo.bind(); */               
+    void operator()(){
+      fbo.attach(*textureA, GL::COLOR);  
+      fbo.bind();               
       
-  /*       glViewport(0, 0, width, height ); */ 
-  /*       glClearColor(0,0,0,1); */
-  /*       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+        glViewport(0, 0, width, height ); 
+        glClearColor(0,0,0,1);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-  /*       //do any preprocessing in the stack (i.e. motion blur) */
-  /*       preProcess(); */
-  /*       //And add a new frame on top */
-  /*       (*process)(); */ 
-  /*       //do any postprocessing in the stack */
-  /*       postProcess(); */
+        //do any preprocessing in the stack (i.e. motion blur)
+        preProcess();
+        //And add a new frame on top
+        (*process)(); 
+        //do any postprocessing in the stack
+        postProcess();
         
-  /*     fbo.unbind(); */ 
-  /*   } */
+      fbo.unbind(); 
+    }
 
-  /*   void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  }; */
-  /* }; */
+    void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };
+  };
 
 
   /*!
