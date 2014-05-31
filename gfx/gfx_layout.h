@@ -49,20 +49,22 @@ namespace gfx{
       
       //gets Pose (bottom left corner) of Mth Row and Nth Col screen
       Pose poseOf( int M, int N){
+        cout << "BOTTOM " << left(M,N) << " " << bottom(M,N) << endl; 
+
         return Pose( 
           left(M,N),
           bottom(M,N), 
           0 );
       }  
       
-      //Absolute (GL coord) position of left speaker on M, N monitor 
+      //Absolute (and GL coord) position of left corner of M, N monitor 
       float left(int M, int N){
-        return - totalWidth() / 2.0 + N * screenWidth + N * wPitch;
+        return - totalWidth() / 2.0 + N * screenWidth + (N) * wPitch;
       }  
          
-      //absolute (GL coord) position of right speaker on M, N monitor
+      //absolute (and GL coord) position of right corner of M, N monitor
       float bottom(int M, int N){
-        return totalHeight() / 2.0 - M * screenHeight + M * hPitch;
+        return totalHeight() / 2.0 - ( M * screenHeight + (M) * hPitch ) - screenHeight;
       }
     
   };

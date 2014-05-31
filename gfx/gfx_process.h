@@ -168,6 +168,10 @@ namespace gfx{
        this->bind();
         update();
         texture->bind();
+            //don't repeat edge pixels
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
         this->line( *rect );
        texture -> unbind();
       this->unbind(); 

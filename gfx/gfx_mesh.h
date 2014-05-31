@@ -463,10 +463,10 @@ namespace gfx {
           Vertex va(p[a][0], p[a][1], p[a][2]);
           va.Tex = Vec2f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th );
          // cout << va.Tex << endl; 
-          //va.Col = Vec4f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th, 1- ( p[a][0] + tw/2.0) /tw, 1 );
+          va.Col = Vec4f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th, 1- ( p[a][0] + tw/2.0) /tw, 1 );
           Vertex vb(p[b][0], p[b][1], p[b][2]);
           va.Tex = Vec2f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th );
-          //va.Col = Vec4f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th, 1- ( p[b][0] + tw/2.0) /tw, 1 );
+          va.Col = Vec4f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th, 1- ( p[b][0] + tw/2.0) /tw, 1 );
 
           m.add( va ).add();
           m.add( vb ).add(); 

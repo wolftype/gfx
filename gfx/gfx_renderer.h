@@ -159,7 +159,9 @@ namespace gfx {
            layout.left( row, col ) + layout.screenWidth, 
           layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
        }
-      
+
+
+      scene.viewpose = p;
       scene.camera.pos() = Vec3f( 0, 0, z); 
       scene.camera.view = View( scene.camera.pos(), p, aspect, h );
 

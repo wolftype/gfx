@@ -148,38 +148,26 @@ namespace gfx{
 
     View(double _l, double _t, double _r, double _b) : l(_l), t(_t), r(_r), b(_b) {}
 
-    // View (Vec3f ta, Vec3f tb, Vec3f tc ) {
-    //   Vec3f x = tb - ta;
-    //   Vec3f u = tc - ta;
-    //   l = x.dot(ta);  //*n/d;
-    //   r = x.dot(tb);  //*n/d;
-    //   b = u.dot(ta);
-    //   t = u.dot(tc);
-    // }
-
     View (){}
 
-    //Views for multiscreen environments will typically have same eye
+    //Views for multiscreen environments will typically have same eye 
+    //CONSTRUCT (fed from renderer setview)
     View( Vec3f eye, const Pose& p, float aspect, float height = 1.0  ){
       Vec3f br = p.pos() + p.x() * height * aspect; 
       Vec3f tl = p.pos() + p.y() * height ;
       set( eye, p.pos(), br, tl, p.z() );  
+      bottomright = br;
+      topleft = tl;
+      topright = tl + Vec3f(height*aspect,0,0);
+      bottomleft = br - Vec3f(height*aspect,0,0);
     }
 
-    //Views for multiscreen environments will typically have same eye -- center
-    // View( int w, int h, Vec3f eye, float screenAspect, float screenHeight  ){
-    //   Vec3f xoff = c.x() * screenHeight/2.0 * aspect;
-    //   Vec3f yoff = c.y() * height/2.0;
-    //   Vec3f bl = c.pos() - xoff - yoff; 
-    //   Vec3f br = c.pos() + xoff - yoff;
-    //   Vec3f tl = c.pos() + c.y() * height ;
-    //   set( eye, bl, br, tl, c.z() );  
-    // }
 
     View ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal  = Vec3f(0,0,1) ) {
       set( eye,bl,br,tl,normal );
     }  
 
+    //SET FUNC
     View& set ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal = Vec3f(0,0,1) ) {
 
       Vec3f ta = bl - eye; Vec3f tb = (br - eye); Vec3f tc = (tl -eye);
@@ -193,13 +181,11 @@ namespace gfx{
       b = u.dot(ta) / d;
       t = u.dot(tc) / d;
 
-
-      //cout << "View INIT\n DIST: " << d << "\n" << ta << tb << tc << endl; 
-
       return *this;
     }      
 
     float l, t, r, b;
+    Vec3f topleft, topright, bottomleft, bottomright;
 
   };
 
@@ -242,6 +228,8 @@ namespace gfx{
      Camera camera;
      MPose model;
      XformMat xf; 
+
+     Pose viewpose;  
 
      Vec3f light;
      
