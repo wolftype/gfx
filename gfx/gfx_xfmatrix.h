@@ -126,8 +126,9 @@ namespace gfx{
         // static Mat4f rot( Rot );
         static Mat4f rotXY(float rad) ;
 
-        template< typename T> static Mat4f trans(T v);
+        template<typename T> static Mat4f trans(T v);
         template<typename T> static Mat4f trans(T x, T y, T z);
+        template<typename T> static Mat4f translateScale2D( const T& v, float s);
 
 
 		// template< typename T> inline static Mat4f& trans( Mat4f& m, T v){
@@ -343,6 +344,20 @@ namespace gfx{
             x, y, z, 1
         );    
     }
+
+     /*!
+         4x4 Transformation Matrix From Translation Vector, and Scale
+        */
+        template<typename T>
+        inline Mat4f XMat::translateScale2D( const T& v, float s) {
+                    
+            double x = v[0]; double y = v[1]; double z = 0;// v[2];
+  
+            return gfx::Mat4f( s , 0 , 0 , 0, 
+                               0 , s , 0 , 0,
+                               0 , 0 , s , 0,
+                               x , y , z , 1 );
+        }
     
 //    template< typename T>
 //    inline Mat4f XMat::rts( const Rot& r, const Vec& v, double scale s){
