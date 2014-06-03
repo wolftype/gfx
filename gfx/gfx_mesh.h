@@ -369,7 +369,9 @@ namespace gfx {
 
         template<class T>
         static Mesh Points(T* p, int num);  
-    
+        
+        static Mesh Points(int num);      
+        
         template<class T>
         static Mesh Points(std::vector<T> p);
         
@@ -549,6 +551,19 @@ namespace gfx {
     m.store();    
     return m;
   } 
+
+  inline Mesh Mesh::Points(int num){
+    cout << "NUM POINTS: " << num << endl; 
+    Mesh m;
+    for (int i = 0; i < num; ++i){
+      float u = (float)i/num * 10;
+      m.add(u,5,0).add();
+    }
+    m.mode( GL::P );    
+    m.store();    
+    return m;
+  } 
+
   
   inline Mesh Mesh::Contour(int num){
     Mesh m;
