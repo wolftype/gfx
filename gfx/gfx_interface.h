@@ -12,6 +12,9 @@ namespace gfx{
   
    struct MouseData {
 
+
+        MouseData() : isDown(false), isMoving(false), newClick(false){}
+
         enum  {
             Up = 1, Down, Left, Right
         };
