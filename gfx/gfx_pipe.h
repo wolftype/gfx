@@ -172,7 +172,13 @@ namespace gfx{
                 program -> uniform("projection",  xf.proj);
                 program -> uniform("normalMatrix", xf.normal);  
                 program -> uniform("modelView",  xf.modelView );     
-          }   
+          }  
+          
+          void bindModelView( const Mat4f& mat ){
+              static float mv[16];
+              mat.fill(mv);
+              program -> uniform("modelView", mv);
+          }
           
           void bind(){
             program -> bind();

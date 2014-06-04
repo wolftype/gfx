@@ -160,10 +160,14 @@ vec3 doVertex(vec4 p, vec2 tex){
 
 void main(void){
    
-  colorDst = vec4(1,0,0,1);//sourceColor;// + doColor();       
+
+
+  colorDst = vec4(1,0,0,1);      
   texco = texCoord;
+  
   vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
-                       
+  vec4 colorFalse = doColor();
+                         
   gl_PointSize = 5.0;
   gl_Position = vec4(doVertex(sourceColor,texco),1.0);
 
