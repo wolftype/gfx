@@ -37,8 +37,8 @@ using namespace std;
  */
 struct Glut {
 
-  static Glut& Initialize(int argc, char ** argv){
-    static Glut TheGlutInstance(argc,argv);
+  static Glut& Initialize(){
+    static Glut TheGlutInstance;
     return TheGlutInstance; 
   }
 
@@ -47,7 +47,10 @@ struct Glut {
   }
 
   private:
-    Glut(int argc, char ** argv){
+    Glut(){
+      int argc = 1;
+      char c[] = {'G','F','X'};
+      char * argv[] = {c,NULL};
       glutInit(&argc,argv);
       glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     }
@@ -89,8 +92,6 @@ struct Window {
   static int Create(APPLICATION * _app, 
                     int w, int h, int offsetW = 0, int offsetH = 0){
     
-    //Glut::Initialize(0,"");
-
 
     int id = glutCreateWindow("glut");
     cout <<"INITIALIZING WINDOW " << id << " " <<  w << " " << h << endl;  
@@ -141,6 +142,7 @@ struct Window {
   static void SwapBuffers(){
     glutSwapBuffers();
   }
+
 
   template<class APPLICATION>
   static void Reshape(int width, int height){

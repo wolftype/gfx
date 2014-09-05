@@ -62,7 +62,7 @@ namespace gfx {
 			void unbind() const;
             
             
-            void set(GL::PARAM a, GL::PARAM b); ///< Set param named a to param b of this texture target
+      void set(GL::PARAM a, GL::PARAM b); ///< Set param named a to param b of this texture target
             
 			void setDefaultParam();	///< set parameters
 			

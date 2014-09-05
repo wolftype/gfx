@@ -56,7 +56,8 @@ namespace gfx {
             { }
       
 //            VBO(GLvoid * udata, int num,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC);
-            VBO(GLvoid * udata, int num, GLsizeiptr s, GL::BUFFER b = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC)
+            VBO(GLvoid * udata, int num, GLsizeiptr s, 
+                GL::BUFFER b = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC)
             : mId(0),
             mType(GL::USHORT),
             mFormat(GL::RGB), 
