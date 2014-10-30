@@ -146,9 +146,9 @@ namespace gfx{
   
   struct View {   
 
-    View(double _l, double _t, double _r, double _b) : l(_l), t(_t), r(_r), b(_b) {}
+    View(double _l=-1, double _t=1, double _r=1, double _b=-1) : l(_l), t(_t), r(_r), b(_b) {}
 
-    View (){}
+   // View (){}
 
     //Views for multiscreen environments will typically have same eye 
     //CONSTRUCT (fed from renderer setview)
@@ -227,18 +227,18 @@ namespace gfx{
 
      Camera camera;
      MPose model;
-     XformMat xf; 
+     XformMat xf;
+    // float mv[16];
 
      Pose viewpose;  
-
      Vec3f light;
      
-    Scene() : camera(0,0,5), light(3,3,3) {} 
+     Scene() : camera(0,0,5), light(3,3,3) {} 
       
-    void fit(int w, int h){
-      camera.lens.width( w ); 
-      camera.lens.height( h );   
-    } 
+     void fit(int w, int h){
+       camera.lens.width( w ); 
+       camera.lens.height( h );   
+     } 
     
     void resize(int _w, int _h){
       float w = (float)_w/100;
@@ -272,11 +272,12 @@ namespace gfx{
         copy(tnorm.val(), tnorm.val() + 16, xf.normal);
        
         xf.toDoubles();
+        //xf.fill(mv);
       } 
 
-    void onFrame(){
-      updateMatrices();         
-    }    
+     void onFrame(){
+       updateMatrices();         
+     }    
     
                                  
     // FIXED FUNCTION PIPELINE  

@@ -5,6 +5,8 @@
 /*
 
     Vertex Attribute Data
+
+      id, 
 */
 
 //  Created by Pablo Colapinto on 10/25/12.
@@ -18,66 +20,62 @@
 
 namespace gfx {
 
-   class VAttrib {
+   class VertexAttrib {
       
-    public:  
-        VAttrib() : bNormal(GL_FALSE), mStride(0), mData(NULL) {}
+    public:
+     
+        VertexAttrib() : bNormal(GL_FALSE),  mData(NULL) {}
         
-        //Pass in a ShaderProgramID, attribute name, and packing
-        VAttrib( GLuint s, string attrib, GLsizei stride, GLint size = 3 ) 
-        : bNormal(GL_FALSE), mStride(stride), mData(NULL), mSize(size) {
-            
+        //Pass in a ShaderProgramID, attribute name as written in shader, and packing
+        VertexAttrib( GLuint s, string attrib, GLsizei stride, GLvoid * data = NULL ) 
+        : bNormal(GL_FALSE), mStride(stride), mData(data) {            
             get(s, attrib);
+            enable();
+            pointer();
         }
-        
-        void set(GLuint s, string attrib, GLsizei stride, GLint size, GLvoid * data = NULL){
+
+        void set(GLuint s, string attrib, GLsizei stride, GLvoid * data = NULL){
             mStride = stride;
             mData = data;
-            mSize = size;
             get(s, attrib);
+            enable();
+            pointer();
         }
         
         void att(const Attribute& a) { mAtt = a; }
         
         void get( GLuint sprog, string attrib) {
 
-            printf("VATTRIB GETS\n");
-            printf("program: %d string: %s \n", sprog, attrib.c_str());
-            
-//            mAtt.id = glGetAttribLocation(sprog, attrib.c_str()); 
-            
             mAtt.getAttrib(sprog, attrib.c_str());
-
-//            mAtt.print();
-            
             mSize = GL::cmp(mAtt.vectype);
-            cout << "components: " << mSize << endl;
             
             GL::error("get vertex attribute");
                         
         }
         
-        void normal( GLboolean b)   { bNormal = b; }
-        void stride(GLsizei s)      { mStride = s; }        
-        void data(void * udata)     { mData = (GLvoid*) udata; }
-        
         void enable()   {   glEnableVertexAttribArray( mAtt.id );  GL::error("enable vattrib"); }
         void disable()  {   glDisableVertexAttribArray( mAtt.id ); GL::error("disable vattrib");}
-        
-        static void draw(int n, GL::MODE = GL::LL);
-        static void drawElements(int n, void * ptr, GL::MODE, GL::TYPE = GL::UBYTE);
 
+        //Data is not sent here, just pointed to
         void pointer(){
             glVertexAttribPointer(mAtt.id, mSize, mAtt.datatype, bNormal, mStride, mData);  
             GL::error("pointer");
         }
 
-        void pointer(GLuint offset){
-            glVertexAttribPointer(mAtt.id, mSize, mAtt.datatype, bNormal, mStride, (GLvoid*) offset);  
-            GL::error("pointer");
-        }
+        /* void pointer(GLuint offset){ */
+        /*     glVertexAttribPointer(mAtt.id, mSize, mAtt.datatype, bNormal, mStride, (GLvoid*) offset); */  
+        /*     GL::error("pointer"); */
+        /* } */
+
+        /* static void draw(int n, GL::MODE = GL::LL); */
+        /* static void drawElements(int n, void * ptr, GL::MODE, GL::TYPE = GL::UBYTE); */
         
         GLuint id() const { return mAtt.id; }
+        
+        //setters
+        void normal( GLboolean b)   { bNormal = b; }
+        void stride(GLsizei s)      { mStride = s; }        
+        void data(void * udata)     { mData = (GLvoid*) udata; }
         
     private:
         
@@ -90,22 +88,44 @@ namespace gfx {
         Attribute mAtt;
     };
 
-    inline void VAttrib::draw(int n, GL::MODE mode) { 
-        glDrawArrays(mode, 0, n); 
-        GL::error("vattrib draw");
-    }
+    struct VertexAttributes {
+        
+        vector<VertexAttrib> vatt;
+        
+        void add(GLuint id, string name, GLsizei stride, GLvoid * offset ){
+          vatt.push_back( VertexAttrib(id,name,stride,offset) );
+        }
+              
+          void enable(){
+            for (int i=0;i<vatt.size();++i){
+              vatt[i].enable();
+              vatt[i].pointer();
+            }
+          }
 
-    inline void VAttrib::drawElements(int n, void * ptr, GL::MODE mode, GL::TYPE t ) { 
-        glDrawElements(mode, n, t, ptr ); 
-        GL::error("vattrib drawelements");
-    }
-    
-    struct VAttrib4{
-        VAttrib pos, norm, col, tex;
-        void enable() { pos.enable(); norm.enable(); col.enable(); tex.enable(); }
-        void disable() { pos.disable(); norm.disable(); col.disable(); tex.disable(); }
-        void pointer() { pos.pointer();  norm.pointer(); col.pointer(); tex.pointer(); }
+          void disable(){
+            for (int i=0;i<vatt.size();++i){
+              vatt[i].disable();
+            }
+          }
     };
+
+    /* inline void VAttrib::draw(int n, GL::MODE mode) { */ 
+    /*     glDrawArrays(mode, 0, n); */ 
+    /*     GL::error("vattrib draw"); */
+    /* } */
+
+    /* inline void VAttrib::drawElements(int n, void * ptr, GL::MODE mode, GL::TYPE t ) { */ 
+    /*     glDrawElements(mode, n, t, ptr ); */ 
+    /*     GL::error("vattrib drawelements"); */
+    /* } */
+    
+    /* struct VAttrib4{ */
+    /*     VAttrib pos, norm, col, tex; */
+    /*     void enable() { pos.enable(); norm.enable(); col.enable(); tex.enable(); } */
+    /*     void disable() { pos.disable(); norm.disable(); col.disable(); tex.disable(); } */
+    /*     void pointer() { pos.pointer(0);  norm.pointer(0); col.pointer(0); tex.pointer(0); } */
+    /* }; */
     
 } //ctl::
 

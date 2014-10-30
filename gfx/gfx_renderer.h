@@ -100,8 +100,8 @@ namespace gfx {
     }
        
     // Subclassed Application or Window must define onDraw and onFrame
-    virtual void onDraw() = 0;
-    virtual void onFrame() = 0;  
+    /* virtual void onDraw() = 0; */
+    /* virtual void onFrame() = 0; */  
     
     virtual void onResize(int w, int h){
       if (!bImmediate){
@@ -114,16 +114,17 @@ namespace gfx {
 
     }
    
-    void drawFunc(){
-      if (bImmediate) onDraw();
-      else onFrame();
-    }
+    /* void drawFunc(){ */
+    /*   if (bImmediate) onDraw(); */
+    /*   else onFrame(); */
+    /* } */
 
-    virtual void render(){
+    template<class APPLICATION>
+    virtual void render(APPLICATION * app){
         scene.updateMatrices();
         mvm = scene.xf.modelViewMatrixf();
         pipe.bind( scene.xf );
-          onDraw();       
+          app -> onDraw();       
         pipe.unbind();  
     }
 

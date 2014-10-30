@@ -7,52 +7,143 @@
 #define  gfx_process_INC
 
 
-#include "gfx_renderer.h"
+//#include "gfx_pipe.h"
+#include "gfx_glsl.h"
+#include "gfx_shader.h"
+#include "gfx_scene.h"
 
 namespace gfx{
+
     
+
   /*!
-   *  A Rendering PROCESS is a type of GRAPHICS PIPELINE meant to throw together
+   *  A Rendering PROCESS is meant to throw together
    *  easy experiments in shader and rendering to textures, etc
+   *  Usually contain a shader program and pre or post processes.
    */
-  struct Process : public Pipe {
+  struct Process {      
       
-      Process(int w, int h, Renderer * r = NULL) : 
-      Pipe(), bEnable(true), width(w), height(h), renderer(r), bES(false) {
+      /// Pass in width and height in pixels and optional parent
+      Process(int w, int h, Process * r = NULL) : 
+      bEnable(true), 
+      width(w), height(h), 
+      parent(r), 
+      bES(false) {
         #ifdef GFX_USE_GLES
-          cout << "PROCESS USES GLES" << endl;
           bES = true;
         #endif  
       }
 
       virtual ~Process(){};
 
-      bool bES;                     ///< Boolean use GL or GLES
+      Process * parent;                                           ///< Pointer to Parent Process
 
-      int width, height;            ///< Number of Pixels Width and Height
+      bool bES;                                                   ///< Use GL or GLES
 
-      Renderer * renderer;          ///< Pointer to Parent Renderer (which has the onFrame<T>(T&context) method)
+      int width, height;                                          ///< Pixels Width and Height
 
-      bool bEnable;                 ///< Enable this Process
+      bool bEnable;                                               ///< Enable this Process
      
-      vector<Process*> mPre;        ///< List of Pre-Processing steps
-      vector<Process*> mPost;       ///< List of Post-Processing steps
+      vector<Process*> mPre;                                      ///< List of Pre-Processing steps
+      vector<Process*> mPost;                                     ///< List of Post-Processing steps
 
-      void pre(Process& p) { mPre.push_back(&p); }     ///< Add Pre-Processing step
-      void post(Process& p) { mPost.push_back(&p); }   ///< Add Post-Processing step
+      void pre(Process& p) { mPre.push_back(&p); }                ///< Add a Pre-Processing step
+      void post(Process& p) { mPost.push_back(&p); }              ///< Add a Post-Processing step
 
-      void preProcess(){ for (auto& i : mPre ) (*i)(); }            ///< Execute Pre-Processing steps
-      void postProcess(){ for (auto& i : mPost ) (*i)(); }          ///< Execute Post-Processing steps
+      void preProcess(){ for (auto& i : mPre ) (*i)(); }          ///< Execute Pre-Processing steps
+      void postProcess(){ for (auto& i : mPost ) (*i)(); }        ///< Execute Post-Processing steps
 
       virtual void init() = 0;
       virtual void operator()() = 0;
 
   };
 
+  struct Renderer : public Process {
+
+      ShaderProgram * program;
+      VertexAttributes vatt;
+
+      ///Default initialization
+      virtual void init(){
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+          
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          
+        glLineWidth(5);
+      
+        string V = bES ? DefaultVertES : DefaultVert;        ///< These basic shaders are defined in gfx_glsl.h 
+        string F = bES ? DefaultFragES : DefaultFrag; 
+              
+        program = new ShaderProgram(V,F,0);                 ///< The 0 here means load directly from string, not from file
+                                                            ///< Bind all vertex attributes
+                                                            
+        //Specify Attributes (name, size of container, offset into container)
+        vatt.add(program->id(), "position", sizeof(Vertex), 0); 
+        vatt.add(program->id(), "sourceColor", sizeof(Vertex), Vertex::oc() ); 
+        vatt.add(program->id(), "normal", sizeof(Vertex), Vertex::on()); 
+        vatt.add(program->id(), "texCoord", sizeof(Vertex), Vertex::ot()); 
+      }
+
+      void bindUniforms(XformMat& xf){
+          program -> uniform("lightPosition", 2.0, 2.0, 2.0);  
+          program -> uniform("projection",  xf.proj);
+          program -> uniform("normalMatrix", xf.normal);  
+          program -> uniform("modelView",  xf.modelView );
+      }
+
+      template<class APP>
+      virtual void operator()(APP& app){
+        scene.updateMatrices();
+        mvm = scene.xf.modelViewMatrixf();
+        program -> bind();
+          vatt.enable();
+          bindUniforms(scene.xf);
+              app.onDraw();
+          vatt.disable();
+        program -> unbind();
+      }
+
+  };
+
+
+  
+  /*!
+   *  Default Process 
+   *  are defined in the shader
+   */
+  struct Default : public Process {
+
+      Scene scene;
+      Mat4f mvm;
+
+      virtual void init(){
+        
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+          
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          
+        glLineWidth(5);
+      
+    }
+
+    virtual void operator()(){
+        scene.updateMatrices();
+        mvm = scene.xf.modelViewMatrixf();
+        pipe.bind( scene.xf );
+
+        pipe.unbind();
+    }
+  };
+
   /*!
    *  A SLAB billboards a texture to the screen
    *
-   *  (note: the Slab does not need to know about parent renderer)
+   *  (note: the Slab does not need to know about parent process)
    */
   struct Slab : public Process {
        
@@ -193,9 +284,8 @@ namespace gfx{
     Texture * textureA;                         ///< Texture into which to render
     Texture * textureB;                         ///< Secondary Texture for swapping buffers
 
-    //Renderer * renderer;
 
-    R2T(int w, int h, Renderer * r = NULL) : Process(w,h,r) { init(); }
+    R2T(int w, int h, Process * r = NULL) : Process(w,h,r) { init(); }
     
     virtual void init(){
       cout << "INITIALIZING RENDER TO TEXTURE: " << width << " " << height << endl; 
@@ -221,7 +311,7 @@ namespace gfx{
         //do any preprocessing in the stack (i.e. motion blur)
         preProcess();
         //And add a new frame on top
-        renderer->render(); 
+        (*parent)(); 
         
         postProcess();
 
@@ -252,7 +342,7 @@ namespace gfx{
     Texture * textureA;                         ///< Texture into which to render
     Texture * textureB;                         ///< Secondary Texture for swapping buffers
 
-    //Renderer * renderer;
+    //Process * renderer;
     Process * process;
 
     RP2T(int w, int h, Process * p = NULL) : Process(w,h), process(p) { init(); }
@@ -299,7 +389,7 @@ namespace gfx{
       Slab  slab;
      // Blur blur;
 
-      MotionTrace(int w, int h, Renderer * r = NULL) : 
+      MotionTrace(int w, int h, Process * r = NULL) : 
       Process(w,h,r), r2t(w,h,r), trace(w,h), slab(w,h) { init(); } 
       
       virtual void init(){

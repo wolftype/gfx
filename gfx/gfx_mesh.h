@@ -54,6 +54,10 @@ namespace gfx {
         static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
         static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
 
+        static size_t offsetColor(){ return 2*sizeof(Vec3f); }        
+        static size_t offsetNormal(){ return sizeof(Vec3f); }        
+        static size_t offsetTextureCoordinate(){ return 2*sizeof(Vec3f) + sizeof(Vec4f); }        
+
         float operator[] (int idx) { return ((float*)&(Pos[0]))[idx]; }
 
         void print() { }
@@ -220,6 +224,7 @@ namespace gfx {
 
         vector<Vertex>& vertex() { return mVertex; }
         vector<Vertex>& original() { return mStore; }
+        vector<INDEXTYPE>& index() { return mIndex; }
         
         Vertex& last() { return mVertex[ mVertex.size() - 1 ]; }
         

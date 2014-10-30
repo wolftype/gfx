@@ -31,7 +31,7 @@
 
 using namespace std;
 
-
+namespace gfx {
 /*!
  *  Singleton initializer
  */
@@ -42,7 +42,8 @@ struct Glut {
     return TheGlutInstance; 
   }
 
-  static void Start(){
+  template<class APPLICATION>
+  static void Start(APPLICATION& app){
       glutMainLoop();
   }
 
@@ -125,9 +126,9 @@ struct Window {
 
 
   template<class APPLICATION>
-  static void Animate(int){
+  static void (int) Animate(){
     glutPostRedisplay();
-    ((APPLICATION*)(app)) -> drawFunc();
+    ((APPLICATION*)(app)) -> onFrame();
     glutSwapBuffers();
     glutTimerFunc(10, Animate<APPLICATION>, 1);
   }
@@ -135,7 +136,7 @@ struct Window {
 
   template<class APPLICATION>
   static void Draw(void){
-    ((APPLICATION*)(app)) -> drawFunc();
+    ((APPLICATION*)(app)) -> onDraw();
     glutSwapBuffers();
   }
 
@@ -158,6 +159,6 @@ vector<WindowData*> Window::mWindows;
 int Window::currentWindow;
 
 
-
+} // namespace gfx::
 
 #endif   /* ----- #ifndef GlutWindow_INC  ----- */

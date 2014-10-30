@@ -1,5 +1,9 @@
 /*
-    GL ES 2.0 HELPER CLASS
+    A PIPE GL HELPER CLASS
+
+    Re writing this so that everything is a process . . .
+
+
 */
 //  Created by Pablo Colapinto on 10/25/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
@@ -66,7 +70,7 @@ namespace gfx{
             vatt.pos.set( Shader :: Current(), "texCoord", sizeof(Vertex), 2, Vertex::ot() );            
           } 
                       
-            void bindAll(){
+           void bindAll(){
             program -> bind();
             bindAttributes();  
             program -> unbind();

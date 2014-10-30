@@ -162,7 +162,7 @@ namespace gfx{
         }
      
 
-        static  Mat4f lookAt(const Vec3f eye, const Vec3f target, const Vec3f up ){
+        static  Mat4f lookAt(const Vec3f eye=Vec3f(0,0,5), const Vec3f target=Vec3f(0,0,0), const Vec3f up=Vec3f(0,1,0) ){
             Vec3f z = (target - eye).unit();	
             Vec3f x = z.cross(up).unit();
             Vec3f y = x.cross(z).unit();

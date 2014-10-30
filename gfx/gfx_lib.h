@@ -10,8 +10,7 @@
 #ifndef GFX_LIB_INCLUDED
 #define GFX_LIB_INCLUDED
 
-   // #define IOS_PROJECT
-    #ifdef IOS_PROJECT
+    #ifdef __ios__
 
         #include <OpenGLES/ES1/gl.h>
         #include <OpenGLES/ES1/glext.h>
@@ -43,6 +42,7 @@
       #include "EGL/eglext.h"
 
       #define GFX_USE_GLES
+      #include "gfx_macros.h"
 
 	#elif defined(__linux__)
 		
@@ -59,12 +59,27 @@
   #else //defined(__APPLE__) || defined(__OSX__)
 
       //printf("APPLE SYSTEM\n");
+      #include <GL/glew.h>
       #include <OpenGL/OpenGL.h>
-      #include <GLUT/GLUT.h>
+      #include "GLUT/GLUT.h"
 
       #define GL_IMMEDIATE_MODE
-
+  
   #endif
+
+#ifndef GFX_USE_GLES
+  
+  #ifndef GENVERTEXARRAYS
+    #define GENVERTEXARRAYS(n,id) if(GLEW_APPLE_vertex_array_object)glGenVertexArraysAPPLE(1,id);\
+	  else if (GLEW_ARB_vertex_array_object) glGenVertexArrays(n,id)
+  #endif
+
+  #ifndef BINDVERTEXARRAY
+    #define BINDVERTEXARRAY(id) if(GLEW_APPLE_vertex_array_object)glBindVertexArrayAPPLE(id);\
+	  else if (GLEW_ARB_vertex_array_object) glBindVertexArray(id)
+  #endif
+
+#endif
 
 #endif
 

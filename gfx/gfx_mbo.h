@@ -15,9 +15,12 @@
 #define CTL_gl_data_h
 
 #include "gfx_vbo.h"
+#include "gfx_vao.h"
+#include "gfx_vattrib.h"
 #include "gfx_mesh.h"
 
 namespace gfx{
+
     
         //a Mesh Buffer Object, for lack of a better term
         struct MBO {
@@ -26,10 +29,11 @@ namespace gfx{
             
             int idx;
             
-            VBO vertex;     //vertex buffer container
-            VBO index;      //element buffer container
+            VBO vertex;                 //vertex buffer container
+            VBO index;                  //element buffer container
+  
+            Mesh mesh;                  //Actual mesh data on CPU
 
-            Mesh mesh;
             
             GL::MODE mode;
 
@@ -72,7 +76,9 @@ namespace gfx{
                 vertex = VBO( &mesh.vertices()[0].Pos[0], mesh.num(), mesh.num() * sizeof(Vertex), GL::VERTEXBUFFER, usage );
                 index = VBO( &mesh.indices()[0], mesh.numIdx(), mesh.numIdx() * sizeof(Mesh::INDEXTYPE), GL::ELEMENTBUFFER, GL::STATIC );
                 mode = mesh.mode();
+                bind();
             }
+
                        
             //Enable Vertex Attributes FIRST             
             void drawElements( int num = -1, int off = 0){ // GLenum mode,
@@ -93,21 +99,22 @@ namespace gfx{
                 index.unbind(); 
                 vertex.unbind();   
             }
+
              
             /// Update Vertex Info               
             void update(Vertex * val){
                 vertex.update(val);
             }
             
-      void update(){
-        vertex.update();
-      }
-      
-      ///Update Specific Vertex
-      template< class T >
-      void update(int idx, int num, const T& val){
-        vertex.update(idx, num, &val);
-      }
+            void update(){
+              vertex.update();
+            }
+            
+            ///Update Specific Vertex
+            template< class T >
+            void update(int idx, int num, const T& val){
+              vertex.update(idx, num, &val);
+            }
 
 //            //static methods to grab quick int
 //            static int Buffer( Mesh& mesh, int id = -1){
@@ -121,7 +128,24 @@ namespace gfx{
         };
         
         int MBO::mCount;
- 
+
+
+        struct GFX {
+            
+            static void Render(MBO& mbo, VertexAttributes& vatt) {
+               mbo.bind();
+                vatt.enable();
+                  mbo.drawElements();
+                vatt.disable();
+               mbo.unbind();
+            }
+
+            static void Render(MBO& mbo, VAO& vao) {
+               vao.bind();
+                  mbo.drawElements();
+               vao.unbind();
+            }            
+        };
 
 }
 

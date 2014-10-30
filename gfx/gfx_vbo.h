@@ -177,13 +177,13 @@ namespace gfx {
   };
   
     
-    /// Two Buffer (vertex and elements)
-    struct VEBO{
-        VBO vertex, index;
-        VBO& operator [] (int idx) { return (&vertex)[idx]; }
-        VBO operator [] (int idx) const { return (&vertex)[idx]; }
-    };
+    /* /// Two Buffer (vertex and elements) */
+    /* struct VEBO{ */
+    /*     VBO vertex, index; */
+    /*     VBO& operator [] (int idx) { return (&vertex)[idx]; } */
+    /*     VBO operator [] (int idx) const { return (&vertex)[idx]; } */
+    /* }; */
     
-} // con::
+} // gfx::
 
 #endif

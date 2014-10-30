@@ -9,54 +9,61 @@
 #include <map>
 
 namespace gfx{
+ 
+
+
+
+ 
   
-   struct MouseData {
+   /* struct MouseData { */
 
-        enum  {
-            Up = 1, Down, Left, Right
-        };
+   /*   enum  { */
+   /*       Up = 1, Down, Left, Right */
+   /*   }; */
 
-		float x, y, dx, dy, ddx, ddy, xrel, yrel; //< 2D Mouse Position, first and second derivatives of motion, position relative to TL corner
+   /*   ///< 2D Mouse Position, first and second derivatives of motion, position relative to TL corner */
+		 /* float x, y, dx, dy, ddx, ddy, xrel, yrel; */ 
 
-        Vec3f origin, click, pos, move, accel, cat, drag, dragAccum, dragCat, projectFar, projectNear, projectMid;
+   /*   Vec3f origin, click, pos, move, accel, cat, drag, dragAccum, dragCat, projectFar, projectNear, projectMid; */
 
-		Vec3f biv, bivCat, dragBiv, dragBivCat;
+		 /* Vec3f biv, bivCat, dragBiv, dragBivCat; */
 
-        int gesture;  // stores major direction of mouse movement
+   /*   int gesture;  // stores major direction of mouse movement */
+   /*   int button;   // which button is down */
 
-		bool isDown, isMoving, newClick;		
-		void toggle() { newClick = !newClick; }
-	};
+		 /* bool isDown, isMoving, newClick; */		
+		 /* void toggle() { newClick = !newClick; } */
+	/* }; */
 
-	struct ViewData  {
-		float w, h; 
-        Vec3f z; 
-        Vec3f ray, clickray; 
-	};
+	/* struct ViewData  { */
+		/* float w, h; */ 
+   /*  Vec3f z; */ 
+   /*  Vec3f ray, clickray; */ 
+	/* }; */
 
-	struct KeyboardData {
-		bool shift, alt, caps, ctrl, meta, f, down;
-		int code;
-		KeyboardData() : shift(0), alt(0), caps(0), ctrl(0), code(0){}
-	};    
+	/* struct KeyboardData { */
+		/* bool shift, alt, caps, ctrl, meta, f, down; */
+		/* int code; */
+		/* KeyboardData() : shift(0), alt(0), caps(0), ctrl(0), code(0){} */
+	/* }; */    
 
-    /* Mapped Key values ripped from GLV */
-    namespace Key{
-        enum {
+   /*  /1* Mapped Key values ripped from GLV *1/ */
+   /*  namespace Key{ */
+   /*      enum { */
 
-            // Standard ASCII non-printable characters
-            Enter		=3,		/**< */
-            Backspace	=8,		/**< */
-            Tab			=9,		/**< */
-            Return		=13,	/**< */
-            Escape		=27,	/**< */
-            Delete		=127,	/**< */
+   /*          // Standard ASCII non-printable characters */
+   /*          Enter		  =3,		/**< *1/ */
+   /*          Backspace	=8,		/**< *1/ */
+   /*          Tab			  =9,		/**< *1/ */
+   /*          Return		=13,	/**< *1/ */
+   /*          Escape		=27,	/**< *1/ */
+   /*          Delete		=127,	/**< *1/ */
 
-            // Non-standard, but common keys.
-            F1=256, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, 
-            Insert, Left, Up, Right, Down, PageDown, PageUp, End, Home
-        };
-    }
+   /*          // Non-standard, but common keys. */
+   /*          F1=256, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, */ 
+   /*          Insert, Left, Up, Right, Down, PageDown, PageUp, End, Home */
+   /*      }; */
+   /*  } */
 
     /*! Abstract Interface Class */  
     class Interface {
@@ -501,8 +508,8 @@ inline void Interface::viewCalc(){
 		
 		inline void Interface :: mouseNavigateStop(){
 			mouseModelTransform(.7, false);
-	        mouseCamTranslate(.7, false);
-	        mouseCamSpin(.7, false);
+	    mouseCamTranslate(.7, false);
+	    mouseCamSpin(.7, false);
 		}
 	
 } //gfx::  

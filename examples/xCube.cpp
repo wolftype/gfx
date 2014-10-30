@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <vector>
 
-// INCLUDE the WINDOW Class From the Previous Lesson
 #include "util/GlutWindow.h"
 
 using namespace std;
@@ -34,9 +33,9 @@ struct Vec3 {
 struct App {
 
   Vec3 a,b,c,d,e,f,g,h;
-  float time = 0.0;
+  float time;
 
-  App() { init(); }
+  App() : time(0) { init(); }
 
   void init(){
 
@@ -67,7 +66,7 @@ struct App {
   }
 
   void start(){
-    Glut::Start();
+    Glut::Start(*this);
   }
 
   virtual void onResize(int w, int h){}

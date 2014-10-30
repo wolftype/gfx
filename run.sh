@@ -13,5 +13,5 @@ mkdir build
 cd build
 rm bin/${TARGET}
 cmake .. -DSRC=../$1 -DRPI=$2 
-make
+make VERBOSE=1
 bin/${TARGET}
