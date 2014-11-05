@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "gfx_App.h"
+#include "gfx_app.h"
 #include "util/glut_window.hpp"
 
 #include "gfx_vao.h"

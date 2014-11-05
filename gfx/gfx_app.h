@@ -21,7 +21,10 @@
 #include <stdio.h>
 #include "gfx_lib.h"
 #include "util/gfx_event.h"
+
+#ifdef GFX_USE_GLV
 #include "util/glv_control.h"
+#endif
 
 namespace gfx {
 
@@ -31,7 +34,9 @@ struct App : public InputEventHandler<WINDOWCONTEXT>, public WindowEventHandler<
     WINDOWCONTEXT mWindow;
     //WINDOWCONTEXT& window() { return mWindow; }
     //
+    #ifdef GFX_USE_GLV
     GLVBinding<WINDOWCONTEXT> glv;
+    #endif
 
   App(int w=800, int h=400, int argc = 0, char ** argv = NULL)  
   {
@@ -50,13 +55,16 @@ struct App : public InputEventHandler<WINDOWCONTEXT>, public WindowEventHandler<
       //add listeners to window and input events
       mWindow.interface.addWindowEventHandler(this);
       mWindow.interface.addInputEventHandler(this); 
+
+      #ifdef GFX_USE_GLV
       //do same for glv
       glv.bindTo(mWindow);
+      #endif
 
       /*-----------------------------------------------------------------------------
        *  Initialize GLEW
        *-----------------------------------------------------------------------------*/
-	    glewExperimental = true;
+      glewExperimental = true;
       GLenum glewError = glewInit();
       if (glewError != GLEW_OK){
        printf("glew init error\n%s\n", glewGetErrorString( glewError) );

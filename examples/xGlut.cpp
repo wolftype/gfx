@@ -16,8 +16,10 @@
  */
 
 //Include OpenGL for graphics and Glut for windowing
-#include <OpenGL/OpenGL.h>
-#include <GLUT/GLUT.h>
+//#include <OpenGL/OpenGL.h>
+///	/#include <GLUT/GLUT.h>
+#include "gfx_lib.h"
+
 
 float width, height;
 

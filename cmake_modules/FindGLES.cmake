@@ -11,10 +11,10 @@
 if ((NOT GLES_INCLUDE_DIR) OR (NOT GLES_LIBRARY))
   FIND_PATH( GLES_INCLUDE_DIR 
     NAMES GLES2/gl2.h OpenGLES/ES2/gl.h
-    $ENV{HOME}/pi-root/opt/vc/include
-    DOC "The directory where GLES/egl.h resides")
+    PATHS $ENV{HOME}/pi-root/opt/vc/include $ENV{HOME}/usr/
+    DOC "The directory where GLES/gl.h resides")
   FIND_LIBRARY( GLES_LIBRARY
     NAMES GLESv2
-    PATHS $ENV{HOME}/pi-root/opt/vc/lib 
+    PATHS $ENV{HOME}/pi-root/opt/vc/lib $ENV{HOME}/usr/lib/arm-linux-gnueabihf/mesa-egl/ 
     DOC "The directory where libGLES resides")
 endif ((NOT GLES_INCLUDE_DIR) OR (NOT GLES_LIBRARY))
