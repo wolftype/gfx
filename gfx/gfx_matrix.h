@@ -441,7 +441,13 @@ namespace gfx {
 //
 //        w = v.w; x = v.x; y = v.y; z = v.z;
 //      }
+  
+      template<class T>
+      Quat& set( const T& t ){ w=t[0]; x=t[1]; y=t[2]; z=t[3]; return *this; }
       
+      template<class T>
+      Quat& set( const T& a, const T& b, const T& c, const T& d ){ w=a; x=b; y=c; z=d; return *this; } 
+           
       static Vec3<> spin(Vec3<> v, Quat q) { return Quat( q.unit() * Quat(v) * (~(q.unit()) ) ).vec(); }
     
       double sqnorm() { return w*w + x*x + y*y + z*z; }

@@ -450,6 +450,9 @@ namespace gfx {
         inline void scale (float s){
         glScalef(s,s,s);
         }
+        inline void scale (float sx, float sy, float sz){
+        glScalef(sx,sy,sz);
+        }
         inline void scale (double s){
         glScaled(s,s,s);
         }        
