@@ -289,6 +289,16 @@ class ShaderProgram {
             GL::error("Set Shader Program UniformMat4fv");
             return *this;
         }
+
+        const ShaderProgram& uniform(const char * name, const Mat4f& m) {
+			      static float vo[16];
+            m.fill(vo);
+            glUniformMatrix4fv(uniform(name), 1, GL_FALSE, vo); 
+            //cout << "setting" << endl; 
+            GL::error("Set Shader Program UniformMat4fv");
+            return *this;
+        }
+
     
 //        const ShaderProgram& uniform(const char * name, int vo[16]) const{
 //            glUniformMatrix2iv(uniform(name), 1, GL_FALSE, vo); 

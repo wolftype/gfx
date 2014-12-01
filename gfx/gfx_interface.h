@@ -233,6 +233,7 @@ template <class A, class B> void Interface :: touch( A& s, const B& x, float t){
           if ( isSelected( &s ) ){
 				    X<A,B>(this).f(&s, x, dt);
 				//xf(&s, x, dt);
+           // cout << "happening" << endl;
           }
         }
     }

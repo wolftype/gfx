@@ -32,8 +32,6 @@ namespace gfx {
   template < typename T > class Mat3;
   template < typename T > class Mat4;
   template < typename T > class Mat5;
-//  template < typename T > class Col3;
-//  template < typename T > class Col4;
 
     //Predeclare Template Friends
     template< class T >
