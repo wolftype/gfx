@@ -3,66 +3,80 @@
  *
  *       Filename:  gfx_app.h
  *
- *    Description:  an appclass that can take a variety of window contexts
- *                  WINDOWCONTEXT must have a System (singleton)
- *                  An Initialize function
- *                  A Start function
+ *    Description:  a lightweight GFXAPP utility that takes window contexts as a template parameter
+ *
+ *                  Basic Usage: subclass this and define setup() and onDraw() methods;
+ *
+ *                  WINDOWCONTEXT must have:
+ *                    System() (singleton method)
+ *                    Initialize() function
+ *                    Start() function
+ *                    SwapBuffers() method
+ *                    create(int w, int h) method
+ *                    interace (a public member of type gfx::Interface)
+ *
+ *                    see util/glut_window.hpp and util/glfw_window.hpp as example context classes
+ *                    that can be passed to this GfxApp class as a template parameter.
+ *
  *        Version:  1.0
  *        Created:  05/29/2014 07:18:12
  *       Revision:  none
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:  cuttlefish 
  *
  * =====================================================================================
  */
 
 #include <stdio.h>
-#include "gfx_lib.h"
-#include "util/gfx_event.h"
 
-#ifdef GFX_USE_GLV
-#include "util/glv_control.h"
-#endif
+#include "gfx_lib.h"              //<- Graphics Libraries
+#include "gfx_control.h"          //<- Event Handling
+#include "gfx_scene.h"            //<- Matrix transforms
+#include "gfx_sceneController.h"  //<- Matrix transforms user input
+#include "gfx_nprocess.h"         //<- Process
+
 
 namespace gfx {
 
 template<class WINDOWCONTEXT>
-struct App : public InputEventHandler<WINDOWCONTEXT>, public WindowEventHandler<WINDOWCONTEXT>{
+struct GFXApp : 
+public InputEventHandler,//<WINDOWCONTEXT>, 
+public WindowEventHandler,//<WINDOWCONTEXT>, 
+public GFXRenderNode 
+{
 
-    WINDOWCONTEXT mWindow;
-    //WINDOWCONTEXT& window() { return mWindow; }
-    //
-    #ifdef GFX_USE_GLV
-    GLVBinding<WINDOWCONTEXT> glv;
-    #endif
+  WINDOWCONTEXT mContext;
+  WindowData& window() { return mContext.window(); }
 
-  App(int w=800, int h=400, int argc = 0, char ** argv = NULL)  
+  Scene scene;
+  SceneController sceneController;
+  
+  /*-----------------------------------------------------------------------------
+   *  Pass in width and height of window, and any command line arguments
+   *-----------------------------------------------------------------------------*/
+  GFXApp(int w=800, int h=400, int argc = 0, char ** argv = NULL) :
+  GFXRenderNode(w,h)  
   {
 
      /*-----------------------------------------------------------------------------
       *  Initialize Window and Callbacks
       *-----------------------------------------------------------------------------*/
       WINDOWCONTEXT::System -> Initialize();
-     // mWindow.template create(this,w,h);
-      mWindow.create(w,h);
+      mContext.create(w,h);
 
-      //not sure why Event Handlers need pointer to parent that calls it . . . maybe useful later
-      InputEventHandler<WINDOWCONTEXT>::window( &mWindow );
-      WindowEventHandler<WINDOWCONTEXT>::window( &mWindow );
+      //add this application to list of listeners to window and input events
+      mContext.interface.addWindowEventHandler(this);
+      mContext.interface.addInputEventHandler(this); 
 
-      //add listeners to window and input events
-      mWindow.interface.addWindowEventHandler(this);
-      mWindow.interface.addInputEventHandler(this); 
-
-      #ifdef GFX_USE_GLV
-      //do same for glv
-      glv.bindTo(mWindow);
-      #endif
+     //bind sceneController to scene and add as listener to input events 
+      sceneController.scene(&scene);
+      sceneController.io(&mContext.interface.io);
+      mContext.interface.addInputEventHandler(&sceneController);
 
       /*-----------------------------------------------------------------------------
-       *  Initialize GLEW
+       *  Initialize GLEW and check for features
        *-----------------------------------------------------------------------------*/
       glewExperimental = true;
       GLenum glewError = glewInit();
@@ -78,55 +92,90 @@ struct App : public InputEventHandler<WINDOWCONTEXT>, public WindowEventHandler<
             
   }
 
+
+
   /*-----------------------------------------------------------------------------
-   *  User Initialization (init is called automatically by App::start() method)
+   *  User must define setup() in a subclass. setup() is called by App::start() method
    *-----------------------------------------------------------------------------*/
-  virtual void init() = 0;
+  virtual void setup() = 0;
+
+  /*-----------------------------------------------------------------------------
+   *  User must Define onDraw() in a subclass. onDraw() is called by onFrame() method;
+   *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
+  
+  /*-----------------------------------------------------------------------------
+   *  Starts Graphics Thread.  To be called from main()
+   *-----------------------------------------------------------------------------*/
   void start(){
-    init();
+    setup();
     WINDOWCONTEXT::System -> Start(this);
   }
-
-  ~App(){
-     WINDOWCONTEXT::System -> Terminate();
-  }
-
+  
+  /*-----------------------------------------------------------------------------
+   *  Optional method for updating physics etc -- called onFrame();
+   *-----------------------------------------------------------------------------*/
   virtual void update(){}
 
-  virtual bool onFrame(){
-    update();
-    mWindow.setViewport();
 
-    glClearColor(.2,.2,.2,1);
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   
-    onDraw();
-     
-    mWindow.onFrame(); //<-- Swap buffers, listen for events, etc.
+  /*-----------------------------------------------------------------------------
+   *  Clear Window Contents
+   *-----------------------------------------------------------------------------*/
+  void clear(){
+     mContext.setViewport();      
+     glClearColor(.2,.2,.2,1);
+     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
+  
+  /*-----------------------------------------------------------------------------
+   *  Default Rendering (Shader ambivalent)
+   *-----------------------------------------------------------------------------*/
+  virtual void onFrame(){
 
-    return true;
+     clear(); 
+     update();
+
+     scene.push();
+      onRender();
+     scene.pop();
+    
+     scene.step();
+     //note: swapbuffers not called here because
+     //this is just one of many potential windowEventHandler callbacks
+     //swapbuffers is called by Interface::onDraw() after all eventhandlers have been called
   }
 
+  virtual void onRender(){ onDraw(); }
+
+
+  /*-----------------------------------------------------------------------------
+   *  Destructor
+   *-----------------------------------------------------------------------------*/
+   ~GFXApp(){
+     WINDOWCONTEXT::System -> Terminate();
+   } 
   
   /*-----------------------------------------------------------------------------
    *  INPUT EVENT HANDLER METHODS
    *-----------------------------------------------------------------------------*/
-  virtual bool onMouseMove(const Mouse& m){ return true; }//int x, int y){}
-  virtual bool onMouseDrag(const Mouse& m){return true; }//int x, int y){}
-  virtual bool onMouseDown(const Mouse& m){return true; }//int button, int action){}
-  virtual bool onMouseUp(const Mouse& m){return true; }//int x, int y){}
-  virtual bool onKeyDown(const Keyboard& k){return true; }//int key, int action=0){}
-  virtual bool onKeyUp(const Keyboard& k){return true; }//int key){}
+  virtual void onMouseMove(const Mouse& m){ }
+  virtual void onMouseDrag(const Mouse& m){ }
+  virtual void onMouseDown(const Mouse& m){ }
+  virtual void onMouseUp(const Mouse& m){ }
+  virtual void onKeyDown(const Keyboard& k){}
+  virtual void onKeyUp(const Keyboard& k){ }
 
   /*-----------------------------------------------------------------------------
    *  WINDOW EVENT HANDLER METHODS
    *-----------------------------------------------------------------------------*/
-  virtual bool onCreate(){return true; }
-  virtual bool onDestroy(){return true; }
- // virtual bool onFrame();{}
-
+  virtual void onCreate(){ }
+  virtual void onDestroy(){ }
+  virtual void onResize(int w, int h){
+   // scene.camera.lens.width() = w;
+   // scene.camera.lens.height() = h;
+    scene.resize(w,h);
+  }
 
 };
 

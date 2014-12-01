@@ -13,9 +13,15 @@
 #ifndef gfx_glsl_h
 #define gfx_glsl_h
 
+#include "gfx_lib.h"
+
 #ifndef STRINGIFY
-#define STRINGIFY(A) #A
+//#define R"(A) #A
 #endif
+
+//#ifndef GL_IMMEDIATE_MODE
+//#define GLES_CHECK lowp
+//#endif
 
 namespace gfx{
 
@@ -30,7 +36,7 @@ namespace gfx{
       /*-----------------------------------------------------------------------------
        *  TEST VERTEX SHADER
        *-----------------------------------------------------------------------------*/
-      string SimpleVertex = STRINGIFY(
+      string SimpleVertex = R"(
     
         attribute vec3 position;
     
@@ -38,144 +44,144 @@ namespace gfx{
           vec4 tmp = vec4(position,1.0);
           gl_Position = tmp;
        }
-      );
+      )";
 
 
       /*-----------------------------------------------------------------------------
        *  TEST FRAGMENT SHADER
        *-----------------------------------------------------------------------------*/
 
-      string SimpleFragment = STRINGIFY(
+      string SimpleFragment = R"(
     
         void main(void){
           gl_FragColor = vec4(1.0,1.0,1.0,1.0);
         }
-      );
+      )";
 
       
       /*-----------------------------------------------------------------------------
        *  TYPICAL VERTEX ATTRIBUTES
        *-----------------------------------------------------------------------------*/
-        string AVertex = STRINGIFY(
+        string AVertex = R"(
             attribute vec3 position;
             attribute vec3 normal;
             attribute vec4 sourceColor;
             attribute vec2 texCoord;
-        );
+        )";
         
 
         /*-----------------------------------------------------------------------------
          *  TYPICAL MATRIX TRANSFORM UNIFORMS
          *-----------------------------------------------------------------------------*/
-        string UMatrix = STRINGIFY(
+        string UMatrix = R"(
             uniform mat4 modelView;           // Model * View
             uniform mat4 projection;          // Projection Matrix (ortho or frustum)
             uniform mat4 normalMatrix;        // Normal Matrix (inverse transpose of mvm)
-        );
+        )";
         
         /*-----------------------------------------------------------------------------
          *  TYPICAL VARYING VALUES TO PASS FROM VERTEX TO SHADER
          *-----------------------------------------------------------------------------*/
-        string VaryingES = STRINGIFY(
+        string VaryingES = R"(
             varying vec4 colorDst;
             varying lowp vec2 texco;
-        ); 
+        )"; 
 
-        string Varying = STRINGIFY(
+        string Varying = R"(
             varying vec4 colorDst;
             varying vec2 texco;
-        );
+        )";
 
 
         /*-----------------------------------------------------------------------------
          *  LIGHT POSITION UNIFORM
          *-----------------------------------------------------------------------------*/
-        string ULight = STRINGIFY(
+        string ULight = R"(
             uniform vec3 lightPosition;
-        );
+        )";
         
 
         /*-----------------------------------------------------------------------------
          *  LIGHT PROPERTIES
          *-----------------------------------------------------------------------------*/
-        string ULightProperty = STRINGIFY(
+        string ULightProperty = R"(
             uniform vec3 ambientColor;
             uniform vec3 diffuseMaterial;
             uniform vec3 specularColor;
-        );
+        )";
         
 
         /*-----------------------------------------------------------------------------
          *  TEXTURE SAMPLER2D UNIFORM
          *-----------------------------------------------------------------------------*/
-        string USampler = STRINGIFY(
+        string USampler = R"(
             uniform sampler2D sampleTexture;
-        );
+        )";
         
         /*-----------------------------------------------------------------------------
          *  TEXTURE SAMPLER CUBE UNIFORM
          *-----------------------------------------------------------------------------*/
-        string USamplerCube = STRINGIFY(
+        string USamplerCube = R"(
             uniform samplerCube sampleTexture;
-        );
+        )";
 
         
         /*-----------------------------------------------------------------------------
          *  VARYING COLOR 
          *-----------------------------------------------------------------------------*/
-        string VColor = STRINGIFY(
+        string VColor = R"(
             varying vec4 colorDst;
-        );
+        )";
 
         /*-----------------------------------------------------------------------------
          *  VARYING TEXTURE 
          *-----------------------------------------------------------------------------*/
-        string VTexES = STRINGIFY(
+        string VTexES = R"(
             varying lowp vec2 texco;
-        );
+        )";
 
-        string VTex = STRINGIFY(
+        string VTex = R"(
             varying vec2 texco;
-        );
+        )";
 
         /*-----------------------------------------------------------------------------
          *  FUNCTION TO CALCULATE NORMAL
          *-----------------------------------------------------------------------------*/
-        string NTransform = STRINGIFY(
+        string NTransform = R"(
            vec3 doNormal(vec4 n) {
                 return normalize( ( normalMatrix * n ).xyz );
             }
-        );
+        )";
 
         
         /*-----------------------------------------------------------------------------
          *  FUNCTION TO TRANSFORM VERTEX
          *-----------------------------------------------------------------------------*/
-        string VCalc = STRINGIFY(
+        string VCalc = R"(
             vec4 doVertex (vec4 v) {
               mat4 m = projection * modelView;
               return m * v;
             }
-        );
+        )";
 
          /*-----------------------------------------------------------------------------
          *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON SAMPLER 
          *-----------------------------------------------------------------------------*/
-        string VDisplaceCalc = STRINGIFY(
+        string VDisplaceCalc = R"(
             vec4 doVertex (vec4 v) {
               float z = texture2D(sampleTexture, texco).r * amt;
               vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
               mat4 m = projection * modelView;
               return m * nv;
             }
-        );
+        )";
 
 
         
         /*-----------------------------------------------------------------------------
          *  FUNCTION TO CALCULATE LIGHTING
          *-----------------------------------------------------------------------------*/
-         string VLighting = STRINGIFY(
+         string VLighting = R"(
             
             uniform vec3 lightPosition;
             
@@ -196,13 +202,13 @@ namespace gfx{
                 return vec4((sourceColor * df).xyz , 1 );
             }
 
-        );
+        )";
 
         
         /*-----------------------------------------------------------------------------
          *  MAIN VERTEX FUNCTION
          *-----------------------------------------------------------------------------*/
-        string MVert = STRINGIFY(
+        string MVert = R"(
             
             void main(void){
             
@@ -219,9 +225,9 @@ namespace gfx{
                 gl_PointSize = 1.0;
                 gl_Position = doVertex(pos);
             }
-        );
+        )";
  
-        /* string MVertN = STRINGIFY( */
+        /* string MVertN = R"( */
             
         /*     void main(void){ */
             
@@ -245,8 +251,11 @@ namespace gfx{
         /*-----------------------------------------------------------------------------
          *  MAIN FRAGMENT FUNCTION
          *-----------------------------------------------------------------------------*/
-         string DefaultFragES = STRINGIFY(
+         string DefaultFragES = R"(
 
+         /*-----------------------------------------------------------------------------
+          *  DEFAULT FRAGMENT SHADER ES
+          *-----------------------------------------------------------------------------*/
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying lowp vec2 texco;
@@ -259,10 +268,13 @@ namespace gfx{
                 
                 gl_FragColor = litColor;     //mix(litColor, texColor, .5);
             }
-        ); 
+        )"; 
 
-         string DefaultFrag = STRINGIFY(
+         string DefaultFrag = R"(
 
+         /*-----------------------------------------------------------------------------
+          *  DEFAULT FRAGMENT SHADER
+          *-----------------------------------------------------------------------------*/
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying vec2 texco;
@@ -275,14 +287,14 @@ namespace gfx{
                 
                 gl_FragColor = litColor;      //mix(litColor, texColor, .5);
             }
-        );   
+        )";   
 
 
         
          /*-----------------------------------------------------------------------------
           *  FRAGMENT .5 MIXED WITH TEXTURE
           *-----------------------------------------------------------------------------*/
-         string TFragMix = STRINGIFY(
+         string TFragMix = R"(
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -296,14 +308,14 @@ namespace gfx{
                 
                 gl_FragColor = mix(litColor, texColor, 0.5);           
             }
-        ); 
+        )"; 
 
         
          /*-----------------------------------------------------------------------------
           *  ALPHA WEIGHTED FRAGMENT SHADER (FOR MOTION BLUR AND TRAILS) 
           *-----------------------------------------------------------------------------*/
 
-         string TFragAlphaES = STRINGIFY(
+         string TFragAlphaES = R"(
 
             uniform sampler2D sampleTexture;
             uniform float alpha;
@@ -320,9 +332,9 @@ namespace gfx{
                 gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha *  litColor.a) );           
 
             }
-        );
+        )";
 
-         string TFragAlpha = STRINGIFY(
+         string TFragAlpha = R"(
 
             uniform sampler2D sampleTexture;
             uniform float alpha;
@@ -337,13 +349,13 @@ namespace gfx{
                 
                 gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * litColor.a) );           
             }
-        );
+        )";
  
          /*-----------------------------------------------------------------------------
           *  BLUR FRAGMENT SHADER (FOR FAKE ANTI-ALIASING)
           *-----------------------------------------------------------------------------*/
 
-         string TFragBlur = STRINGIFY(
+         string TFragBlur = R"(
 
             uniform sampler2D sampleTexture;  
             uniform float ux;
@@ -391,13 +403,13 @@ namespace gfx{
 
             }
 
-        );
+        )";
       
          /*-----------------------------------------------------------------------------
           *  BLUR FRAGMENT SHADER (FOR FAKE ANTI-ALIASING)
           *-----------------------------------------------------------------------------*/
 
-         string TFragBlurES = STRINGIFY(
+         string TFragBlurES = R"(
 
             uniform sampler2D sampleTexture;  
             uniform float ux;
@@ -445,16 +457,16 @@ namespace gfx{
 
             }
 
-        );
+        )";
              
       
                      
+
+
+          string TFrag = R"(   
         /*-----------------------------------------------------------------------------
          *  PURE TEXTURE SHADER (FOR SLABS)
          *-----------------------------------------------------------------------------*/
-
-          string TFrag = STRINGIFY(   
-
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying vec2 texco;
@@ -466,10 +478,10 @@ namespace gfx{
                 
                 gl_FragColor = texColor;                //mix(litColor, texColor, 0.0);
             }
-        );
+        )";
 
 
-         string TFragES = STRINGIFY(   
+         string TFragES = R"(   
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -482,13 +494,13 @@ namespace gfx{
                 
               gl_FragColor = texColor; //mix(litColor, texColor, 0.0);
             }
-        );   
+        )";   
 
 
    /*-----------------------------------------------------------------------------
     *  CLIP SPACE VERTEX SHADER (FOR SLABS)
     *-----------------------------------------------------------------------------*/
-    string ClipSpaceVertES = STRINGIFY( 
+    string ClipSpaceVertES = R"( 
 
       attribute vec3 position; 
       attribute vec3 normal;
@@ -504,10 +516,10 @@ namespace gfx{
         vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
         gl_Position = vec4(position,1.0);
         }
-    ); 
+    )"; 
     
     
-    string ClipSpaceVert = STRINGIFY( 
+    string ClipSpaceVert = R"( 
 
         attribute vec3 position; 
         attribute vec3 normal;
@@ -523,7 +535,7 @@ namespace gfx{
         vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
         gl_Position = vec4(position,1.0);
         }
-    );
+    )";
          
     
     
@@ -536,7 +548,7 @@ namespace gfx{
     string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
     string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
-    // string TFragBasic = STRINGIFY(     
+    // string TFragBasic = R"(     
     // 
     //   uniform sampler2D tex; 
     //   varying lowp vec2 texco; 
@@ -549,7 +561,7 @@ namespace gfx{
     // ); 
         
     /// Cubemapping function [in progress]
-    string VMakeCubemap = STRINGIFY(
+    string VMakeCubemap = R"(
             
           uniform cmFace;
           varying vec3 vTexDir;
@@ -578,19 +590,19 @@ namespace gfx{
         );  
         return vertex;  
             }
-        );
+        )";
         
-        string FUseCubemap = STRINGIFY(
+        string FUseCubemap = R"(
             uniform samplerCube cubeMap;            
             varying vec3 vTexDir;
             
             void main(void){
                 textureCube(cubeMap, vTexDir).rgb 
             }
-        );   
+        )";   
            
 
-    string FXDB = STRINGIFY(
+    string FXDB = R"(
       uniform sampler2D sampleTexture; 
       uniform vec2 frameBufSize;
        // uniform vec2 frameBufSize;
@@ -616,25 +628,25 @@ namespace gfx{
         gl_FragColor= vec4(rgbM,1.0);//max(texColor, average + average2);
       }
       
-    );    
+    )";    
     
-    string FOGL = STRINGIFY(
+    string FOGL = R"(
        uniform sampler2D sampleTexture;
         uniform vec2 frameBufSize;
 
       varying vec4 colorDst; 
       varying vec2 texco;     
-     );   
+     )";   
     
-    string FOGLES = STRINGIFY(
+    string FOGLES = R"(
        uniform sampler2D sampleTexture;
        uniform vec2 frameBufSize;
 
       varying vec4 colorDst; 
       varying lowp vec2 texco;     
-     );     
+     )";     
                             
-    string FXAA = STRINGIFY(
+    string FXAA = R"(
   
       void main(void) {
         //gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
@@ -692,11 +704,11 @@ namespace gfx{
           gl_FragColor =  vec4(rgbB,1.0);
         }
       }
-      );
+      )";
            
 
 
-        // static string SVert = STRINGIFY(
+        // static string SVert = R"(
         //     
         //                   attribute vec3 position;
         //                   // attribute vec3 normal;
@@ -720,7 +732,7 @@ namespace gfx{
         //   }
         // );
         // 
-        // static string SFrag = STRINGIFY(
+        // static string SFrag = R"(
         //           
         //       
         //    void main(void){

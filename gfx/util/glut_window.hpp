@@ -3,7 +3,7 @@
  *
  *       Filename:  glut_window.h
  *
- *    Description:  A Windowing Class for Up and Running with OpenGL
+ *    Description:  A Glut Context Windowing Class
  *
  *        Version:  1.0
  *        Created:  06/09/2014 17:50:12
@@ -11,7 +11,6 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
  *
  * =====================================================================================
  */
@@ -20,7 +19,7 @@
 #define  GlutWindow_INC
 
 #include "gfx_lib.h"
-#include "util/gfx_event.h"
+#include "gfx_control.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -31,107 +30,66 @@ using namespace std;
 
 namespace gfx{
 
-/*!
- *  Stores width, height, and id of a Window
- */
-struct WindowData {
-  WindowData(int width = 100, int height = 100, int id = 0) : 
-    mWidth(width), mHeight(height), mID(id), isFullScreen(false){}
-  int mWidth, mHeight, mPrevWidth, mPrevHeight, mID;
-  bool isFullScreen;
-  float ratio() { return (float) mWidth/mHeight; }
-  void reshape(int w, int h){
-    mWidth = w; mHeight =h;
-  }
-  void save(){
-    mPrevWidth = mWidth;
-    mPrevHeight = mHeight;
-  }
-  int width() const { return mWidth; }
-  int height() const { return mHeight; }
-  int prevWidth() const { return mPrevWidth; }
-  int prevHeight() const { return mPrevHeight; }
-};
 
 
-/*-----------------------------------------------------------------------------
- *  Some Callbacks to be implemented later 
- *-----------------------------------------------------------------------------*/
-template <class CONTEXT>
-struct Interface {
 
-  static vector<InputEventHandler<CONTEXT>*> mInputEventHandlers;
-  static vector<WindowEventHandler<CONTEXT>*> mWindowEventHandlers;
+ 
+template<class CONTEXT> 
+struct GlutInterface : Interface<CONTEXT> {
   
-  Interface& addInputEventHandler( InputEventHandler<CONTEXT> * e ){ 
-     mInputEventHandlers.push_back(e); 
-     return *this; 
-   } 
-  Interface& addWindowEventHandler( WindowEventHandler<CONTEXT> * e ){ 
-     mWindowEventHandlers.push_back(e); 
-     return *this; 
-   } 
-
-  static void OnDraw(void){
-    for (auto& i : mWindowEventHandlers){
-      i->onFrame();
-    }
+  static void Draw(void){
+    Interface<CONTEXT>::OnDraw();
+  }
+  static void OnReshape(int w, int h){
+    Interface<CONTEXT>::OnResize(w,h);
   }
 
+  
   static void OnMouse(int button, int state, int x, int y){
     Mouse mouse(button,state,x,y);
+    Interface<CONTEXT>::io.keyboard.modifier = glutGetModifiers();
     if (state == GLUT_DOWN) {
-      for (auto& i : mInputEventHandlers){
-          i->onMouseDown(mouse);
-      }
+      mouse.state |= Mouse::IsDown;
+      Interface<CONTEXT>::OnMouseDown(mouse);
     }
-    if (state == GLUT_DOWN) {
-      for (auto& i : mInputEventHandlers){
-          i->onMouseUp(mouse);
-      }
+    if (state == GLUT_UP) {
+      mouse.state |= Mouse::IsDown;
+      Interface<CONTEXT>::OnMouseUp(mouse);
     }
   }
 
-  static void OnMouseDrag(int x, int y){
+  static void OnMotion(int x, int y){
     Mouse mouse (0, Mouse::IsDown & Mouse::IsMoving, x, y);
-    for (auto& i : mInputEventHandlers){ i->onMouseDrag(mouse); }
+    Interface<CONTEXT>::OnMouseDrag(mouse);    
   }
 
-  static void OnMouseMove(int x, int y){
+  static void OnPassiveMotion(int x, int y){
     Mouse mouse(0, Mouse::IsMoving, x, y);
-    for (auto& i : mInputEventHandlers){ i->onMouseMove(mouse); }
+    Interface<CONTEXT>::OnMouseMove(mouse);
   }
 
   static void OnKeyboardDown(unsigned char key, int x, int y){
-    Keyboard keyboard(key,x,y);
-   for (auto& i : mInputEventHandlers){ i->onKeyDown(keyboard); }   
+    Keyboard keyboard(key,glutGetModifiers(),x,y,true);
+    Interface<CONTEXT>::OnKeyDown(keyboard); 
  }
 
   static void OnKeyboardUp(unsigned char key, int x, int y){
-     Keyboard keyboard(key,x,y);
-     for (auto& i : mInputEventHandlers){ i->onKeyUp(keyboard); }   
-  } 
-  
+    Keyboard keyboard(key,glutGetModifiers(),x,y,false);
+    Interface<CONTEXT>::OnKeyUp(keyboard);
+  }
+    
   static void OnSpecialDown(int key, int x, int y){
-     Keyboard keyboard(key,x,y);
-     for (auto& i : mInputEventHandlers){ i->onKeyDown(keyboard); }   
+    Keyboard keyboard(key,glutGetModifiers(),x,y,true);
+    Interface<CONTEXT>::OnKeyDown(keyboard);   
   }
 
   static void OnSpecialUp(int key, int x, int y){
-     Keyboard keyboard(key,x,y);
-     for (auto& i : mInputEventHandlers){ i->onKeyUp(keyboard); }   
+    Keyboard keyboard(key,glutGetModifiers(),x,y,false);
+    Interface<CONTEXT>::OnKeyUp(keyboard);  
   }     
 
 };
 
-/* template<class CONTEXT> */
-/* void * Interface<CONTEXT>::app; */ 
-
-template<class CONTEXT>
-vector<InputEventHandler<CONTEXT>*> Interface<CONTEXT>::mInputEventHandlers;
-
-template<class CONTEXT>
-vector<WindowEventHandler<CONTEXT>*> Interface<CONTEXT>::mWindowEventHandlers;
   
 /*!
  *  Singleton initializer
@@ -163,51 +121,42 @@ struct Glut {
 
 
 /*!
- *  Window can have a bunch of windows, 
+ *  A GlutContext can have a bunch of windows, 
  *
- *  Rename to GlutContext?
  */
-struct Window { //GlutContext {
+struct GlutContext { 
   
   static Glut * System;
 
-  Interface<Window> interface;
+  GlutInterface<GlutContext> interface;
   static vector<WindowData*> mWindows;
   static int currentWindow;
 
- // template<class APPLICATION>
- // void create(APPLICATION * _app, 
+  void create(int w, int h, int offsetW = 0, int offsetH = 0){
     
-    void create(int w, int h, int offsetW = 0, int offsetH = 0){
-    
-    int id = glutCreateWindow("glut");
-   // cout <<"INITIALIZING WINDOW " << id << " " <<  w << " " << h << endl;         
-  //  interface.app = _app;
-
+    int id = glutCreateWindow("glut window");
            
     //WINDOW CALLBACKS
-    glutDisplayFunc(Interface<Window>::OnDraw);//<APPLICATION>);           //<-- Callbacks Bind to Application
+    glutDisplayFunc(GlutInterface<GlutContext>::Draw);         
     glutTimerFunc(10, Animate, 1);
-    glutReshapeFunc(  Reshape);
-
+    glutReshapeFunc(Reshape);
     glutReshapeWindow(w,h);
     glutPositionWindow(offsetW, offsetH);
 
 
     //MOUSE INPUT CALLBACKS
-    glutMouseFunc( Interface<Window>::OnMouse);
-    glutMotionFunc( Interface<Window>::OnMouseDrag);
-    glutPassiveMotionFunc( Interface<Window>::OnMouseMove);
+    glutMouseFunc( GlutInterface<GlutContext>::OnMouse);
+    glutMotionFunc( GlutInterface<GlutContext>::OnMotion);
+    glutPassiveMotionFunc( GlutInterface<GlutContext>::OnPassiveMotion);
 
     //KEYBOARD INPUT CALLBACKS
-    glutKeyboardFunc( Interface<Window>::OnKeyboardDown );
-    glutKeyboardUpFunc(Interface<Window>::OnKeyboardUp );
-    glutSpecialFunc( Interface<Window>::OnSpecialDown );
-    glutSpecialUpFunc( Interface<Window>::OnSpecialUp );
+    glutKeyboardFunc( GlutInterface<GlutContext>::OnKeyboardDown );
+    glutKeyboardUpFunc(GlutInterface<GlutContext>::OnKeyboardUp );
+    glutSpecialFunc( GlutInterface<GlutContext>::OnSpecialDown );
+    glutSpecialUpFunc( GlutInterface<GlutContext>::OnSpecialUp );
 
     mWindows.push_back( new WindowData(w,h,id) );
     currentWindow = id-1;
-    //return currentWindow;
   }
 
   static float ratio(){ 
@@ -219,7 +168,6 @@ struct Window { //GlutContext {
   }
 
   static void ToggleFullScreen(){
-    cout << "TOGGLE" << endl;
     if (!window().isFullScreen) {
       window().save();
       glutFullScreen();
@@ -241,7 +189,7 @@ struct Window { //GlutContext {
   static void Reshape(int width, int height){
     currentWindow = glutGetWindow()-1;
     reshape(width,height);
-    //((APPLICATION*)(Interface::app) ) -> onResize(width,height);//((float)width)/100,((float)height)/100);
+    GlutInterface<GlutContext>::OnReshape(width,height);
   }
 
   static void reshape(int w, int h){ 
@@ -249,18 +197,14 @@ struct Window { //GlutContext {
     glViewport(0,0,w,h);
   }
 
-  void onFrame(){
-    SwapBuffers();
-  }
-
   void setViewport(){
     glViewport(0,0, window().width(),window().height());  
    } 
 };
 
-Glut * Window::System;
-vector<WindowData*> Window::mWindows;
-int Window::currentWindow;
+Glut * GlutContext::System;
+vector<WindowData*> GlutContext::mWindows;
+int GlutContext::currentWindow;
 
 
 } //gfx::

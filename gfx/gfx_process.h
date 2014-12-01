@@ -11,18 +11,21 @@
 #include "gfx_glsl.h"
 #include "gfx_shader.h"
 #include "gfx_scene.h"
+#include "gfx_control.h"
 
 namespace gfx{
 
-    
+  using namespace gfx::GLSL;
 
   /*!
    *  A Rendering PROCESS is meant to throw together
    *  easy experiments in shader and rendering to textures, etc
    *  Usually contain a shader program and pre or post processes.
    */
+  template<class APP>
   struct Process {      
       
+      APP * app;
       /// Pass in width and height in pixels and optional parent
       Process(int w, int h, Process * r = NULL) : 
       bEnable(true), 
@@ -36,12 +39,11 @@ namespace gfx{
 
       virtual ~Process(){};
 
+      Process& set(APP * a) { app = a; return *this; }
+
       Process * parent;                                           ///< Pointer to Parent Process
-
       bool bES;                                                   ///< Use GL or GLES
-
       int width, height;                                          ///< Pixels Width and Height
-
       bool bEnable;                                               ///< Enable this Process
      
       vector<Process*> mPre;                                      ///< List of Pre-Processing steps
@@ -54,11 +56,12 @@ namespace gfx{
       void postProcess(){ for (auto& i : mPost ) (*i)(); }        ///< Execute Post-Processing steps
 
       virtual void init() = 0;
-      virtual void operator()() = 0;
+      virtual void operator()(const WindowEventHandler& app) = 0;
 
   };
 
-  struct Renderer : public Process {
+  template<class APP>
+  struct Renderer : public Process<APP> {
 
       ShaderProgram * program;
       VertexAttributes vatt;
@@ -94,14 +97,12 @@ namespace gfx{
           program -> uniform("modelView",  xf.modelView );
       }
 
-      template<class APP>
-      virtual void operator()(APP& app){
-        scene.updateMatrices();
-        mvm = scene.xf.modelViewMatrixf();
+      void operator()(){
+        app -> scene.updateMatrices();
         program -> bind();
           vatt.enable();
-          bindUniforms(scene.xf);
-              app.onDraw();
+          bindUniforms(app -> scene.xf);
+              app -> onDraw();
           vatt.disable();
         program -> unbind();
       }
@@ -110,35 +111,36 @@ namespace gfx{
 
 
   
-  /*!
-   *  Default Process 
-   *  are defined in the shader
-   */
-  struct Default : public Process {
+  /*  *  Default Process */ 
+  /*  *  are defined in the shader */
+  /*  *1/ */
+  /* struct Default : public Process { */
 
-      Scene scene;
-      Mat4f mvm;
+  /*     Scene scene; */
+  /*     Mat4f mvm; */
 
-      virtual void init(){
+  /*     virtual void init(){ */
         
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
+  /*       glEnable(GL_DEPTH_TEST); */
+  /*       glDepthFunc(GL_LESS); */
           
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  /*       glEnable(GL_BLEND); */
+  /*       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
           
-        glLineWidth(5);
+  /*       glLineWidth(5); */
       
-    }
+  /*   } */
 
-    virtual void operator()(){
-        scene.updateMatrices();
-        mvm = scene.xf.modelViewMatrixf();
-        pipe.bind( scene.xf );
+  /*   virtual void operator()(){ */
+  /*       scene.updateMatrices(); */
+  /*       mvm = scene.xf.modelViewMatrixf(); */
+  /*       //pipe.bind( scene.xf ); */
 
-        pipe.unbind();
-    }
-  };
+  /*       //pipe.unbind(); */
+  /*   } */
+  /* }; */
+
+
 
   /*!
    *  A SLAB billboards a texture to the screen

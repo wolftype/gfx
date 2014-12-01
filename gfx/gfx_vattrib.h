@@ -99,6 +99,11 @@ namespace gfx {
           void enable(){
             for (int i=0;i<vatt.size();++i){
               vatt[i].enable();
+            }
+          }
+
+          void pointer(){
+            for (int i=0;i<vatt.size();++i){
               vatt[i].pointer();
             }
           }

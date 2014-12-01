@@ -81,9 +81,10 @@ else()
 #  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
 
   #GLV
-  include_directories(${PROJECT_SOURCE_DIR}/../GLV)
   #link_directories(${PROJECT_SOURCE_DIR}/../GLV/build/lib/)
-  target_link_libraries(${target} ${PROJECT_SOURCE_DIR}/../GLV/build/lib/libGLV.a)
+  find_package(GLV)
+  target_link_libraries(${target} ${GLV_LIBRARY}) #${PROJECT_SOURCE_DIR}/../GLV/build/lib/libGLV.a)
+  include_directories(${GLV_INCLUDE_DIR})
 endif()
 
 #PROJECT INCLUDE AND LINK

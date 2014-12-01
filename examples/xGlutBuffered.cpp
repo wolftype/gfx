@@ -16,47 +16,78 @@
  * =====================================================================================
  */
 
-#include "util/GlutWindow.h"
+#include "util/glut_window.hpp"
 #include "gfx_app.h"
-
-#include "gfx_renderer.h"
 #include "gfx_mbo.h"
-#include "gfx_process.h"
+#include "gfx_tprocess.h"
 
 using namespace gfx;
+
 /*-----------------------------------------------------------------------------
- * example use of gfx_renderer with mesh buffer objects
- * Call Re:nderer::initGL() after initializing window context 
+ * example use of rendering with mesh buffer objects
+ * Calls Renderer::init() after initializing window context 
  *-----------------------------------------------------------------------------*/
-struct MyApp : App<Window> {
+struct MyApp : GFXApp<GlutContext> {
 
   MBO * mbo;
   float time = 0;
 
-  MyApp(int w, int h, int argc, char ** argv) : App<Window>(w,h,argc,argv) {
-      init();
+  GFXRenderer renderer;
+  Slab slab;
+  unsigned char * tdata;
+
+  MyApp(int w, int h, int argc, char ** argv) : 
+  GFXApp<GlutContext>(w,h,argc,argv),
+  renderer(w,h,this),
+  slab(w,h)
+  { 
+      scene.immediate(false);         //<-- don't use immediate mode
+      renderer.init();
+      renderer.scene( &(this->scene) ); 
+      setup();
+
   }
 
-  void init(){
-    mbo = new MBO( Mesh::Circle(1,10) );  
-    scene.camera.pos(0,0,5);
+  void setup(){
+    mbo = new MBO( Mesh::Circle() );
+    
+    tdata = new unsigned char[window().width()*window().height()*4];
+  
+    for (int i=0;i<window().width();++i){
+      for (int j=0;j<window().height();++j){
+        for (int k=0;k<4;++k){
+         tdata[i*window().height()*4 + j*4 + k] = i+j-(k*j);
+        }
+      }
+    }
+    slab.texture -> data(tdata); 
+    slab.texture -> update();
   }
   
   virtual void update(){
-    mbo -> mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
+    static float counter = 0;
+    counter += .01;
+
+    mbo -> mesh.moveTo( sin(counter) * scene.camera.lens.width()/2.0,0,0);
     mbo -> update();
   }
 
   virtual void onDraw(){
-    time+=.005;    
-    update();
-    pipe.line(*mbo);
+    GFX::Render(*mbo, renderer.vatt);
+   // slab();
+  }
+
+  virtual void onFrame(){
+     clear();
+     //update(); 
+     renderer(); //<-- Renderer binds shader and calls this->onRender() method;
+     scene.step();
   }
 
 };
 
 int main(int argc, char ** argv){
-  MyApp app(500,500, argc, argv);
+  MyApp app(800,400, argc, argv);
   app.start();
   return 0;
 }

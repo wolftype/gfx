@@ -1,18 +1,9 @@
-//
-//  ctl_gl_data_h.
-//  Versor
-//
-/*
-
-    Higher Level Data containers, combine VBOs with Meshes, Framebuffers with Textures, etc
-    
-*/
 //  Created by Pablo Colapinto on 2/28/13.
-//  Copyright (c) 2013 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2013. All rights reserved.
 //
 
-#ifndef CTL_gl_data_h
-#define CTL_gl_data_h
+#ifndef GFX_MBO_h
+#define GFX_MBO_h
 
 #include "gfx_vbo.h"
 #include "gfx_vao.h"
@@ -21,21 +12,29 @@
 
 namespace gfx{
 
-    
-        //a Mesh Buffer Object, for lack of a better term
+       /*!-----------------------------------------------------------------------------
+        *   A Mesh Buffer Object contains both vertex buffer and element buffer, 
+        *   and pointers to Vertex Array Object that binds it, as well as VertexAttributes
+        *   for cases (such as OpenGLES 2) where VAO's don't exist
+        *
+        *   note: element array is currently fixed to static (not dynamic) ... should change this 
+        *-----------------------------------------------------------------------------*/   
         struct MBO {
-            
-            static int mCount;
-            
-            int idx;
-            
-            VBO vertex;                 //vertex buffer container
-            VBO index;                  //element buffer container
-  
-            Mesh mesh;                  //Actual mesh data on CPU
 
             
-            GL::MODE mode;
+            static int mCount;
+            int idx;
+            
+            VBO vertex;                 ///< vertex buffer container
+            VBO index;                  ///< element buffer container
+  
+            Mesh mesh;                  ///< Actual mesh data on CPU
+
+            GL::MODE mode;              ///< GL_LINES, etc
+
+            VAO * vao;                  ///< pointer to simple binding
+            VertexAttributes * vatt;    ///< pointer to vertex attributes
+
 
             MBO& set( GL::MODE m) {
               mode = m;
@@ -95,11 +94,26 @@ namespace gfx{
                 index.bind(); 
             }
 
+
             void unbind() { 
                 index.unbind(); 
                 vertex.unbind();   
             }
 
+            /// Here we can pass in vertex Attributes to point to . . . 
+            // (useful for OPENGLES2.0 where there is no Vertex Array Object)
+            void bind(VertexAttributes& vatt) { 
+                vertex.bind(); 
+                index.bind(); 
+                vatt.enable();
+                vatt.pointer();
+            }
+
+            void unbind(VertexAttributes& vatt){
+               vatt.disable();
+               index.unbind();
+               vertex.unbind();
+            }
              
             /// Update Vertex Info               
             void update(Vertex * val){
@@ -130,11 +144,16 @@ namespace gfx{
         int MBO::mCount;
 
 
+
+        /*-----------------------------------------------------------------------------
+         *  RENDERING ROUTINES
+         *-----------------------------------------------------------------------------*/
         struct GFX {
             
             static void Render(MBO& mbo, VertexAttributes& vatt) {
                mbo.bind();
                 vatt.enable();
+                vatt.pointer();
                   mbo.drawElements();
                 vatt.disable();
                mbo.unbind();

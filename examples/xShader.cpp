@@ -23,22 +23,18 @@
 #include "gfx_mbo.h"
 #include "gfx_glsl.h"
 
-#include "gfx_scene.h" //matrix transforms
-
 using namespace gfx;
 
-struct MyApp : App<Window> {
+struct MyApp : GfxApp<Window> {
 
   VAO * vao;            //<-- Vertex Array Object
   MBO * mbo;            //<-- Vertex Buffer Objects
 
   ShaderProgram * shader;
 
-  Scene scene;
-
-  virtual void init(){
+  virtual void setup(){
   
-   printf("My App Init\n");
+   printf("My App Setup\n");
 
    //Compile and Link Shader 
    shader = new ShaderProgram( GLSL::DefaultVert, GLSL::DefaultFrag, 0);  
@@ -54,18 +50,21 @@ struct MyApp : App<Window> {
    //Unbind Vertex Array Object
    vao -> unbind();
 
+   scene.bImmediate = false;
   }
 
   virtual void onDraw(){
+    static float counter = 0;
+    counter += .01;
 
-    scene.updateMatrices();
-    
     shader->bind(); 
       shader -> uniform("lightPosition", 2.0, 2.0, 2.0);  
       shader -> uniform("projection",  scene.xf.proj);
       shader -> uniform("normalMatrix", scene.xf.normal);  
       shader -> uniform("modelView",  scene.xf.modelView ); 
 
+      mbo -> mesh.moveTo( sin(counter) * scene.camera.lens.width()/2.0,0,0);
+      mbo->update();
       vao->bind();
         mbo->drawElements();
       vao->unbind();
@@ -74,10 +73,8 @@ struct MyApp : App<Window> {
 
   }
 
-  virtual bool onMouseDown(const Mouse& m){
-
-    cout << m.x << " " << m.y << endl; 
-    return false;
+  virtual void onMouseDown(const Mouse& m){
+  
   }
 
 };

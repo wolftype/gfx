@@ -3,7 +3,7 @@
  *
  *       Filename:  glv_control.h
  *
- *    Description:  adapted from alloGLV glue (here we use templates to help disentangle)
+ *    Description:  adapted from alloGLV glue (here we use templates to help disentangle dependencies)
  *                  to relay info from windowing context to glv...
  *
  *        Version:  1.0
@@ -21,26 +21,27 @@
 #ifndef  glv_control_INC
 #define  glv_control_INC
 
+#include "gfx_control.h"
+
 #include "GLV/glv_core.h"
 #include "GLV/glv_buttons.h"
-#include "util/gfx_event.h"
 
 namespace gfx {
 
 /// Base class for mapping window and input events to a GLV controller
 class GLVControl {
 public:
-	///
-	GLVControl(glv::GLV& v): mGLV(&v){}
+  ///
+  GLVControl(glv::GLV& v): mGLV(&v){}
 
-	/// Set GLV controller
-	GLVControl& glv(glv::GLV& v){ mGLV=&v; return *this; }
-	
-	/// Get mutable GLV controller
-	glv::GLV& glv(){ return *mGLV; }
+  /// Set GLV controller
+  GLVControl& glv(glv::GLV& v){ mGLV=&v; return *this; }
+  
+  /// Get mutable GLV controller
+  glv::GLV& glv(){ return *mGLV; }
 
 protected:
-	glv::GLV * mGLV;
+  glv::GLV * mGLV;
 };
 
 
@@ -49,33 +50,32 @@ protected:
 template<class CONTEXT>
 class GLVInputControl : public GLVControl, public InputEventHandler<CONTEXT> {
 public:
-	///
-	GLVInputControl(glv::GLV& v): GLVControl(v){}
-	virtual ~GLVInputControl(){}
+  ///
+  GLVInputControl(glv::GLV& v): GLVControl(v){}
+  virtual ~GLVInputControl(){}
 
-	virtual bool onMouseDown(const Mouse& m);
-	virtual bool onMouseUp(const Mouse& m);
+  virtual void onMouseDown(const Mouse& m);
+  virtual void onMouseUp(const Mouse& m);
 
-	virtual bool onMouseDrag(const Mouse& m){
-		return !motionToGLV(m, glv::Event::MouseDrag);
-	}
+  virtual void onMouseDrag(const Mouse& m){
+    motionToGLV(m, glv::Event::MouseDrag);
+  }
 
-	virtual bool onMouseMove(const Mouse& m){
+  virtual void onMouseMove(const Mouse& m){
+    motionToGLV(m, glv::Event::MouseMove);
+  }
 
-		return !motionToGLV(m, glv::Event::MouseMove);
-	}
+  virtual void onKeyDown(const Keyboard& k){
+    keyToGLV(k, true);
+  }
 
-	virtual bool onKeyDown(const Keyboard& k){
-		return !keyToGLV(k, true);
-	}
-
-	virtual bool onKeyUp(const Keyboard& k){
-		return !keyToGLV(k, false);
-	}
+  virtual void onKeyUp(const Keyboard& k){
+    keyToGLV(k, false);
+  }
 
 protected:
-	bool keyToGLV(const Keyboard& k, bool down);
-	bool motionToGLV(const Mouse& m, glv::Event::t e);
+  void keyToGLV(const Keyboard& k, bool down);
+  void motionToGLV(const Mouse& m, glv::Event::t e);
 };
 
 
@@ -84,16 +84,14 @@ protected:
 template<class CONTEXT>
 class GLVWindowControl : public GLVControl, public WindowEventHandler<CONTEXT> {
 public:
-	///
-	GLVWindowControl(glv::GLV& v): GLVControl(v){}
-	virtual ~GLVWindowControl(){}
+  ///
+  GLVWindowControl(glv::GLV& v): GLVControl(v){}
+  virtual ~GLVWindowControl(){}
 
-	virtual bool onCreate();
-	virtual bool onDestroy();
-	virtual bool onResize(int dw, int dh);
-	//virtual bool onVisibility(bool v){ return true; }
-
-	virtual bool onFrame();
+  virtual void onCreate();
+  virtual void onDestroy();
+  virtual void onResize(int dw, int dh);
+  virtual void onFrame();
 };
 
 
@@ -103,37 +101,102 @@ template<class CONTEXT>
 class GLVBinding : public glv::GLV{
 public:
 
-	GLVBinding():	mWindowCtrl(*this), mInputCtrl(*this)
-  {
-	  glv::GLV::disable(glv::DrawBack);
+  GLVBinding() : mWindowCtrl(*this), mInputCtrl(*this){
+    disable( glv::DrawBack);
   }
-	/// Bind GLV GUI to window
-	
-	/// By default, the GLV input event handler is attached to the front of the 
-	/// window handler list and the GLV window event handler to the end of the
-	/// window handler list. This means that the GUI will receive input events
-	/// first and be drawn last.
-	void bindTo(CONTEXT& win){
-    win.interface.addWindowEventHandler(&mWindowCtrl);
-    win.interface.addInputEventHandler(&mInputCtrl);
+  
+  void listenTo(CONTEXT& win){
+    win.interface.addWindowEventHandler(&mWindowCtrl, &win);
+    win.interface.addInputEventHandler(&mInputCtrl, &win);
   }
 
 private:
-	GLVWindowControl<CONTEXT> mWindowCtrl;
-	GLVInputControl<CONTEXT> mInputCtrl;
+  GLVWindowControl<CONTEXT> mWindowCtrl;
+  GLVInputControl<CONTEXT> mInputCtrl;
 };
+
+
+template<class CONTEXT>
+inline void GLVInputControl<CONTEXT>::onMouseDown(const Mouse& m){
+  glv::space_t xrel=m.x, yrel=m.y;
+  glv().setMouseDown(xrel,yrel, m.button, 0);
+  glv().setMousePos(m.x, m.y, xrel, yrel);
+  glv().propagateEvent();
+}
+
+template<class CONTEXT>
+inline void GLVInputControl<CONTEXT>::onMouseUp(const Mouse& m){
+  glv::space_t xrel, yrel;
+  glv().setMouseUp(xrel,yrel, m.button, 0);
+  glv().setMousePos(m.x, m.y, xrel, yrel);
+  glv().propagateEvent();
+}
+
+template<class CONTEXT>
+inline void GLVInputControl<CONTEXT>::keyToGLV(const Keyboard& k, bool down){
+  down ? glv().setKeyDown(k.code) : glv().setKeyUp(k.code);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->alt(k.alt);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->ctrl(k.ctrl);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->shift(k.shift);
+  glv().propagateEvent();
+}
+
+template<class CONTEXT>
+inline void GLVInputControl<CONTEXT>::motionToGLV(const Mouse& m, glv::Event::t e){
+  glv::space_t x = m.x, y = m.y, relx = x, rely = y;
+  glv().setMouseMotion(relx, rely, e);
+  glv().setMousePos((int)x, (int)y, relx, rely);
+  glv().propagateEvent();
+}
+
+
+template<class CONTEXT>
+inline void GLVWindowControl<CONTEXT>::onCreate(){
+  glv().broadcastEvent(glv::Event::WindowCreate);
+}
+
+template<class CONTEXT>
+inline void GLVWindowControl<CONTEXT>::onDestroy(){
+  glv().broadcastEvent(glv::Event::WindowDestroy);
+}
+
+template<class CONTEXT>
+inline void GLVWindowControl<CONTEXT>::onResize(int dw, int dh){
+  glv().extent(dw,dh );//glv().width(), glv().height());
+  glv().broadcastEvent(glv::Event::WindowResize);
+}
+
+template<class CONTEXT>
+inline void GLVWindowControl<CONTEXT>::onFrame(){
+  glv().drawGLV(glv().w, glv().h, .1);//WindowEventHandler<CONTEXT>::window().spfActual());
+}
 
 
 
 /* /// A GLV that can be detached into its own window from a parent window */
+/* template<class CONTEXT> */
 /* class GLVDetachable : public glv::GLV { */
 /* public: */
 
 /* 	/// */
-/* 	GLVDetachable(); */
+/* 	GLVDetachable() :	glv::GLV(0,0), */ 
+/* 	mParentWindow(NULL), mInputControl(*this), mWindowControl(*this) */
+/*   { */
+/* 	 init(); */
+/*   } */
+
+
 
 /* 	/// @param[in] parent	parent window */
-/* 	GLVDetachable(Window& parent); */
+/* 	GLVDetachable(CONTEXT& parent) :	glv::GLV(0,0), */ 
+/* 	mInputControl(*this), mWindowControl(*this) */
+/* { */
+/* 	parentWindow(parent); */
+/* 	init(); */
+/* } */
+
 	
 /* 	/// Get button for detaching/attaching GUI */
 /* 	glv::Button& detachedButton(){ return mDetachedButton; } */
@@ -142,96 +205,130 @@ private:
 /* 	Window& parentWindow(){ return *mParentWindow; } */
 
 /* 	/// Set parent window */
-/* 	GLVDetachable& parentWindow(Window& v); */
+/* 	GLVDetachable& parentWindow(CONTEXT& v); */
 
 /* 	/// Get detached window */
-/* 	Window& detachedWindow(){ return mDetachedWindow(); } */
-/* 	const Window& detachedWindow() const { return mDetachedWindow(); } */
+/* 	CONTEXT& detachedWindow(){ return mDetachedWindow(); } */
+/* 	const CONTEXT& detachedWindow() const { return mDetachedWindow(); } */
 
 /* 	/// Get whether GUI is detached from parent window */
-/* 	bool detached() const { return detachedWindow().created(); } */
+/* //	bool detached() const { return detachedWindow().created(); } */
 
 /* 	/// Get whether GUI is detached from parent window */
-/* 	GLVDetachable& detached(bool v); */
+/* //	GLVDetachable& detached(bool v); */
 	
 /* 	/// Toggle whether GUI is detached from parent window */
-/* 	GLVDetachable& detachedToggle(){ return detached(!detached()); } */
+/* //	GLVDetachable& detachedToggle(){ return detached(!detached()); } */
 
 /* private: */
-/* 	Window * mParentWindow; */
-/* 	glv::Lazy<Window> mDetachedWindow; */
-/* 	GLVInputControl mInputControl; */
-/* 	GLVWindowControl mWindowControl; */
+/* 	CONTEXT * mParentWindow; */
+/* 	glv::Lazy<CONTEXT> mDetachedWindow; */
+/* 	GLVInputControl<CONTEXT> mInputControl; */
+/* 	GLVWindowControl<CONTEXT> mWindowControl; */
 /* 	glv::Button mDetachedButton; */
 
-/* 	void addGUI(Window& w); */
-/* 	void remGUI(Window& w); */
+/* 	void listenTo(CONTEXT& w); */
 /* 	void init(); */
 /* }; */
 
 
-template<class CONTEXT>
-inline bool GLVInputControl<CONTEXT>::onMouseDown(const Mouse& m){
-	glv::space_t xrel=m.x, yrel=m.y;
-	glv().setMouseDown(xrel,yrel, m.button, 0);
-	glv().setMousePos(m.x, m.y, xrel, yrel);
-	return !glv().propagateEvent();
-}
+/* template<class CONTEXT> */
+/* static void ntDetachedButton(const glv::Notification& n){ */
+/* 	GLVDetachable<CONTEXT> * R = n.receiver<GLVDetachable<CONTEXT>>(); */
+/* 	//if(R->mouse().isDown()) return; */
+/* 	/1* if(n.sender<glv::Button>()->getValue()){ *1/ */
+/* 	/1* 	R->detached(true); *1/ */
+/* 	/1* } *1/ */
+/* 	/1* else{ *1/ */
+/* 	/1* 	R->detached(false); *1/ */
+/* 	/1* } *1/ */
+/* } */
 
-template<class CONTEXT>
-inline bool GLVInputControl<CONTEXT>::onMouseUp(const Mouse& m){
-	glv::space_t xrel, yrel;
-	glv().setMouseUp(xrel,yrel, m.button, 0);
-	glv().setMousePos(m.x, m.y, xrel, yrel);
-	return !glv().propagateEvent();
-}
+/* template<class CONTEXT> */
+/* void GLVDetachable<CONTEXT>::init(){ */
+/* 	mDetachedButton.attach(ntDetachedButton<CONTEXT>, glv::Update::Value, this); */
+/* 	mDetachedButton.disable(glv::Momentary); */
+/* 	mDetachedButton.symbolOn(glv::draw::viewChild); */
+/* 	mDetachedButton.symbolOff(glv::draw::viewSibling); */
+/* 	mDetachedButton.disable(glv::DrawBorder); */
+/* 	stretch(1,1); */
+/* 	this->disable(glv::DrawBack); */
+/* } */
 
-template<class CONTEXT>
-inline bool GLVInputControl<CONTEXT>::keyToGLV(const Keyboard& k, bool down){
-	down ? glv().setKeyDown(k.code) : glv().setKeyUp(k.code);
-	const_cast<glv::Keyboard*>(&glv().keyboard())->alt(k.alt);
-	const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
-	const_cast<glv::Keyboard*>(&glv().keyboard())->ctrl(k.ctrl);
-	const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
-	const_cast<glv::Keyboard*>(&glv().keyboard())->shift(k.shift);
-	return glv().propagateEvent();
-}
+/* template<class CONTEXT> */
+/* void GLVDetachable<CONTEXT>::listenTo(CONTEXT& w){ */
+/*     w.interface.addWindowEventHandler(&mWindowControl); */
+/*     w.interface.addInputEventHandler(&mInputControl); */
+/* } */
 
-template<class CONTEXT>
-inline bool GLVInputControl<CONTEXT>::motionToGLV(const Mouse& m, glv::Event::t e){
-	glv::space_t x = m.x, y = m.y, relx = x, rely = y;
-	glv().setMouseMotion(relx, rely, e);
-	glv().setMousePos((int)x, (int)y, relx, rely);
-	return glv().propagateEvent();
-}
+/* /1* template<class CONTEXT> *1/ */
+/* /1* GLVDetachable& GLVDetachable::detached(bool v){ *1/ */
+/* /1* 	if(v && !detached()){			// is not detached *1/ */
+/* /1* 		if(mParentWindow){ *1/ */
+/* /1* 			//remGUI(parentWindow()); *1/ */
+/* /1* 		} *1/ */
+/* /1* 		glv::Rect ru = unionOfChildren(); *1/ */
+/* /1* 		enable(glv::DrawBack); *1/ */
+/* /1* 		{ *1/ */
+/* /1* 			glv::View * cv = child; *1/ */
+/* /1* 			while(cv){ *1/ */
+/* /1* 				cv->posAdd(-ru.l, -ru.t); *1/ */
+/* /1* 				cv = cv->sibling; *1/ */
+/* /1* 			} *1/ */
+/* /1* 		} *1/ */
+/* /1* 		//ru.print(); *1/ */
+/* /1* 		//posAdd(-ru.l, -ru.t); *1/ */
+/* /1* 		//detachedWindow().create(Window::Dim(ru.w, ru.h)); *1/ */
+/* /1* 		int pl=0, pt=0; *1/ */
+/* /1* 		if(mParentWindow){ *1/ */
+/* /1* 			pl = parentWindow().dimensions().l; *1/ */
+/* /1* 			pt = parentWindow().dimensions().t; *1/ */
+/* /1* 			//printf("%d %d\n", pl, pt); *1/ */
+/* /1* 		} *1/ */
+/* /1* 		detachedWindow().create(Window::Dim(pl, pt, ru.w, ru.h)); *1/ */
+/* /1* 		listenTo(detachedWindow()); *1/ */
+/* /1* 	} *1/ */
+/* /1* 	else if(detached()){ // is currently detached, attach back to parent, if any *1/ */
+/* /1* 		remGUI(detachedWindow()); *1/ */
+/* /1* 		detachedWindow().destroy(); *1/ */
+/* /1* 		if(mParentWindow){ *1/ */
+/* /1* 			disable(glv::DrawBack); *1/ */
+/* /1* 			pos(0,0); *1/ */
+/* /1* 			addGUI(parentWindow()); *1/ */
+/* /1* 		} *1/ */
+/* /1* 	} *1/ */
 
+/* /1* 	// This is a hack to ensure all GLV mouse button states are "up" (false). *1/ */
+/* /1* 	// Because the GLV changes windows between mouse down and mouse up calls, *1/ */
+/* /1* 	// the mouse relative position gets into an inconsistent state on mouse up. *1/ */
+/* /1* 	const int mx = mouse().x(); *1/ */
+/* /1* 	const int my = mouse().y(); *1/ */
+/* /1* 	for(int i=0; i<GLV_MAX_MOUSE_BUTTONS; ++i){ *1/ */
+/* /1* 		glv::space_t x=mx,y=my; *1/ */
+/* /1* 		setMouseUp(x,y, i, 1); *1/ */
+/* /1* 	} *1/ */
 
-template<class CONTEXT>
-inline bool GLVWindowControl<CONTEXT>::onCreate(){
-	glv().broadcastEvent(glv::Event::WindowCreate);
-	return true;
-}
+/* /1* 	return *this; *1/ */
+/* /1* } *1/ */
 
-template<class CONTEXT>
-inline bool GLVWindowControl<CONTEXT>::onDestroy(){
-	glv().broadcastEvent(glv::Event::WindowDestroy);
-	return true;
-}
-
-template<class CONTEXT>
-inline bool GLVWindowControl<CONTEXT>::onResize(int dw, int dh){
-	glv().extent(glv().width() + dw, glv().height() + dh);
-	glv().broadcastEvent(glv::Event::WindowResize);
-	return true;
-}
-
-template<class CONTEXT>
-inline bool GLVWindowControl<CONTEXT>::onFrame(){
-	glv().drawGLV(glv().w, glv().h, .01);//WindowEventHandler<CONTEXT>::window().spfActual());
-	return true;
-}
-
-
+/* template<class CONTEXT> */
+/* GLVDetachable<CONTEXT>& GLVDetachable<CONTEXT>::parentWindow(CONTEXT& v){ */
+/* 	/1* if(&v != mParentWindow){ *1/ */
+/* 	/1* 	if(!detached()){ *1/ */
+/* 	/1* 		if(mParentWindow){ *1/ */
+/* 	/1* 			remGUI(parentWindow()); *1/ */
+/* 	/1* 		} *1/ */
+/* 			mParentWindow = &v; */
+/* 			disable(glv::DrawBack); */
+/* 			listenTo(parentWindow()); */
+/* 			/1* //printf("%d\n", parentWindow().created()); *1/ */
+/* 		/1* } *1/ */
+/* 		/1* else{ *1/ */
+/* 			/1* mParentWindow = &v; *1/ */
+/* 		/1* } *1/ */
+/* 	/1* } *1/ */
+/* 	return *this; */
+/* } */
 
 
 } // gfx::

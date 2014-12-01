@@ -1,13 +1,32 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  gfx_scene.h
+ *
+ *    Description:  Matrix Transforms and Camera Object etc
+ *
+ *        Version:  1.0
+ *        Created:  06/09/2014 17:50:12
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Pablo Colapinto (), gmail -> wolftype
+ *   Organization:  
+ *
+ * =====================================================================================*/
+
 #ifndef GFX_SCENE_INCLUDED
 #define GFX_SCENE_INCLUDED   
 
 #include "gfx_gl.h" 
 #include "gfx_xfmatrix.h" 
-//#include "gfx_glsl.h" 
-
 
 namespace gfx{   
 
+  
+  /*-----------------------------------------------------------------------------
+   *  Focal Length, Width, Near and Far Clipping Planes, ortho mode boolean ...
+   *-----------------------------------------------------------------------------*/
   struct Lens {
       /* Lens Parameters */
       bool bOrtho;
@@ -24,7 +43,7 @@ namespace gfx{
 
       /* Implicit Getters and Setters */
       void   width ( float w )  { mWidth = w;}            ///< set width
-      void   height( float h )  { mHeight = h;}            ///< set height
+      void   height( float h )  { mHeight = h;}           ///< set height
       
       float   ratio()   const { return width()/ height(); }
       float   width()    const {return mWidth;}              ///< get width
@@ -59,6 +78,10 @@ namespace gfx{
 
   };
     
+  
+  /*-----------------------------------------------------------------------------
+   *  Position and Orientation (vec3 and quat)
+   *-----------------------------------------------------------------------------*/
   struct Pose {
     Pose(Vec3f p, Quat q = Quat(1,0,0,0)) : mPos(p), mQuat(q) {}// orient(); }
     Pose(float x, float y, float z) : mPos(x,y,z), mQuat(1,0,0,0) {}// orient(); }
@@ -110,7 +133,11 @@ namespace gfx{
      
   }; 
   
-  //Moving Pose
+
+  
+/*-----------------------------------------------------------------------------
+ *  A moving pose (acceleration, velocity, rotational velocity)
+ *-----------------------------------------------------------------------------*/
   struct MPose : public Pose {
     float aBiv, aVec; 
     Vec3f dVec, dBiv;  
@@ -143,12 +170,14 @@ namespace gfx{
     }
      
   };
-  
+
+    
+/*-----------------------------------------------------------------------------
+ * VIEW: Left, Top, Right, Bottom, and methods
+ *-----------------------------------------------------------------------------*/
   struct View {   
 
     View(double _l=-1, double _t=1, double _r=1, double _b=-1) : l(_l), t(_t), r(_r), b(_b) {}
-
-   // View (){}
 
     //Views for multiscreen environments will typically have same eye 
     //CONSTRUCT (fed from renderer setview)
@@ -189,6 +218,10 @@ namespace gfx{
 
   };
 
+  
+/*-----------------------------------------------------------------------------
+ *  CAMERA: A moving pose with a view and a lens
+ *-----------------------------------------------------------------------------*/
   struct Camera : public MPose {     
     
     Lens lens;
@@ -223,17 +256,24 @@ namespace gfx{
 
   }; 
   
+
+
+/*-----------------------------------------------------------------------------
+ *  SCENE: Camera, Model pose, matrix containers, whether to use immediate mode
+ *-----------------------------------------------------------------------------*/
   struct Scene {
 
      Camera camera;
      MPose model;
      XformMat xf;
-    // float mv[16];
 
      Pose viewpose;  
      Vec3f light;
-     
-     Scene() : camera(0,0,5), light(3,3,3) {} 
+      
+     bool bImmediate;
+     Scene& immediate(bool b) { bImmediate = b; return *this; } 
+
+     Scene() : camera(0,0,5), light(3,3,3), bImmediate(true) {} 
       
      void fit(int w, int h){
        camera.lens.width( w ); 
@@ -247,7 +287,6 @@ namespace gfx{
       camera.lens.height( h ); 
       Pose p(-w/2.0,-h/2.0, 0); 
       camera.view = gfx::View( camera.pos(), p, 1.0 * w/h, h );
-      updateMatrices();
     }
 
       Quat cat() { return camera.quat() * model.quat(); } 
@@ -262,46 +301,54 @@ namespace gfx{
         return (!(mvm().transpose()) );
       }
 
-      void updateMatrices(){      
-        Mat4f tmvm =  mvm();    
-        Mat4f tproj = camera.proj();  
-        Mat4f tnorm = norm();
-
-        copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
-        copy(tproj.val(), tproj.val() + 16, xf.proj);
-        copy(tnorm.val(), tnorm.val() + 16, xf.normal);
-       
-        xf.toDoubles();
-        //xf.fill(mv);
-      } 
-
-     void onFrame(){
-       updateMatrices();         
-     }    
-    
-                                 
-    // FIXED FUNCTION PIPELINE  
-    #ifdef GL_IMMEDIATE_MODE
     void push(){
+      if(bImmediate){
+        pushMatrices();
+        getMatrices();
+      }else{
+        updateMatrices();
+      }
+    }
+
+    void pop(){
+      if(bImmediate) popMatrices();
+    }
+
+    void step(){
+      model.step(); camera.step();
+    }
+
+    void updateMatrices(){      
+      Mat4f tmvm =  mvm();    
+      Mat4f tproj = camera.proj();  
+      Mat4f tnorm = norm();
+
+      copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
+      copy(tproj.val(), tproj.val() + 16, xf.proj);
+      copy(tnorm.val(), tnorm.val() + 16, xf.normal);
+     
+      xf.toDoubles();
+    } 
+
+
+    void pushMatrices(){
         
-       // Pose& cam = camera;
-      Vec3f look = camera.pos() + camera.forward(); 
+     // FIXED FUNCTION PIPELINE  
+    #ifdef GL_IMMEDIATE_MODE
+
+        Vec3f look = camera.pos() + camera.forward(); 
       
         GL :: enablePreset();
         GL :: lightPos( light[0], light[1], light[2] );
     
-        glPushAttrib(GL_VIEWPORT_BIT );
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
 
         glLoadIdentity();
         if ( camera.lens.bOrtho ){
             float oz =  camera.pos()[2];
-            //glOrtho(-1.0 * oz, 1.0* oz, -1.0* oz, 1.0* oz, -50.0, 50.0); 
             float aspect = camera.lens.mWidth/camera.lens.mHeight;
             glOrtho(-aspect* oz, aspect* oz,-1.0 * oz, 1.0 * oz, -50.0, 50.0);
-            //camera.lens.mWidth, camera.lens.mHeight, 0.f, -50.0, 50.0); 
-
         } else {
             gluPerspective( camera.lens.mFocal, camera.lens.mWidth/camera.lens.mHeight, camera.lens.mNear, camera.lens.mFar);        
         }
@@ -314,14 +361,14 @@ namespace gfx{
         look.x, look.y, look.z, 
         camera.up().x, camera.up().y, camera.up().z );   
       
-      Vec4<> tr = model.quat().axan(); 
+        Vec4<> tr = model.quat().axan(); 
       
-      glRotatef ( tr[3], tr[0], tr[1], tr[2]  );
-
+        glRotatef ( tr[3], tr[0], tr[1], tr[2]  );
+    #endif
     }
 
-    void pop(){
-      glPopAttrib();
+    void popMatrices(){
+    #ifdef GL_IMMEDIATE_MODE
 
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
@@ -330,71 +377,23 @@ namespace gfx{
       glPopMatrix();
     
       GL :: disablePreset();  
+    #endif
      }    
   
      void getMatrices(){
-           glGetDoublev(GL_PROJECTION_MATRIX, xf.projd);  
-           glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd);
-           glGetIntegerv(GL_VIEWPORT, xf.viewport);  
-           
-           xf.toFloats();
-       } 
-    #endif  
+    #ifdef GL_IMMEDIATE_MODE
+      glGetDoublev(GL_PROJECTION_MATRIX, xf.projd);  
+      glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd);
+      glGetIntegerv(GL_VIEWPORT, xf.viewport);  
+      
+      xf.toFloats();
+    #endif
+    } 
+   
+
   };
       
-      //ADVANCED PIPELINE -> Update Shader Uniforms
-        // void updateMatrices(){
-        // 
-        //     Mat4f tmod = mod();
-        //     Mat4f tview = XMat::lookAt( cam.x(), cam.y(), cam.z() * -1, cam.pos());
-        //     Mat4f tmvm = mvm();
-        //     Mat4f tproj = proj();
-        //     Mat4f tnorm = norm();
-        //     
-        //     copy(tmod.val(), tmod.val() + 16, xf.model);
-        //     copy(tview.val(), tview.val() + 16, xf.view);
-        //     copy(tmvm.val(), tmvm.val() + 16, xf.modelView);
-        //     copy(tproj.val(), tproj.val() + 16, xf.proj);
-        //     copy(tnorm.val(), tnorm.val() + 16, xf.normal);
-        //  
-        //     xf.toDoubles();
-        // }
-        //
-        //     /* struct Slab{ */
-    /*     Vec3f blu, bru, tru, tlu; */
-    /*     Vec3f& operator[] (int i ) { return (&blu)[i]; } */
-    /* }; */
 
-    /* struct Volume{ */
-    /*     Vec3f bl, br, tr, tl, blb, brb, trb, tlb; */ 
-    /*     Vec3f& operator[] (int i ) { return (&bl)[i]; } */
-    /* }; */ 
-
-  /* struct Frustrum{ */
-  /*     float width, height, depth; */
-  /*     float bwidth, bheight; */
-
-  /*     Slab dir; */
-  /*     Volume box; */
-
-  /*     void calc(){ */
-  /*         dir.blu = (box.blb - box.bl).unit(); */
-  /*         dir.tru = (box.trb - box.tr).unit(); */
-  /*         dir.bru = (box.brb - box.br).unit(); */
-  /*         dir.tlu = (box.tlb - box.tl).unit(); */
-  /*         width = box.br[0] - box.bl[0]; */
-  /*         height = box.tr[1] - box.br[1]; */
-  /*         depth = box.blb[2] - box.bl[2]; */
-  /*         bwidth = box.brb[0] - box.blb[0]; */
-  /*         bheight =box.trb[1] - box.brb[1]; */
-
-  /*     } */
-
-  /*     // Pln left(){ return Ro::null(box.tl) ^ Ro::null(box.bl) ^ Ro::null(box.blb) ^ Inf(1); } */
-  /*     // Pln right(){ return Ro::null(box.tr) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */
-  /*     // Pln top(){ return Ro::null(box.tl) ^ Ro::null(box.tr) ^ Ro::null(box.trb) ^ Inf(1); } */
-  /*     // Pln bottom(){ return Ro::null(box.bl) ^ Ro::null(box.br) ^ Ro::null(box.brb) ^ Inf(1); } */ 
-  /* }; */
 }     
 
 #endif
