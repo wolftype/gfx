@@ -26,7 +26,7 @@
 
 using namespace gfx;
 
-struct MyApp : public GfxApp<GlutContext> {
+struct MyApp : public GFXApp<GlutContext> {
 
   Mesh * mesh;
 
@@ -42,8 +42,8 @@ struct MyApp : public GfxApp<GlutContext> {
   virtual void setup(){
     mesh = new Mesh ( Mesh::Circle(1) );
 
-    mWindow.interface.addInputEventHandler(this); 
-    glv.listenTo( window() );
+    //mContext.interface.addInputEventHandler(this); 
+    glv.listenTo( mContext );
     glv << gui;
     gui( bBut, "hello" );
     gui( amtA, "amtA",0,100 );

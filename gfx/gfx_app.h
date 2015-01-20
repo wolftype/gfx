@@ -3,11 +3,21 @@
  *
  *       Filename:  gfx_app.h
  *
- *    Description:  a lightweight GFXAPP utility that takes window contexts as a template parameter
+ *    Description:  a lightweight utility that takes window contexts as a template parameter
  *
  *                  Basic Usage: subclass this and define setup() and onDraw() methods;
+ *                  
+ *                  GFXApp will handle mouse and window event callbacks defined in gfx_control.h
  *
- *                  WINDOWCONTEXT must have:
+ *                  for fancier rendering (i.e. rendering to texture or blur etc)
+ *                  overwrite the onFrame() and onRender() methods.
+ *
+ *                    onMouseDown(const Mouse& m)
+ *                    onMouseDrag(const Mouse& m)
+ *
+ *                    etc.
+ *
+ *                  WINDOWCONTEXT template parameter must have:
  *                    System() (singleton method)
  *                    Initialize() function
  *                    Start() function
@@ -32,18 +42,19 @@
 #include <stdio.h>
 
 #include "gfx_lib.h"              //<- Graphics Libraries
-#include "gfx_control.h"          //<- Event Handling
 #include "gfx_scene.h"            //<- Matrix transforms
+#include "gfx_control.h"          //<- Event Handling
 #include "gfx_sceneController.h"  //<- Matrix transforms user input
-#include "gfx_nprocess.h"         //<- Process
+#include "gfx_objectController.h" //<- Objects in Memory Callbacks for interface
+#include "gfx_nprocess.h"         //<- Graphics Pipeline Processes
 
 
 namespace gfx {
 
 template<class WINDOWCONTEXT>
 struct GFXApp : 
-public InputEventHandler,//<WINDOWCONTEXT>, 
-public WindowEventHandler,//<WINDOWCONTEXT>, 
+public InputEventHandler,
+public WindowEventHandler,
 public GFXRenderNode 
 {
 
@@ -52,6 +63,7 @@ public GFXRenderNode
 
   Scene scene;
   SceneController sceneController;
+  ObjectController objectController;
   
   /*-----------------------------------------------------------------------------
    *  Pass in width and height of window, and any command line arguments
@@ -70,10 +82,21 @@ public GFXRenderNode
       mContext.interface.addWindowEventHandler(this);
       mContext.interface.addInputEventHandler(this); 
 
-     //bind sceneController to scene and add as listener to input events 
+      /*-----------------------------------------------------------------------------
+       *  Add SceneController and ObjectController Callbacks
+       *-----------------------------------------------------------------------------*/
+      //bind sceneController to scene and add as listener to input events 
       sceneController.scene(&scene);
       sceneController.io(&mContext.interface.io);
       mContext.interface.addInputEventHandler(&sceneController);
+
+      //attach this application (io and scene) to objectController 
+      objectController.io( &mContext.interface.io );  
+      objectController.scene( &scene );
+    
+      //add object controller as listener to input and window events
+      mContext.interface.addInputEventHandler(&objectController);
+      mContext.interface.addWindowEventHandler(&objectController);
 
       /*-----------------------------------------------------------------------------
        *  Initialize GLEW and check for features
@@ -93,7 +116,6 @@ public GFXRenderNode
   }
 
 
-
   /*-----------------------------------------------------------------------------
    *  User must define setup() in a subclass. setup() is called by App::start() method
    *-----------------------------------------------------------------------------*/
@@ -103,8 +125,7 @@ public GFXRenderNode
    *  User must Define onDraw() in a subclass. onDraw() is called by onFrame() method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
-
-  
+ 
   /*-----------------------------------------------------------------------------
    *  Starts Graphics Thread.  To be called from main()
    *-----------------------------------------------------------------------------*/
@@ -117,7 +138,6 @@ public GFXRenderNode
    *  Optional method for updating physics etc -- called onFrame();
    *-----------------------------------------------------------------------------*/
   virtual void update(){}
-
 
   /*-----------------------------------------------------------------------------
    *  Clear Window Contents

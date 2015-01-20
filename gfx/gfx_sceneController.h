@@ -30,8 +30,6 @@
 
 namespace gfx{
 
-
-    //template<class CONTEXT>
     class SceneController : public InputEventHandler {
 
       Scene * mScene; 
@@ -44,7 +42,9 @@ namespace gfx{
 
      public:     
   
-        SceneController( Scene * s = NULL ) : mScene(s), mRotVel(.02), mVel(.1), mModelRotVel(.1) {};  
+        SceneController( Scene * s = NULL ) : 
+        mScene(s), mRotVel(.02), mVel(.1), mModelRotVel(.1) 
+        {};  
         
         Scene& scene() { return *mScene; }
         void scene(Scene *s ){ mScene=s; }
@@ -52,8 +52,6 @@ namespace gfx{
         GFXio& io() { return *mIO; }
         void io(GFXio * io) { mIO=io; }
                             
-       // virtual void init() = 0;
-
         void inputCalc();        ///< Calculate Mouse Movements based on x and dx
         void viewCalc();         ///< Calculate Window Matrices, Screen Coordinates of Mouse
 
@@ -111,19 +109,18 @@ namespace gfx{
 };   
 
     void SceneController :: onMouseDown(const Mouse& m){
-        //vd().clickray = vd().ray;
-        tModelRot = mScene -> model.rot(); 
+        tModelRot = mScene -> model.rot(); //save state on click 
      }
 
     void SceneController :: onMouseMove(const Mouse& m){  
     }
 
     void SceneController :: onMouseDrag(const Mouse& m){ 
-        mouseNavigate();
+        //mouseNavigate();
     }        
       
     void SceneController:: onMouseUp(const Mouse& m){
-        mouseNavigateStop();
+        //mouseNavigateStop();
     }
 
    
@@ -166,6 +163,9 @@ namespace gfx{
     }
 
 
+/*-----------------------------------------------------------------------------
+ *  TRANFORM MODEL USING KEYBOARD ARROWS
+ *-----------------------------------------------------------------------------*/
     void SceneController :: keyboardModelTransform(float acc, bool trigger){
 
           model().ab() = acc;
@@ -182,26 +182,21 @@ namespace gfx{
 
               switch( io().keyboard.code ){
                   case Key::Up:
-                //  case Mouse::Up:
                   {    
-                      // camera().modelView().yz()
                       model().db() += tyz * mModelRotVel;  
                       break;
                   }
                   case Key::Down: 
-              //    case Mouse::Down: 
                   {
                       model().db() -= tyz * mModelRotVel;  
                       break;
                   }
                   case Key::Left:
-              //    case Mouse::Left:
                   {
                       model().db() -= txz * mModelRotVel;  
                       break;
                   }
                   case Key::Right:
-             //     case Mouse::Right: 
                   {
                       model().db() += txz * mModelRotVel;  
                       break;
@@ -212,7 +207,6 @@ namespace gfx{
 
     void SceneController:: keyboardCamTranslate(float acc, bool trigger){
           camera().ax() = acc;
-          cout << "trigger" << endl;
           if (trigger){
               switch(io().keyboard.code){
                   case Key::Up:

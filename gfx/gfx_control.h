@@ -78,9 +78,10 @@ struct WindowData {
 
      Vec3f click() { return Vec3f(lastX, lastY, 0); }
      Vec3f pos() { return Vec3f(x,y,0); }
+     Vec3f drag() { return Vec3f(dx,dy,0); }
 
      //confusing! get rid of these . . .
-     Vec3f move, accel, cat, drag, dragAccum, dragCat;
+     Vec3f move, accel, cat, dragAccum;
      Vec3f biv, bivCat, dragBiv, dragBivCat;
 
      int gesture;  // stores major direction of mouse movement (Mouse::Up, Mouse::Down, Mouse::Left, Mouse::Right)
@@ -142,9 +143,9 @@ struct WindowData {
     Keyboard(){}
     Keyboard(int key, int mod, int x, int y, bool bDown) : code(key), modifier(mod), down(bDown) {}
 
-    bool ctrl() { return modifier & Key::Ctrl; }
-    bool shift() { return modifier & Key::Shift; }
-    bool alt() { return modifier & Key::Alt; }
+    bool ctrl() const { return modifier & Key::Ctrl; }
+    bool shift() const { return modifier & Key::Shift; }
+    bool alt() const { return modifier & Key::Alt; }
 
   };    
 
@@ -156,7 +157,16 @@ struct WindowData {
     Mouse mouse;
     Keyboard keyboard;
     ViewData viewdata;
-    Vec3f click() { Vec3f m = mouse.click(); return Vec3f(m[0]/viewdata.w, m[1]/viewdata.h,0); } 
+    Vec3f click() { Vec3f m = mouse.click(); return Vec3f(m[0]/viewdata.w,1-m[1]/viewdata.h,0); } 
+    Vec3f pos() { Vec3f m = mouse.pos(); return Vec3f(m[0]/viewdata.w,1-m[1]/viewdata.h,0); } 
+    Vec3f drag() { Vec3f m = mouse.drag(); return Vec3f(m[0]/viewdata.w, -m[1]/viewdata.h,0); } 
+    Vec3f axis() { return drag().cross(Vec3f(0,0,1)); }//-Vec3f(0,0,1).cross(drag()); }
+
+    Quat dragRot(){
+         Vec3f ax = axis();
+         return Quat( ax.len(), ax.unit() );
+    }
+
     bool trigger=true;
   };
 
@@ -167,8 +177,17 @@ struct WindowData {
 /// the event should be propagated to other handlers.
 //template<class TWIN>
 class InputEventHandler{
+
+  bool bActive;
+
 public:
-  InputEventHandler() {}//: mWindow(NULL){}
+
+  bool active() { return bActive; }
+  void enable()  { bActive = true; }
+  void disable() { bActive = false; }
+  void toggle()  { bActive = !bActive; }
+  
+  InputEventHandler()  : bActive(true) {}//: mWindow(NULL){}
   virtual ~InputEventHandler(){}
 
   /// Called when a keyboard key is pressed
@@ -252,15 +271,12 @@ struct Interface {
   static vector<InputEventHandler*> mInputEventHandlers;
   static vector<WindowEventHandler*> mWindowEventHandlers;
   
-  Interface& addInputEventHandler( InputEventHandler * e, CONTEXT * w=NULL ){ 
+  Interface& addInputEventHandler( InputEventHandler * e ){ 
      mInputEventHandlers.push_back(e); 
-      // note: could io data containeres: bind e -> io(io) here.
-   //  if(w!=NULL)e->window(w); 
      return *this; 
    } 
-  Interface& addWindowEventHandler( WindowEventHandler * e, CONTEXT * w=NULL ){ 
+  Interface& addWindowEventHandler( WindowEventHandler * e ){ 
      mWindowEventHandlers.push_back(e); 
-   //  if(w!=NULL)e->window(w);
      return *this; 
    }
 
@@ -287,7 +303,7 @@ struct Interface {
   static void OnMouseUp(const Mouse& m){
     io.mouse.state=0;
     for (auto& i : mInputEventHandlers){
-      i->onMouseUp(io.mouse);
+      if (i->active()) i->onMouseUp(io.mouse);
     }
   }
 
@@ -296,14 +312,16 @@ struct Interface {
     io.mouse.lastX = m.x;
     io.mouse.lastY = m.y;
     for (auto& i : mInputEventHandlers){
-      i->onMouseDown(io.mouse);
+      if (i->active()) i->onMouseDown(io.mouse);
     }
   }
 
 
   static void OnMouseMove(const Mouse& m){
     io.mouse.state = m.state; io.mouse.x=m.x; io.mouse.y=m.y;
-    for (auto& i : mInputEventHandlers){ i->onMouseMove(io.mouse); }
+    for (auto& i : mInputEventHandlers){ 
+      if (i->active()) i->onMouseMove(io.mouse); 
+    }
   }
   
   static void OnMouseDrag(const Mouse& m){
@@ -313,17 +331,23 @@ struct Interface {
 
     io.mouse.calc();
 
-    for (auto& i : mInputEventHandlers){ i->onMouseDrag(io.mouse); }
+    for (auto& i : mInputEventHandlers){ 
+      if (i->active()) i->onMouseDrag(io.mouse); 
+    }
   }
 
   static void OnKeyDown(const Keyboard& k){
     io.keyboard=k;
-    for (auto& i : mInputEventHandlers){ i->onKeyDown(io.keyboard); }
+    for (auto& i : mInputEventHandlers){ 
+      if (i->active()) i->onKeyDown(io.keyboard); 
+    }
   }
 
   static void OnKeyUp(const Keyboard& k){
     io.keyboard=k;
-    for (auto& i : mInputEventHandlers){ i->onKeyUp(io.keyboard); }
+    for (auto& i : mInputEventHandlers){ 
+      if (i->active()) i->onKeyUp(io.keyboard); 
+    }
   }
 
 };   

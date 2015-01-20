@@ -25,7 +25,7 @@
 using namespace gfx;
 /*-----------------------------------------------------------------------------
  * example use of gfx_renderer with mesh buffer objects
- * Call Re:nderer::initGL() after initializing window context 
+ * Call Renderer::initGL() after initializing window context 
  *-----------------------------------------------------------------------------*/
 //template<class CONTEXT>
 struct App : Renderer {

@@ -31,9 +31,6 @@ using namespace std;
 namespace gfx{
 
 
-
-
- 
 template<class CONTEXT> 
 struct GlutInterface : Interface<CONTEXT> {
   
@@ -53,13 +50,13 @@ struct GlutInterface : Interface<CONTEXT> {
       Interface<CONTEXT>::OnMouseDown(mouse);
     }
     if (state == GLUT_UP) {
-      mouse.state |= Mouse::IsDown;
+      mouse.state = 0;//Mouse::IsDown;
       Interface<CONTEXT>::OnMouseUp(mouse);
     }
   }
 
   static void OnMotion(int x, int y){
-    Mouse mouse (0, Mouse::IsDown & Mouse::IsMoving, x, y);
+    Mouse mouse (0, Mouse::IsDown | Mouse::IsMoving, x, y);
     Interface<CONTEXT>::OnMouseDrag(mouse);    
   }
 

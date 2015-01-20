@@ -45,10 +45,8 @@ protected:
 };
 
 
-
 /// Mapping from keyboard and mouse controls to a GLV controller
-template<class CONTEXT>
-class GLVInputControl : public GLVControl, public InputEventHandler<CONTEXT> {
+class GLVInputControl : public GLVControl, public InputEventHandler {
 public:
   ///
   GLVInputControl(glv::GLV& v): GLVControl(v){}
@@ -81,8 +79,7 @@ protected:
 
 
 /// Mapping from window events to a GLV controller
-template<class CONTEXT>
-class GLVWindowControl : public GLVControl, public WindowEventHandler<CONTEXT> {
+class GLVWindowControl : public GLVControl, public WindowEventHandler {
 public:
   ///
   GLVWindowControl(glv::GLV& v): GLVControl(v){}
@@ -106,45 +103,41 @@ public:
   }
   
   void listenTo(CONTEXT& win){
-    win.interface.addWindowEventHandler(&mWindowCtrl, &win);
-    win.interface.addInputEventHandler(&mInputCtrl, &win);
+    win.interface.addWindowEventHandler(&mWindowCtrl);
+    win.interface.addInputEventHandler(&mInputCtrl);
   }
 
 private:
-  GLVWindowControl<CONTEXT> mWindowCtrl;
-  GLVInputControl<CONTEXT> mInputCtrl;
+  GLVWindowControl mWindowCtrl;
+  GLVInputControl mInputCtrl;
 };
 
 
-template<class CONTEXT>
-inline void GLVInputControl<CONTEXT>::onMouseDown(const Mouse& m){
+inline void GLVInputControl::onMouseDown(const Mouse& m){
   glv::space_t xrel=m.x, yrel=m.y;
   glv().setMouseDown(xrel,yrel, m.button, 0);
   glv().setMousePos(m.x, m.y, xrel, yrel);
   glv().propagateEvent();
 }
 
-template<class CONTEXT>
-inline void GLVInputControl<CONTEXT>::onMouseUp(const Mouse& m){
+inline void GLVInputControl::onMouseUp(const Mouse& m){
   glv::space_t xrel, yrel;
   glv().setMouseUp(xrel,yrel, m.button, 0);
   glv().setMousePos(m.x, m.y, xrel, yrel);
   glv().propagateEvent();
 }
 
-template<class CONTEXT>
-inline void GLVInputControl<CONTEXT>::keyToGLV(const Keyboard& k, bool down){
+inline void GLVInputControl::keyToGLV(const Keyboard& k, bool down){
   down ? glv().setKeyDown(k.code) : glv().setKeyUp(k.code);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->alt(k.alt);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->ctrl(k.ctrl);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->shift(k.shift);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->alt(k.alt());
+ // const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->ctrl(k.ctrl());
+//  const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
+  const_cast<glv::Keyboard*>(&glv().keyboard())->shift(k.shift());
   glv().propagateEvent();
 }
 
-template<class CONTEXT>
-inline void GLVInputControl<CONTEXT>::motionToGLV(const Mouse& m, glv::Event::t e){
+inline void GLVInputControl::motionToGLV(const Mouse& m, glv::Event::t e){
   glv::space_t x = m.x, y = m.y, relx = x, rely = y;
   glv().setMouseMotion(relx, rely, e);
   glv().setMousePos((int)x, (int)y, relx, rely);
@@ -152,24 +145,20 @@ inline void GLVInputControl<CONTEXT>::motionToGLV(const Mouse& m, glv::Event::t 
 }
 
 
-template<class CONTEXT>
-inline void GLVWindowControl<CONTEXT>::onCreate(){
+inline void GLVWindowControl::onCreate(){
   glv().broadcastEvent(glv::Event::WindowCreate);
 }
 
-template<class CONTEXT>
-inline void GLVWindowControl<CONTEXT>::onDestroy(){
+inline void GLVWindowControl::onDestroy(){
   glv().broadcastEvent(glv::Event::WindowDestroy);
 }
 
-template<class CONTEXT>
-inline void GLVWindowControl<CONTEXT>::onResize(int dw, int dh){
+inline void GLVWindowControl::onResize(int dw, int dh){
   glv().extent(dw,dh );//glv().width(), glv().height());
   glv().broadcastEvent(glv::Event::WindowResize);
 }
 
-template<class CONTEXT>
-inline void GLVWindowControl<CONTEXT>::onFrame(){
+inline void GLVWindowControl::onFrame(){
   glv().drawGLV(glv().w, glv().h, .1);//WindowEventHandler<CONTEXT>::window().spfActual());
 }
 
