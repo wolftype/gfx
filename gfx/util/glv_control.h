@@ -94,7 +94,6 @@ public:
 
 
 /// A glv::GLV subclass that can be easily bound to an al::Window
-template<class CONTEXT>
 class GLVBinding : public glv::GLV{
 public:
 
@@ -102,6 +101,7 @@ public:
     disable( glv::DrawBack);
   }
   
+  template<class CONTEXT>
   void listenTo(CONTEXT& win){
     win.interface.addWindowEventHandler(&mWindowCtrl);
     win.interface.addInputEventHandler(&mInputCtrl);

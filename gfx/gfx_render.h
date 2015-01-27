@@ -310,6 +310,7 @@ namespace gfx{
       }
 
       void draw(MBO& m, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
+        cout << "mbo" << endl;
         if (bImmediate){
            render::begin(r,g,b,a);
            render::draw(m); 
