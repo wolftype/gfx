@@ -147,13 +147,6 @@ namespace gfx{
     }
   }
     
-  /*   template<class T> */
-  /*   void immediate(const T& t){ */
-  /*     printf("Immediate Mode Draw routine not defined: you must declare a gfx::render::immediate(const YourClass&) function \n"); */
-  /*   } */
-
-  /* }; */
-
 
   /*!
    *  A GFXRenderNode is the root node of all processes
@@ -281,7 +274,9 @@ namespace gfx{
       }
 
       void bindModelView(){
-          program -> uniform("modelView",  scene().xf.modelView );
+         static float mv[16];
+         (mScene->mvm()).fill(mv);
+          program -> uniform("modelView",  mv );
       }
 
      void bindModelView( const Mat4f& mat ){ 
@@ -319,10 +314,10 @@ namespace gfx{
            render::begin(r,g,b,a);
            render::draw(m); 
         }else {
-          if ( m.shouldUpdate() ){
-            m.mesh.color(r,g,b,a);
-            m.update();
-          }
+          /* if ( m.shouldUpdate() ){ */
+          /*   m.mesh.color(r,g,b,a); */
+          /*   m.update(); */
+          /* } */
             bindModelView(); ///< identity matrix
             m.render(vatt); 
         }

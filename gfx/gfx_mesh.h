@@ -727,12 +727,12 @@ namespace gfx {
           //m.add(1);
           
           for (int i = 0; i < stacks -1; ++i){
-             // static bool color = 0;
-            //  color = !color;
+              static bool color = 0;
+              color = !color;
               int a, b;
               for (int j = 0; j < slices; ++j){
-                 // static bool xcolor = 0;
-                 // xcolor = !xcolor;   
+                  static bool xcolor = 0;
+                  xcolor = !xcolor;   
                                
                   a = 1 + i * slices + j;
                   //if (a == 0) continue;
@@ -743,17 +743,12 @@ namespace gfx {
                   
                   m.add(a).add(b); 
                 
-                  if (a==1) m[a].Col.set( 1,0,0,1);
-                  if (a==2) m[a].Col.set( 0,1,0,1);
-                  if (a==3) m[a].Col.set( 0,0,1,1);
-
-                //  m[b].Col.set(color,xcolor,1,1);
+                  m[a].Col.set(color,xcolor,1,1);
               }
               a= 1 + i * slices ;
               b =  ( i < stacks - 2) ? a + slices : m.num() - 1;
               m.add(a).add(b); 
 
-                            //m.add( 1 + i * slices ); //repeat every strip
           }
           
           m.last().Col.set(0,1,0,1);

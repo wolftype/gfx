@@ -274,6 +274,7 @@ namespace gfx{
     } 
     
     Mat4f proj(){
+      //return XMat::identity();
       return bUseFrust ? frust() : fovy();
     }
 
@@ -316,7 +317,7 @@ namespace gfx{
       Mat4f mod() { return XMat::rot( model.quat() ); }
 
       Mat4f mvm() {
-        return XMat::lookAt( camera.x(), camera.y(), camera.forward(), camera.pos() ) * mod(); 
+        return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
       }
             
       Mat4f norm(){
@@ -371,11 +372,11 @@ namespace gfx{
       model.step(); camera.step();
     }
 
-    Mat4f modelviewmult( const Mat4f& m){
-      return mvm() * m;
-    }
+    /* Mat4f modelviewmult( const Mat4f& m){ */
+    /*   return mvm() * m; */
+    /* } */
 
-    void updateMatrices(){      
+    void updateMatrices(){     
       Mat4f tmvm =  mvm();    
       Mat4f tproj = camera.proj();  
       Mat4f tnorm = norm();

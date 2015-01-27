@@ -12,9 +12,6 @@
 
 namespace gfx{
 
-#ifndef CONSTANTSDEFINED
-#define CONSTANTSDEFINED
-    
 #ifndef PI 
    #define PI 3.141592653589793 
 #endif
@@ -101,8 +98,6 @@ namespace gfx{
 
 #ifndef ZERO
 #define ZERO(x) (fabs(x)<FPERROR?0:x)
-#endif
-
 #endif
 
 } //gfx::

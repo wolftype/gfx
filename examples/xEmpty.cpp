@@ -1,9 +1,6 @@
 
-
-//#include "util/glfw_window.hpp"
 #include "gfx_app.h"
 #include "util/glut_window.hpp"
-
 
 using namespace gfx;
 
@@ -27,6 +24,8 @@ struct MyApp : GFXApp<GlutContext> {
     time += .01;
     float rad = 5.0;
     light = Vec3f(sin(time)*rad, cos(time)*rad, 1);
+
+    cout << scene.mvm() << endl;
  }
 
  
