@@ -1,5 +1,4 @@
 /*
- * =====================================================================================
  *
  *       Filename:  gfx_scene.h
  *
@@ -112,12 +111,23 @@ namespace gfx{
     Vec3f pos()  const{ return mPos; }
     Vec3f& pos() { return mPos; }  
     Pose& pos(float x, float y, float z) { mPos.set(x,y,z); return *this; }
-                        
-    template<class T>
-    Pose& set( const T& t){
 
-      mPos = Vec3f( t.pos()[0], t.pos()[1], t.pos()[2] ); 
-      mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] );  
+    ///DEPRECATED                        
+    /* template<class T> */
+    /* Pose& set( const T& t){ */
+
+    /*   mPos = Vec3f( t.pos()[0], t.pos()[1], t.pos()[2] ); */ 
+    /*   mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] ); */  
+
+    /*   return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );// */
+    /* } */   
+
+    //set from your library's vec and quat
+    template<class P, class Q>
+    Pose& set( const P& t, const Q& q){
+
+      mPos.set( t[0], t[1], t[2] ); 
+      mQuat.set( q[0], q[1], q[2], q[3] );  
 
       return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
     }   
@@ -306,7 +316,7 @@ namespace gfx{
       Mat4f mod() { return XMat::rot( model.quat() ); }
 
       Mat4f mvm() {
-        return XMat::lookAt( camera.x(), camera.y(), camera.z(), camera.pos() ) * mod(); 
+        return XMat::lookAt( camera.x(), camera.y(), camera.forward(), camera.pos() ) * mod(); 
       }
             
       Mat4f norm(){

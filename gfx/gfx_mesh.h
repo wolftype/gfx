@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>  
 
 #include "gfx_matrix.h"  
 #include "gfx_gl.h"
@@ -326,13 +327,26 @@ namespace gfx {
         }
         
         //LOAD FROM OBJ FILE
-        void load(string s) {
+        void load(string filepath) {
             
             string line;
-            string fname = s;
-            ifstream myfile(fname.c_str());
+            //string fname = s;
+
+            std::fstream myfile;
+       
+            //search for file by going up file directory tree up to 5 times
+            int attempts = 0;
+            string nfilepath = filepath;
+            while (!myfile.is_open() && attempts < 5) {
+                myfile.open( nfilepath.c_str(), std::ios::in );
+                nfilepath = "../" + nfilepath;   
+                attempts += 1;
+            }
+            if (!myfile.is_open()) throw std::invalid_argument("Error: File Not Found.");  
+
+         //   ifstream myfile(fname.c_str());
             
-            cout << "loading " << s << " from " << fname << " . . . " <<  endl;
+         //   cout << "loading " << s << " from " << fname << " . . . " <<  endl;
             
             if (myfile.is_open()){
                 printf("file open . . .\n");

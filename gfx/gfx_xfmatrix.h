@@ -19,7 +19,7 @@ namespace gfx{
     /*! Transformation Matrices Container */
     struct XformMat {
 
-        static float Identity[16];
+       // static float Identity[16];
         float model[16];
         float view[16];
         float modelView[16];
@@ -102,11 +102,11 @@ namespace gfx{
         }
     };
 
-    float XformMat::Identity[] = {1,0,0,0,
-                                     0,1,0,0,
-                                     0,0,1,0,
-                                     0,0,0,1};
-    
+         /* float XformMat::Identity[] = {1,0,0,0, */
+         /*                               0,1,0,0, */
+         /*                               0,0,1,0, */
+         /*                               0,0,0,1}; */
+     
     struct XMat {
       
         static Mat4f ortho (float X, float Y0);

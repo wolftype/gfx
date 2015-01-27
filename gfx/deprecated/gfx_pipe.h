@@ -161,14 +161,14 @@ namespace gfx{
           }
 
           void bindModelViewIdentity(){
-             program -> uniform("modelView", XformMat::Identity );  
+             program -> uniform("modelView", XMat::identity() );  
           }
           
           void bindIdentity(){
                 program -> uniform("lightPosition", 2.0, 2.0, 2.0);  
-                program -> uniform("projection",  XformMat::Identity);
-                program -> uniform("normalMatrix", XformMat::Identity);  
-                program -> uniform("modelView",  XformMat::Identity );  
+                program -> uniform("projection",  XMat::identity());
+                program -> uniform("normalMatrix", XMat::identity());  
+                program -> uniform("modelView",  XMat::identity() );  
           }
           void bind( XformMat& xf ){
             program -> bind();

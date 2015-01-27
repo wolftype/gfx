@@ -705,6 +705,45 @@ namespace gfx{
       }
       )";
            
+/*-----------------------------------------------------------------------------
+ *  FIXED FUNCTION SHADER CODE
+ *-----------------------------------------------------------------------------*/
+string FFLightingVert = STRINGIFY(
+    varying vec4 color;
+    varying vec3 normal;
+    varying vec3 lightDir;
+    varying vec3 eyeVec;
+    void main(){
+      color = gl_Color;
+      vec4 vertex =  gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+      normal = gl_NormalMatrix * gl_Normal;
+      vec3 V = vertex.xyz;
+      eyeVec = normalize(-V);
+      lightDir = normalize(vec3(gl_LightSource[0].position.xyz - V));
+      gl_Position = vertex; 
+    }
+  );
+
+
+string FFLightingFrag = STRINGIFY(
+    uniform float lighting;
+    varying vec4 color;
+    varying vec3 normal;
+    varying vec3 lightDir;
+    varying vec3 eyeVec;
+    void main() {
+      vec4 final_color = color * gl_LightSource[0].ambient;
+      vec3 N = normalize(normal);
+      vec3 L = lightDir;
+      float lambertTerm = max(dot(N, L), 0.0);
+      final_color += gl_LightSource[0].diffuse * color * lambertTerm;
+      vec3 E = eyeVec;
+      vec3 R = reflect(-L, N);
+      float spec = pow(max(dot(R, E), 0.0), 0.9 + 1e-20);
+      final_color += gl_LightSource[0].specular * spec;
+      gl_FragColor = mix(color, final_color, .8); //color;//
+    }
+  );
 
 
         // static string SVert = R"(
@@ -739,6 +778,9 @@ namespace gfx{
         //     gl_FragColor = vec4(1.0,1.0,1.0,1.0);
         //   }
         // );
+        //
+        //
+
         
     } //GLSL::
 

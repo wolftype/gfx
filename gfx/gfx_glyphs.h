@@ -26,6 +26,10 @@ namespace gfx {
         /* Line Between Two Points */  
         template<class V>
          void Line(const V& v1, const V& v2); 
+        /* Lines */  
+        template<class V>
+         void Lines(const V& v1, int num); 
+
         /* Line from Origin */ 
         template<class V>  
          void Line(const V& v1);              
@@ -91,7 +95,8 @@ namespace gfx {
         //point in space (origin is default)
         inline static void Point() { glBegin(GL_POINTS); glVertex3f(0,0,0); glEnd(); }
           
-        template<class A> static void Point(const A& );   
+        template<class A> static void Point(const A& ); 
+        template<class A> static void Points(const A&, int num ); 
         template<class A> static void Point2D(const A& );  
          // void Point(const Vec3<>& );
          template<class V> 
@@ -598,6 +603,19 @@ inline void Glyph :: Line(const V& v1, const V& v2) {
 }
 
 template<class V>
+inline void Glyph :: Lines(const V& v, int num) {
+
+  glNormal3f(0, 0, 1);
+
+  glBegin(GL_LINE_STRIP);
+   for (int i=0;i<num;++i){
+      glVertex3f(v[i][0], v[i][1], v[i][2]);
+   }
+  glEnd();
+    
+}
+
+template<class V>
 inline void Glyph :: Line(const V& v2) {
   Glyph::Line(V(0,0,0), v2);
 }
@@ -722,6 +740,15 @@ inline void Glyph :: Point(const A& v) {
   glBegin(GL_POINTS);  
     //glNormal3f(v[0], v[1], v[2]);
     glVertex3f(v[0], v[1], v[2]);
+  glEnd();
+}  
+
+template<class A>
+inline void Glyph :: Points(const A& v, int num) {
+  glBegin(GL_POINTS);  
+    for (int i=0; i<num;++i){
+      glVertex3f(v[i][0], v[i][1], v[i][2]);
+    }
   glEnd();
 }  
 
