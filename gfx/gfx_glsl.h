@@ -213,7 +213,6 @@ namespace gfx{
             void main(void){
             
                 colorDst = doColor();  
-                colorDst = sourceColor;
                 
                 texco = texCoord;
                                 

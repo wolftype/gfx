@@ -36,11 +36,11 @@ struct VAO  {
     GENVERTEXARRAYS(1,&id); //<-- This macro calls appropriate glGenVertexArray function (or glGenVertexArrayAPPLE, etc.)
   }
 
-  void bind(){
-    BINDVERTEXARRAY(id);   //<-- This macall calls appropriate glBindVertexArray function
+  void bind() const {
+    BINDVERTEXARRAY(id);    //<-- This macro calls appropriate glBindVertexArray function
   }
 
-  void unbind(){
+  void unbind() const {
     BINDVERTEXARRAY(0);
   }
 

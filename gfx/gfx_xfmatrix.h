@@ -1,6 +1,5 @@
 //
-//  GraphicsMatrix.h
-//  opengles_00
+//  gfx_xfmatrix.h
 //
 //  Created by Pablo Colapinto on 10/28/11.
 //  Copyright 2011 x. All rights reserved.
@@ -16,11 +15,6 @@
 using namespace std;
 
 namespace gfx{
-    
-//    typedef vsr::Mat4<float> Mat4f;
-//    typedef vsr::Mat4<double> Mat4d; 
-
-
     
     /*! Transformation Matrices Container */
     struct XformMat {
@@ -43,12 +37,6 @@ namespace gfx{
         Mat4f modelViewMatrixf()const { return modelView; }
         Mat4f projMatrixf()const { return proj; }
         Mat4f normalMatrixf() const { return normal; }
-
-        // Mat4f& modelMatrixf()  { return model; }
-        // Mat4f& viewMatrixf() { return view; }
-        // Mat4f& modelViewMatrixf() { return modelView; }
-        // Mat4f& projMatrixf() { return proj; }
-        // Mat4f& normalMatrixf()  { return normal; }
 
         void toDoubles() {
             for (int i = 0; i < 16; ++i){
@@ -235,21 +223,23 @@ namespace gfx{
             );
         }
         
-
-
         static  Mat4f identity();
-		static Mat4f rot( const Quat& r );
+	    	static Mat4f rot( const Quat& r );
 
         // static Mat4f aa( const Rot& r);
         
-        /* Projection of World onto Screen Coordinates */
+        /* /1* Projection of World onto Screen Coordinates *1/ */
         static  Vec3f Project(const Vec3f& v, const XformMat& xf){
             Mat4f tmp = xf.projMatrixf() * xf.modelViewMatrixf();
             Vec4f vp = tmp * Vec4f(v[0],v[1],v[2],1.0);
-            
+          
+            vp[0] /= vp[3]; 
+            vp[1] /= vp[3]; 
+            vp[2] /= vp[3]; 
+
             return Vec3f(
-                xf.viewport[0] + xf.viewport[2] * (vp[0] + 1)/2.0,
-                xf.viewport[1] + xf.viewport[3] * (vp[1] + 1)/2.0,
+                (xf.viewport[0] + xf.viewport[2] * (vp[0] + 1)/2.0) / xf.viewport[2],
+                (xf.viewport[1] + xf.viewport[3] * (vp[1] + 1)/2.0) / xf.viewport[3],
                 (vp[2] + 1) / 2.0
             );
         }

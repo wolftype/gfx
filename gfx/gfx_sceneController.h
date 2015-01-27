@@ -24,20 +24,19 @@
 
 #include "gfx_scene.h"
 #include "gfx_control.h"
-#include "gfx_glu.h" 
 #include <sstream> 
 #include <map>
 
 namespace gfx{
+
 
     class SceneController : public InputEventHandler {
 
       Scene * mScene; 
       GFXio * mIO;
 
-      Quat tModelRot, tCameraRot;         ///< store temporary here.
+      Quat tModelRot, tCameraRot;                               ///< store temporary here.
       
-      int mMode;                          ///<  Mode State (not implemented)   
       float mRotVel, mVel, mModelRotVel;
 
      public:     
@@ -59,27 +58,10 @@ namespace gfx{
         ViewData& vd()  { return io().viewdata; }
         Keyboard& kd()  { return io().keyboard; }
         Mouse& md()     { return io().mouse; }
-        //Vec3f click()   { return io().mouse.click;}
-        //Vec3f pos()     { return io().mouse.pos; } 
 
         Camera& camera() { return mScene -> camera; }    
         MPose& model() { return mScene -> model; }
         
-
-        /*-----------------------------------------------------------------------------
-         *  MODES
-         *-----------------------------------------------------------------------------*/
-        /*! Set Mode */
-        int& mode() { return mMode; }
-        /*! Get Mode */
-        int mode() const { return mMode; }
-        /// Check Interface Mode
-        bool mode(int q) { return mMode & q; }  
-        /// Enable Mode    
-        void enable(int bitflag) { mMode |= bitflag; }
-        void disable(int bitflag) { mMode &= ~bitflag; }
-        void toggle(int bitflag)  { mMode & bitflag ? disable(bitflag) : enable(bitflag); }  
-
         /*-----------------------------------------------------------------------------
          *  NAVIGATION
          *-----------------------------------------------------------------------------*/
@@ -109,29 +91,46 @@ namespace gfx{
 };   
 
     void SceneController :: onMouseDown(const Mouse& m){
+      if (io().mode(ControlMode::Navigate)){
         tModelRot = mScene -> model.rot(); //save state on click 
+      }
      }
 
     void SceneController :: onMouseMove(const Mouse& m){  
     }
 
     void SceneController :: onMouseDrag(const Mouse& m){ 
-        //mouseNavigate();
+      if (io().mode(ControlMode::Navigate) ){
+        mouseNavigate();
+      }
     }        
       
     void SceneController:: onMouseUp(const Mouse& m){
-        //mouseNavigateStop();
+      if (io().mode(ControlMode::Navigate)){
+        mouseNavigateStop();
+      }
     }
 
    
     void SceneController::onKeyDown(const Keyboard& k){
-      if (io().trigger == true) keyboardNavigate();
-      io().trigger = false;
+
+      if (io().keyboard.code==Key::Tab){
+          io().toggle(ControlMode::Edit);
+          io().toggle(ControlMode::Navigate);
+      }
+
+      if ( io().mode(ControlMode::Navigate) ){
+       if (io().trigger == true) keyboardNavigate();
+       io().trigger = false;
+      }
+     
      }
 
     void SceneController::onKeyUp(const Keyboard& k){
-      keyboardNavigateStop();
-      io().trigger = true;
+      if ( io().mode(ControlMode::Navigate)) {
+        keyboardNavigateStop();
+        io().trigger = true;
+      }
     }
 
 
@@ -147,11 +146,11 @@ namespace gfx{
         /* io().mouse.bivCat = vd().z.cross( io().mouse.cat ); */
 
         //GLU FUNCS (to do: replace these with our own to eliminate reliance on glu)
-        Vec3f v1 = gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 1.0,  mScene->xf );
-        Vec3f v2 = gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.0,  mScene->xf );
-        Vec3f v3 = gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.5,  mScene->xf );   
+        Vec3f v1 = mScene->unproject( io().pos(1.0)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 1.0,  mScene->xf );
+        Vec3f v2 = mScene->unproject( io().pos(0.0)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.0,  mScene->xf );
+        Vec3f v3 = mScene->unproject( io().pos(0.5)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.5,  mScene->xf );   
 
-        //Get vec of Mouse Position into Z Space 
+        //Get vec of Mouse Position pointing into Z Space 
         vd().ray   = ( v3 - v2 ).unit();
             
         io().viewdata.projectFar  = v1 ;

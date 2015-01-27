@@ -3,24 +3,38 @@
  *
  *       Filename:  gfx_app.h
  *
- *    Description:  a lightweight utility that takes window contexts as a template parameter
+ *    Description:  an OpenGL utility that takes windowing contexts (e.g. Glut or GLFW) as a template parameter,
+ *                  handles keyboard and mouse inputs, and gives two GL rendering modes (fixed or programmable)
  *
- *                  Basic Usage: subclass this and define setup() and onDraw() methods;
+ *                  Basic Usage: subclass GFXApp and define setup() and onDraw() methods;
+ *
+ *                  struct App : GFXApp<GlutContext>{
+ *
+ *                    void setup(){
+ *                      ...
+ *                    }
+ *
+ *                    void onDraw(){
+ *                      ...
+ *                    }
  *                  
- *                  GFXApp will handle mouse and window event callbacks defined in gfx_control.h
+ *                  };
+ *                  
  *
  *                  for fancier rendering (i.e. rendering to texture or blur etc)
  *                  overwrite the onFrame() and onRender() methods.
  *
+ *                  GFXApp will handle mouse and window event callbacks defined in gfx_control.h
+ * 
  *                    onMouseDown(const Mouse& m)
  *                    onMouseDrag(const Mouse& m)
  *
  *                    etc.
  *
- *                  WINDOWCONTEXT template parameter must have:
+ *                  WINDOWCONTEXT template parameter (e.g. GlutContext) must have:
  *                    System() (singleton method)
- *                    Initialize() function
- *                    Start() function
+ *                    Initialize() method
+ *                    Start() method
  *                    SwapBuffers() method
  *                    create(int w, int h) method
  *                    interace (a public member of type gfx::Interface)
@@ -34,7 +48,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  cuttlefish 
+ *   Organization:  pretty awesome 
  *
  * =====================================================================================
  */
@@ -42,11 +56,11 @@
 #include <stdio.h>
 
 #include "gfx_lib.h"              //<- Graphics Libraries
-#include "gfx_scene.h"            //<- Matrix transforms
+#include "gfx_scene.h"            //<- Matrix transforms (should rename this to gfx_modelViewProjection.h)
 #include "gfx_control.h"          //<- Event Handling
-#include "gfx_sceneController.h"  //<- Matrix transforms user input
-#include "gfx_objectController.h" //<- Objects in Memory Callbacks for interface
-#include "gfx_nprocess.h"         //<- Graphics Pipeline Processes
+#include "gfx_sceneController.h"  //<- Matrix transforms bound to user inputEvents
+#include "gfx_objectController.h" //<- Objects in Memory bound to user inputEvents and windowEvents
+#include "gfx_render.h"           //<- Graphics Pipeline Rendering Processes
 
 
 namespace gfx {
@@ -55,25 +69,28 @@ template<class WINDOWCONTEXT>
 struct GFXApp : 
 public InputEventHandler,
 public WindowEventHandler,
-public GFXRenderNode 
+public GFXRenderer 
 {
 
   WINDOWCONTEXT mContext;
-  WindowData& window() { return mContext.window(); }
+  WINDOWCONTEXT& context() { return mContext; }
+  WindowData& windowData() { return mContext.windowData(); }
 
   Scene scene;
   SceneController sceneController;
   ObjectController objectController;
-  
+
+  Vec3f mColor; ///< Background Color
+
   /*-----------------------------------------------------------------------------
-   *  Pass in width and height of window, and any command line arguments
+   *  Constructor: Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
   GFXApp(int w=800, int h=400, int argc = 0, char ** argv = NULL) :
-  GFXRenderNode(w,h)  
+  GFXRenderer(w,h,this), mColor(.2,.2,.2)
   {
 
      /*-----------------------------------------------------------------------------
-      *  Initialize Window and Callbacks
+      *  1. Initialize Window and Callbacks
       *-----------------------------------------------------------------------------*/
       WINDOWCONTEXT::System -> Initialize();
       mContext.create(w,h);
@@ -83,7 +100,7 @@ public GFXRenderNode
       mContext.interface.addInputEventHandler(this); 
 
       /*-----------------------------------------------------------------------------
-       *  Add SceneController and ObjectController Callbacks
+       * 2. Add SceneController and ObjectController Callbacks
        *-----------------------------------------------------------------------------*/
       //bind sceneController to scene and add as listener to input events 
       sceneController.scene(&scene);
@@ -99,7 +116,7 @@ public GFXRenderNode
       mContext.interface.addWindowEventHandler(&objectController);
 
       /*-----------------------------------------------------------------------------
-       *  Initialize GLEW and check for features
+       * 3.  Initialize GLEW and check for features
        *-----------------------------------------------------------------------------*/
       glewExperimental = true;
       GLenum glewError = glewInit();
@@ -112,7 +129,19 @@ public GFXRenderNode
       } else if (GLEW_ARB_vertex_array_object){
         printf("genVertexArrays supported\n");
       }
-            
+     
+      /*-----------------------------------------------------------------------------
+       * 4. Enable Presets (depth func, blend func)
+       *-----------------------------------------------------------------------------*/
+       GL::enablePreset();
+
+      /*-----------------------------------------------------------------------------
+       * 5. Set up Programmable Rendering Pipeline
+       *-----------------------------------------------------------------------------*/
+       GFXRenderer::parent(this);
+       GFXRenderer::scene(&scene);
+       GFXRenderer::init();
+
   }
 
 
@@ -143,8 +172,14 @@ public GFXRenderNode
    *  Clear Window Contents
    *-----------------------------------------------------------------------------*/
   void clear(){
+      if (sceneController.io().mode( ControlMode::Edit ) ){
+        mColor=Vec3f(.2,.2,.2);
+      } else {
+        mColor=Vec3f(.1,.1,.1);
+      }
+
      mContext.setViewport();      
-     glClearColor(.2,.2,.2,1);
+     glClearColor( mColor[0],mColor[1],mColor[2], 1 );
      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   
@@ -156,18 +191,26 @@ public GFXRenderNode
      clear(); 
      update();
 
-     scene.push();
-      onRender();
-     scene.pop();
+     scene.push( GFXRenderNode::bImmediate );
+      (*this)();    //<-- this operator()() is overloaded in GFXRenderNode (see gfx_render.h)
+     scene.pop( GFXRenderNode::bImmediate );
     
      scene.step();
-     //note: swapbuffers not called here because
-     //this is just one of many potential windowEventHandler callbacks
-     //swapbuffers is called by Interface::onDraw() after all eventhandlers have been called
+     
+     //NOTE: swapbuffers is NOT called here because
+     //we are in just one of many potential windowEventHandler callbacks (which add optional effects)
+     //swapbuffers is called by Interface::onDraw() only after ALL eventhandlers have been called
+     //see gfx_control.h for the Interface class
   }
 
-  virtual void onRender(){ onDraw(); }
+  
+  /*-----------------------------------------------------------------------------
+   *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
+   *-----------------------------------------------------------------------------*/
+  virtual void onRender(){ 
 
+    onDraw();
+  }
 
   /*-----------------------------------------------------------------------------
    *  Destructor
@@ -192,8 +235,6 @@ public GFXRenderNode
   virtual void onCreate(){ }
   virtual void onDestroy(){ }
   virtual void onResize(int w, int h){
-   // scene.camera.lens.width() = w;
-   // scene.camera.lens.height() = h;
     scene.resize(w,h);
   }
 

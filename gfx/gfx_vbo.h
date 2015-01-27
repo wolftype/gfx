@@ -89,7 +89,7 @@ namespace gfx {
                 unbind();
           }
     
-          void bind() {
+          void bind() const {
                 glBindBuffer(mTarget, mId);//arb?
                 GL::error( "vbo bind");
           }
@@ -117,7 +117,7 @@ namespace gfx {
                 mData = NULL;
             }
 
-            void unbind() {
+            void unbind() const {
                 glBindBuffer(mTarget, 0);//arb?
                 GL::error("vbo ubind");
             }
@@ -156,12 +156,12 @@ namespace gfx {
       
             //void draw(GLenum);
             
-            void drawArray(GLenum mode = GL_LINE_LOOP){
+            void drawArray(GLenum mode = GL_LINE_LOOP) const{
                 glDrawArrays  (mode, 0, mNum);  
                 GL::error("vbo draw arrays");
             }
             
-            void drawElements(GLenum mode = GL_TRIANGLES, int num = -1, int off = 0){
+            void drawElements(GLenum mode = GL_TRIANGLES, int num = -1, int off = 0) const{
                 glDrawElements ( mode, (num==-1) ? mNum - off : num, mType, (GLvoid *) ( sizeof( mType ) * off ) );  
                 GL::error("vbo draw elements");
             }

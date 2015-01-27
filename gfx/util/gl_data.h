@@ -3,7 +3,7 @@
  *
  *       Filename:  gl_data.hpp
  *
- *    Description:  load data
+ *    Description:  load bitmap data
  *
  *        Version:  1.0
  *        Created:  06/18/2014 20:53:16
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-namespace lynda {
+namespace gfx { namespace util {
 
 
 struct Bitmap{
@@ -87,6 +87,6 @@ struct Bitmap{
 
 };
 
-} //lynda::
+} } // gfx::util::
 
 #endif   /* ----- #ifndef gl_data_INC  ----- */

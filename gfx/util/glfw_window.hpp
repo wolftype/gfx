@@ -27,6 +27,8 @@
 #include <iostream>
 
 
+#include "gfx_control.h"
+
 using namespace std;
 namespace gfx{
 
@@ -34,30 +36,36 @@ namespace gfx{
 /*-----------------------------------------------------------------------------
  *  Some Callbacks to be implemented later 
  *-----------------------------------------------------------------------------*/
-struct Interface {
 
-  static void * app; // <-- an unknown application to be defined later
+struct GLFWContext;
 
-  template<class APPLICATION>
+struct GLFWInterface : Interface<GLFWContext> {
+
   static void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods){
-      ((APPLICATION*)(app))->onKeyDown(key,action);
+      //((APPLICATION*)(app))->onKeyDown(key,action);
+      Keyboard keyboard(key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyDown(keyboard);   
   }
 
-  template<class APPLICATION>
   static void OnMouseMove(GLFWwindow* window, double x, double y){
-      ((APPLICATION*)(app))->onMouseMove(x,y);  
+      Mouse mouse (0, Mouse::IsMoving, x, y);
+      Interface<GLFWContext>::OnMouseMove(mouse);
+      //((APPLICATION*)(app))->onMouseMove(x,y);  
   }
 
-  template<class APPLICATION>
   static void OnMouseDown(GLFWwindow* window, int button, int action, int mods){
-      ((APPLICATION*)(app))->onMouseDown(button,action);
+      Mouse mouse;
+      mouse.state |= Mouse::IsDown;
+      Interface<GLFWContext>::OnMouseDown(mouse);
+
+     // ((APPLICATION*)(app))->onMouseDown(button,action);
   }
 
 };
 
-void * Interface::app;
-
-
+/*!
+ *  Singleton initializer
+ */
 struct GLFW {
 
   static GLFW& Initialize(){////int argc, char ** argv){
@@ -68,8 +76,9 @@ struct GLFW {
   template<class APPLICATION>
   static void Start(APPLICATION * app){
     printf("starting ...\n");
-    while( !app->window().shouldClose() ){
+    while( !app->context().shouldClose() ){//!win.shouldClose() ){
       app->onFrame();
+      app->context().pollEvents();
     }
   }
 
@@ -86,12 +95,17 @@ struct GLFW {
 /*-----------------------------------------------------------------------------
  *  A GLFW Window Wrapper
  *-----------------------------------------------------------------------------*/
-struct Window {
+struct GLFWContext {
 
     static GLFW * System;
 
     GLFWwindow * mWindow;
-    Interface interface;
+    
+    GLFWInterface interface;
+    
+    static vector<WindowData*> mWindows;
+    static int currentWindow;
+    WindowData& windowData(){ if (!mWindows.empty()) return *mWindows[0]; }
 
     int mWidth, mHeight;
 
@@ -101,28 +115,30 @@ struct Window {
 
     GLFWwindow& window() { return *mWindow; }
 
-    Window() {}
+    GLFWContext() {}
 
     //Create a Window Context
-    template<class APPLICATION>
-    void create(APPLICATION * app, int w, int h, const char * name="demo"){
+    void create(int w, int h, const char * name="demo"){
         
-        interface.app = app;
-
         mWidth = w; mHeight = h;
 
         mWindow = glfwCreateWindow(w,h,name,NULL ,NULL);
+
         if (!mWindow) {
           glfwTerminate();
           exit(EXIT_FAILURE);
         }        
+        
         glfwMakeContextCurrent(mWindow);
         glfwSwapInterval(1); //<-- force interval (not guaranteed to work with all graphics drivers)
 
         //register callbacks for keyboard and mouse
-        glfwSetKeyCallback(mWindow, Interface::OnKeyDown<APPLICATION>);
-        glfwSetCursorPosCallback(mWindow, Interface::OnMouseMove<APPLICATION> );
-        glfwSetMouseButtonCallback(mWindow, Interface::OnMouseDown<APPLICATION> );
+        /* glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown); */
+        /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
+        /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
+
+        mWindows.push_back( new WindowData(w,h,0) );
+        //currentWindow = id-1;
 
     }
 
@@ -139,8 +155,8 @@ struct Window {
     }
 
     //Swap front and back buffers
-    void swapBuffers(){
-      glfwSwapBuffers(mWindow);
+    static void SwapBuffers(){
+      //glfwSwapBuffers(mWindow);
     }
 
     //listen
@@ -148,23 +164,21 @@ struct Window {
       glfwPollEvents();
     }
 
-    void onFrame(){
-      swapBuffers();
-      pollEvents();
-    }
-
     //Destroy the window
     void destroy(){
       glfwDestroyWindow(mWindow);
     }
 
-
-    ~Window(){
+    ~GLFWContext(){
       destroy();
     }
 };
 
-GLFW * Window::System;
+GLFW * GLFWContext::System;
+//GLFWwindow * GLFWContext::mWindow;
+vector<WindowData*> GLFWContext::mWindows;
+int GLFWContext::currentWindow;
+
 
 } //gfx
 

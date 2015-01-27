@@ -32,8 +32,6 @@ namespace gfx {
   template < typename T > class Mat3;
   template < typename T > class Mat4;
   template < typename T > class Mat5;
-//  template < typename T > class Col3;
-//  template < typename T > class Col4;
 
     //Predeclare Template Friends
     template< class T >
@@ -126,7 +124,6 @@ namespace gfx {
         int size() const { return 3; } 
 
   };
-
 
   
   //4D VECTOR (HOMOGENOUS COORDINATES)
@@ -306,9 +303,12 @@ namespace gfx {
        return *this;
      } 
         
-          const T * val() const { return col[0].val(); }
+         const T * val() const { return col[0].val(); }
+    
          T * val() { return &col[0][0]; }
+  
          const T operator [] ( int i ) const { return val()[i]; }
+  
          T& operator [] ( int i ) { return val()[i]; }
 
          Vec4<T> row(int j) const { return Vec4<T>( col[0][j], col[1][j], col[2][j], col[3][j]); } 
@@ -321,6 +321,7 @@ namespace gfx {
             }
             return m;
          }
+
          //matrix multiplication, 
          Mat4 operator * (const Mat4& B) const {
             Mat4 m;
@@ -333,6 +334,8 @@ namespace gfx {
          Vec4<T> operator * (const Vec4<T>& v) const {
             return Vec4<T>(
                 row(0).dot(v), row(1).dot(v), row(2).dot(v), row(3).dot(v)
+//                col[0].dot(v), col[1].dot(v), col[2].dot(v), col[3].dot(v)
+
             );
          }
         

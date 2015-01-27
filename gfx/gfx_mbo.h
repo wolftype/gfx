@@ -10,6 +10,8 @@
 #include "gfx_vattrib.h"
 #include "gfx_mesh.h"
 
+#include <sstream>
+
 namespace gfx{
 
        /*!-----------------------------------------------------------------------------
@@ -32,9 +34,9 @@ namespace gfx{
 
             GL::MODE mode;              ///< GL_LINES, etc
 
-            VAO * vao;                  ///< pointer to simple binding
-            VertexAttributes * vatt;    ///< pointer to vertex attributes
-
+            bool bUpdate = true;       ///< whether to update mesh data
+            bool shouldUpdate() const { return bUpdate; }
+            MBO& setUpdate(bool v) { bUpdate=v; return *this; }
 
             MBO& set( GL::MODE m) {
               mode = m;
@@ -50,6 +52,7 @@ namespace gfx{
               index = mbo.index; 
               mesh = mbo.mesh;
               mode = mbo.mode;  
+              bUpdate = mbo.bUpdate;
               
               vertex.data( &mesh.vertices()[0].Pos[0] );
               index.data( &mesh.indices()[0] );      
@@ -62,7 +65,8 @@ namespace gfx{
                 index = mbo.index; 
                 mesh = mbo.mesh;
                 mode = mbo.mode;    
-                
+                bUpdate = mbo.bUpdate;
+                 
                 vertex.data( &mesh.vertices()[0].Pos[0] );
                 index.data( &mesh.indices()[0] );
               }  
@@ -78,41 +82,52 @@ namespace gfx{
                 bind();
             }
 
-                       
+             /// Call BEFORE Enabling Vertex Attributes
+            void bind() const { 
+                vertex.bind(); 
+                index.bind(); 
+            }
+
+
+            void unbind() const { 
+                index.unbind(); 
+                vertex.unbind();   
+            } 
+                                 
             //Enable Vertex Attributes FIRST             
-            void drawElements( int num = -1, int off = 0){ // GLenum mode,
+            void drawElements( int num = -1, int off = 0) const { // GLenum mode,
                 index.drawElements(mode, num, off);
             }
             
-            void drawArray(){ //GLenum mode
+            void drawArray() const{ //GLenum mode
                 vertex.drawArray(mode);
             }
 
-            /// Call BEFORE Enabling Vertex Attributes
-            void bind() { 
-                vertex.bind(); 
-                index.bind(); 
+            void render(const VertexAttributes& vatt) const {
+               bind(vatt);
+                drawElements();
+               unbind(vatt);
+            }
+
+            void render(const VAO& vao) const {
+              vao.bind();
+                drawElements();
+              vao.unbind();
             }
 
 
-            void unbind() { 
-                index.unbind(); 
-                vertex.unbind();   
-            }
 
             /// Here we can pass in vertex Attributes to point to . . . 
             // (useful for OPENGLES2.0 where there is no Vertex Array Object)
-            void bind(VertexAttributes& vatt) { 
-                vertex.bind(); 
-                index.bind(); 
+            void bind(const VertexAttributes& vatt) const { 
+                bind(); 
                 vatt.enable();
                 vatt.pointer();
             }
 
-            void unbind(VertexAttributes& vatt){
+            void unbind(const VertexAttributes& vatt) const{
                vatt.disable();
-               index.unbind();
-               vertex.unbind();
+               unbind();
             }
              
             /// Update Vertex Info               
@@ -144,28 +159,59 @@ namespace gfx{
         int MBO::mCount;
 
 
+          /*-----------------------------------------------------------------------------
+           *  STATIC CREATION OF MESH BUFFER SINGLETON OBJECTS FOR DIFFERENT ELEMENTS 
+           *  User must specify this to define draw routines
+           *
+           *  template<> MakeMeshBuffer<CLASSNAME>::MakeMeshBuffer(){
+           *      mMBO.push_back( meshes....);
+           *  }
+           *-----------------------------------------------------------------------------*/
+          template<class T>
+          struct MeshBuffer{
 
-        /*-----------------------------------------------------------------------------
-         *  RENDERING ROUTINES
-         *-----------------------------------------------------------------------------*/
-        struct GFX {
-            
-            static void Render(MBO& mbo, VertexAttributes& vatt) {
-               mbo.bind();
-                vatt.enable();
-                vatt.pointer();
-                  mbo.drawElements();
-                vatt.disable();
-               mbo.unbind();
+            static vector<MBO>& mbo() { return mMBO; }
+
+            static MBO& mbo(const T& t) { 
+                stringstream fs; fs << &t;
+                return mMBOmap[fs.str()];
             }
 
-            static void Render(MBO& mbo, VAO& vao) {
-               vao.bind();
-                  mbo.drawElements();
-               vao.unbind();
-            }            
-        };
+            static void Add(const T& m){};//{ mMBO.push_back(m); }
 
+            static bool Exists(const T& t){
+              stringstream fs; fs << &t;
+              return !(mMBOmap.find(fs.str())==mMBOmap.end() );
+            }
+
+            static MBO& Get(const T& t){
+              if ( !Exists(t) ){
+                Add(t);
+              }
+              return mbo(t);
+            }
+
+            static vector<MBO>& Get(){
+              if (mMBO.empty()) Init();
+              return mbo();
+            }
+          
+            static MeshBuffer& Init(){
+              static MeshBuffer m;
+              return m;
+            }
+            private:
+              MeshBuffer();
+              static vector<MBO> mMBO;
+              static map<string,MBO> mMBOmap;
+          };
+
+ 
+          template<class T> vector<MBO> MeshBuffer<T>::mMBO; 
+          template<class T> map<string,MBO>  MeshBuffer<T>::mMBOmap;  
+
+          //template<>  vector<MBO>& MeshBuffer<MBO>::Get
+                   
 }
 
 

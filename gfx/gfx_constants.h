@@ -15,9 +15,9 @@ namespace gfx{
 #ifndef CONSTANTSDEFINED
 #define CONSTANTSDEFINED
     
-  #ifndef PI 
-    #define PI 3.141592653589793 
-  #endif
+#ifndef PI 
+   #define PI 3.141592653589793 
+#endif
 
 #define TWOPI 6.283185307179586
 #define PIOVERTWO 1.570796326794897

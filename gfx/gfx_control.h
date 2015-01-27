@@ -115,7 +115,7 @@ struct WindowData {
   namespace Key{
       enum {
 
-          //Modifiers (glut anyway)
+          //Modifiers (at least for glut anyway)
           Shift = 1,
           Ctrl  = 1<<1,
           Alt   = 1<<2,
@@ -150,6 +150,18 @@ struct WindowData {
   };    
 
 
+
+    /*-----------------------------------------------------------------------------
+     *  Control Mode Enums
+     *-----------------------------------------------------------------------------*/
+    namespace ControlMode {
+        enum{
+           Edit = 1,
+           Navigate = 1<<1,
+           Trigger = 1<<2,
+        };
+    }
+
   /*-----------------------------------------------------------------------------
    * GFX IO DATA CONTAINER
    *-----------------------------------------------------------------------------*/
@@ -159,6 +171,7 @@ struct WindowData {
     ViewData viewdata;
     Vec3f click() { Vec3f m = mouse.click(); return Vec3f(m[0]/viewdata.w,1-m[1]/viewdata.h,0); } 
     Vec3f pos() { Vec3f m = mouse.pos(); return Vec3f(m[0]/viewdata.w,1-m[1]/viewdata.h,0); } 
+    Vec3f pos(float z) { Vec3f m = mouse.pos(); return Vec3f(m[0]/viewdata.w,1-m[1]/viewdata.h,z); } 
     Vec3f drag() { Vec3f m = mouse.drag(); return Vec3f(m[0]/viewdata.w, -m[1]/viewdata.h,0); } 
     Vec3f axis() { return drag().cross(Vec3f(0,0,1)); }//-Vec3f(0,0,1).cross(drag()); }
 
@@ -167,15 +180,31 @@ struct WindowData {
          return Quat( ax.len(), ax.unit() );
     }
 
-    bool trigger=true;
+    bool trigger=true; ///< used to flag state...
+
+    /*-----------------------------------------------------------------------------
+     *  MODES
+     *-----------------------------------------------------------------------------*/
+    int mMode = ControlMode::Navigate;                          ///<  Mode State 
+    /*! Set Mode */
+    int& mode() { return mMode; }
+    /*! Get Mode */
+    int mode() const { return mMode; }
+    /// Check Interface Mode
+    bool mode(int q) { return mMode & q; }  
+    /// Enable Mode    
+    void enable(int bitflag) { mMode |= bitflag; }
+    void disable(int bitflag) { mMode &= ~bitflag; }
+    void toggle(int bitflag)  { mMode & bitflag ? disable(bitflag) : enable(bitflag); }   
+
   };
 
-//RIPPED FROM ALLOCORE (AND TEMPLATED)...
+//Adapted FROM ALLOCORE (removed dependency on window context)
+
 /// Controller for handling input events
 
-/// The return value of the event handlers determines whether or not
+/// Note: The return value of the event handlers could determine whether or not
 /// the event should be propagated to other handlers.
-//template<class TWIN>
 class InputEventHandler{
 
   bool bActive;
@@ -225,7 +254,6 @@ protected:
 /// Subscriber for general Window events
 /// The return value of the event handlers determines whether or not
 /// the event should be propagated to other handlers.
-//template<class TWIN>
 class WindowEventHandler {
 public:
   WindowEventHandler() {}// : mWindow(NULL){}

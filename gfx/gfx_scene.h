@@ -11,7 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:  AlloSphere
  *
  * =====================================================================================*/
 
@@ -22,19 +22,19 @@
 #include "gfx_xfmatrix.h" 
 
 namespace gfx{   
-
   
   /*-----------------------------------------------------------------------------
    *  Focal Length, Width, Near and Far Clipping Planes, ortho mode boolean ...
    *-----------------------------------------------------------------------------*/
   struct Lens {
+
       /* Lens Parameters */
       bool bOrtho;
       float mFocal, mNear, mFar, mWidth, mHeight; 
 
       Lens() :
-      mFocal(60.0), 
-      mWidth(100), 
+      mFocal(60.0),                                         ///< in degrees
+      mWidth(100),                                          ///< in pixels
       mHeight(100), 
       mNear(0.1), 
       mFar (100.0),
@@ -42,24 +42,25 @@ namespace gfx{
       {}
 
       /* Implicit Getters and Setters */
-      void   width ( float w )  { mWidth = w;}            ///< set width
-      void   height( float h )  { mHeight = h;}           ///< set height
+      void   width ( float w )  { mWidth = w;}              ///< set width
+      void   height( float h )  { mHeight = h;}             ///< set height
       
-      float   ratio()   const { return width()/ height(); }
-      float   width()    const {return mWidth;}              ///< get width
-      float   height()  const {return mHeight;}              ///< get height
-      float   depth()     const { return mFar - mNear; }     
+      float   width()    const {return mWidth;}             ///< get width
+      float   height()  const {return mHeight;}             ///< get height
   
-      float&   width()     {return mWidth;}              ///< get width
-      float&   height()  {return mHeight;}              ///< get height
+      float&   width()     {return mWidth;}                 ///< width
+      float&   height()  {return mHeight;}                  ///< height
+
+      float   ratio()   const { return width()/ height(); }
+      float   depth()     const { return mFar - mNear; }    
 
       float near() const { return mNear; }
       float far() const { return mFar; }
       float& near()  { return mNear; }
       float& far()  { return mFar; }
 
-      void  focal(float f)  { mFocal = f; }            ///< set focal length
-      float& focal()      { return mFocal; }          ///< get focal length
+      void  focal(float f)  { mFocal = f; }                 ///< set focal length
+      float& focal()      { return mFocal; }                ///< get focal length
       float  focal() const  { return mFocal; }
 
       void  ortho(bool b) { bOrtho = b; }
@@ -173,30 +174,36 @@ namespace gfx{
 
     
 /*-----------------------------------------------------------------------------
- * VIEW: Left, Top, Right, Bottom, and methods
+ * VIEW: Floating points relative to (0,0) at center Left, Top, Right, Bottom, and methods
  *-----------------------------------------------------------------------------*/
   struct View {   
 
-    View(double _l=-1, double _t=1, double _r=1, double _b=-1) : l(_l), t(_t), r(_r), b(_b) {}
+    //Default Clipspace
+    View(double _l=0, double _t=1, double _r=1, double _b=0) : l(_l), t(_t), r(_r), b(_b) {}
 
     //Views for multiscreen environments will typically have same eye 
-    //CONSTRUCT (fed from renderer setview)
-    View( Vec3f eye, const Pose& p, float aspect, float height = 1.0  ){
+    //CONSTRUCT (called on resize)
+    View( Vec3f eye, const Pose& p, float aspect, float height){
+      
+      Vec3f bl = p.pos();
       Vec3f br = p.pos() + p.x() * height * aspect; 
       Vec3f tl = p.pos() + p.y() * height ;
-      set( eye, p.pos(), br, tl, p.z() );  
+      Vec3f tr = tl + p.x() * height * aspect;
+
+      bottomleft = bl; 
       bottomright = br;
       topleft = tl;
-      topright = tl + Vec3f(height*aspect,0,0);
-      bottomleft = br - Vec3f(height*aspect,0,0);
-    }
+      topright = tr;
+      
+      set( eye, bl, br, tl, p.z() );  
 
+    }
 
     View ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal  = Vec3f(0,0,1) ) {
       set( eye,bl,br,tl,normal );
     }  
 
-    //SET FUNC
+    //SET FUNC (arguments are in world space coordinates)
     View& set ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal = Vec3f(0,0,1) ) {
 
       Vec3f ta = bl - eye; Vec3f tb = (br - eye); Vec3f tc = (tl -eye);
@@ -213,8 +220,14 @@ namespace gfx{
       return *this;
     }      
 
+    float width(){ return r-l; }
+    float height(){ return t-b; }
     float l, t, r, b;
     Vec3f topleft, topright, bottomleft, bottomright;
+
+    void print(){
+      printf("%f\t%f\t%f\t%f\n", l, t, r, b);
+    }
 
   };
 
@@ -229,8 +242,8 @@ namespace gfx{
     
     bool bUseFrust;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
+    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }
@@ -254,9 +267,9 @@ namespace gfx{
       return bUseFrust ? frust() : fovy();
     }
 
+
   }; 
   
-
 
 /*-----------------------------------------------------------------------------
  *  SCENE: Camera, Model pose, matrix containers, whether to use immediate mode
@@ -268,12 +281,8 @@ namespace gfx{
      XformMat xf;
 
      Pose viewpose;  
-     Vec3f light;
       
-     bool bImmediate;
-     Scene& immediate(bool b) { bImmediate = b; return *this; } 
-
-     Scene() : camera(0,0,5), light(3,3,3), bImmediate(true) {} 
+     Scene() : camera(0,0,5) {} 
       
      void fit(int w, int h){
        camera.lens.width( w ); 
@@ -281,12 +290,15 @@ namespace gfx{
      } 
     
     void resize(int _w, int _h){
-      float w = (float)_w/100;
+
+      camera.lens.width( _w );
+      camera.lens.height( _h ); 
+
+      float w = (float)_w/100; 
       float h = (float)_h/100; 
-      camera.lens.width( w ); 
-      camera.lens.height( h ); 
-      Pose p(-w/2.0,-h/2.0, 0); 
-      camera.view = gfx::View( camera.pos(), p, 1.0 * w/h, h );
+      Pose pose(-w/2.0,-h/2.0, 0); //pose in the middle?
+      //eye | pose | aspect | height 
+      camera.view = gfx::View( camera.pos(), pose, (float)w/h, h);
     }
 
       Quat cat() { return camera.quat() * model.quat(); } 
@@ -301,21 +313,56 @@ namespace gfx{
         return (!(mvm().transpose()) );
       }
 
-    void push(){
-      if(bImmediate){
-        pushMatrices();
-        getMatrices();
-      }else{
-        updateMatrices();
+      //into clip space
+      Vec3f project(const Vec3f& v){
+
+         Vec4f tp = mvm() * Vec4f(v[0],v[1],v[2],1.0);
+         Vec4f vp = camera.proj() * tp;
+
+         vp[0] /= vp[3];
+         vp[1] /= vp[3];
+         vp[2] /= vp[3];
+                     
+        Vec3f sc(
+            (vp[0]+1)/2.0,//camera.view.l + camera.view.width() * 
+            (vp[1]+1)/2.0,//camera.view.b + camera.view.height() * 
+            0 //(vp[2]+1)/2.0 
+        ); 
+
+        return sc;
+               
       }
+
+      //cast view coords into 3D world coordinates (not yet tested)
+      Vec3f unproject(const Vec3f& v){
+
+        Mat4f ipm = !(camera.proj()*mod());
+        Vec4f sc ( 
+                      (2*(v[0]))-1,//-camera.view.l))/camera.view.width() -1, 
+                      (2*(v[1]))-1,//-camera.view.b))/camera.view.height() -1,
+                      (2*v[2]) -1,
+                      1
+                    ); 
+
+        
+        return ipm * sc;
+      }
+
+    void push(bool bImmediate){        
+      updateMatrices();
+      if(bImmediate) pushMatrices();
     }
 
-    void pop(){
+    void pop(bool bImmediate){
       if(bImmediate) popMatrices();
     }
 
     void step(){
       model.step(); camera.step();
+    }
+
+    Mat4f modelviewmult( const Mat4f& m){
+      return mvm() * m;
     }
 
     void updateMatrices(){      
@@ -330,7 +377,6 @@ namespace gfx{
       xf.toDoubles();
     } 
 
-
     void pushMatrices(){
         
      // FIXED FUNCTION PIPELINE  
@@ -338,19 +384,18 @@ namespace gfx{
 
         Vec3f look = camera.pos() + camera.forward(); 
       
-        GL :: enablePreset();
-        GL :: lightPos( light[0], light[1], light[2] );
-    
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
 
         glLoadIdentity();
+
+        //! replaced gluPerspective with glLoadMatrix( xf.proj)
         if ( camera.lens.bOrtho ){
             float oz =  camera.pos()[2];
             float aspect = camera.lens.mWidth/camera.lens.mHeight;
             glOrtho(-aspect* oz, aspect* oz,-1.0 * oz, 1.0 * oz, -50.0, 50.0);
         } else {
-            gluPerspective( camera.lens.mFocal, camera.lens.mWidth/camera.lens.mHeight, camera.lens.mNear, camera.lens.mFar);        
+            glLoadMatrixf( xf.proj );
         }
       
         glMatrixMode(GL_MODELVIEW);
@@ -376,19 +421,18 @@ namespace gfx{
       glMatrixMode(GL_MODELVIEW);
       glPopMatrix();
     
-      GL :: disablePreset();  
     #endif
      }    
   
-     void getMatrices(){
-    #ifdef GL_IMMEDIATE_MODE
-      glGetDoublev(GL_PROJECTION_MATRIX, xf.projd);  
-      glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd);
-      glGetIntegerv(GL_VIEWPORT, xf.viewport);  
+     /* void getMatrices(){ */
+    /* #ifdef GL_IMMEDIATE_MODE */
+     /*  glGetDoublev(GL_PROJECTION_MATRIX, xf.projd); */  
+     /*  glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd); */
+     /*  glGetIntegerv(GL_VIEWPORT, xf.viewport); */  
       
-      xf.toFloats();
-    #endif
-    } 
+     /*  xf.toFloats(); */
+    /* #endif */
+    /* } */ 
    
 
   };

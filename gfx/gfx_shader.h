@@ -1,6 +1,5 @@
 /*
- *  vsr_gl_shader.h
- *  VERSOR
+ *  gfx_shader.h
  *
  *  
  *
@@ -10,7 +9,6 @@
 #define GFX_SHADER_H_INCLUDED
 
 #include "gfx_gl.h"
-// #include "vsr_file.h"
 
 #include <string>
 #include <stdio.h>

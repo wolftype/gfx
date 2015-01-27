@@ -160,17 +160,17 @@ struct GlutContext {
     return mWindows[currentWindow] -> ratio(); 
   }
 
-  static WindowData& window(){
+  static WindowData& windowData(){
     return *mWindows[currentWindow];
   }
 
   static void ToggleFullScreen(){
-    if (!window().isFullScreen) {
-      window().save();
+    if (!windowData().isFullScreen) {
+      windowData().save();
       glutFullScreen();
     }
-    else glutReshapeWindow( window().prevWidth(), window().prevHeight() );
-    window().isFullScreen = !window().isFullScreen;
+    else glutReshapeWindow( windowData().prevWidth(), windowData().prevHeight() );
+    windowData().isFullScreen = !windowData().isFullScreen;
   }
 
   static void Animate(int){
@@ -195,7 +195,7 @@ struct GlutContext {
   }
 
   void setViewport(){
-    glViewport(0,0, window().width(),window().height());  
+    glViewport(0,0, windowData().width(),windowData().height());  
    } 
 };
 

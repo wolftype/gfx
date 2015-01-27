@@ -27,7 +27,7 @@ namespace gfx {
     namespace GL {
         
         enum ATTACH {
-			#ifndef __REDUCED_GRAPHICS__
+			      #ifndef __REDUCED_GRAPHICS__
             COLOR =     GL_COLOR_ATTACHMENT0, 
             DEPTH =     GL_DEPTH_ATTACHMENT,
             STENCIL =   GL_STENCIL_ATTACHMENT
@@ -66,7 +66,7 @@ namespace gfx {
         
         enum TYPE {
             UBYTE       = GL_UNSIGNED_BYTE, 
-			USHORT		= GL_UNSIGNED_SHORT,
+			      USHORT		= GL_UNSIGNED_SHORT,
             USHORT565   = GL_UNSIGNED_SHORT_5_6_5,
             USHORT4     = GL_UNSIGNED_SHORT_4_4_4_4, 
             USHORT5     = GL_UNSIGNED_SHORT_5_5_5_1,
@@ -117,7 +117,7 @@ namespace gfx {
             #ifndef __REDUCED_GRAPHICS__  
             STENCILIDX  = GL_STENCIL_INDEX8, 
             #endif 
-			RGBA4 		= GL_RGBA4,
+            RGBA4     = GL_RGBA4,
             #ifndef __raspberry__
             RGBA8       = GL_RGBA8
             #endif

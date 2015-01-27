@@ -21,7 +21,6 @@
 
 #include "gfx_lib.h"
 #include "gfx_gl.h"
-#include "gfx_glu.h"
 #include "gfx_xfmatrix.h"
 #include "gfx_control.h"
 #include "gfx_scene.h"
@@ -67,8 +66,8 @@ namespace gfx {
         Scene& scene() { return *mScene; }
         void scene(Scene *s ){ mScene=s; } 
               
-        template <class A> Vec3f screenCoord(const A& p );
-        template <class A> Vec3f screenCoord2D(const A& p );
+      //template <class A> Vec3f screenCoord(const A& p );
+      //template <class A> Vec3f screenCoord2D(const A& p );
         template <class A> bool pntClicked(const A&, float rad );   
 
         /// Mouse Movement Relative to ModelView (belongs elsewhere
@@ -91,8 +90,8 @@ namespace gfx {
         template<class A, class B>
         void touch(A& s, const B& b);
       
-        /// ObjectPtr Stores Address and Temp Copies of Object 
-        //  (And maybe some function for extracting position from object ...)
+        /// ObjectPtr Stores Address and Temp Copy of Object 
+        //  (And ... to do: maybe some function for extracting position from object ...)
          template <class A>  
          struct ObjectPtr : GenericObjectPtr { 
 
@@ -105,10 +104,11 @@ namespace gfx {
           /// address
           A * mAddress;
   
-          /// memory
+          /// temp memory
           A tObject;
-
-          Vec3f getPosition();
+          
+          /// User-defined Position of Object
+          Vec3f worldPosition();
 
           /// User-defined Transformation of Object
           void transform(); 
@@ -117,7 +117,7 @@ namespace gfx {
           virtual void update(){
            // stringstream s; s << mAddress;  
             if (!remote){
-              pos = getPosition();
+              pos = worldPosition();
             } else {
               remotePtr->update();
               pos = remotePtr->pos;
@@ -196,57 +196,60 @@ namespace gfx {
      *  Get Screen Coordinates of Object
      *-----------------------------------------------------------------------------*/
     /// Screen Coordinates of Target point
-    template <class A> Vec3f ObjectController :: screenCoord(const A& p){
-
-       XformMat& xf = mScene->xf;
-       Vec3f sc = GL::project( p[0], p[1], p[2], xf );
-       sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;   
-       
-       return sc;
-    } 
+    /* template <class A> Vec3f ObjectController :: screenCoord(const A& p){ */
+    /*    Vec3f sc = mScene->project(p);// XMat::Project( p, xf ); */
+    /*    return sc; */
+    /* } */ 
  
-    /// Screen Coordinates of Target 2D point
-    template <class A> Vec3f ObjectController :: screenCoord2D(const A& p){
+    /* /// Screen Coordinates of Target 2D point */
+    /* template <class A> Vec3f ObjectController :: screenCoord2D(const A& p){ */
      
-        XformMat& xf = mScene->xf;
-        Vec3f sc = GL::project( p[0], p[1], 0, xf );
-        sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0;      
-        return sc;
-    }          
+    /*     XformMat& xf = mScene->xf; */
+    /*     Vec3f sc = GL::project( p[0], p[1], 0, xf ); */
+    /*     sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0; */     
+    /*     return sc; */
+    /* } */          
 
     template <class A> bool ObjectController :: pntClicked( const A& x, float rad ) {
       Vec3f v = io().click();  // [0,0] is bottom left corner [1.0,1.0] is top right
       Vec3f p = Vec3f( x[0], x[1], x[2] );
-     // printf("pos: %f\t%f\t%f\n",p[0],p[1],p[2]);
-     // printf("click: %f\t%f\t%f\n",v[0],v[1],v[2]);
-      Vec3f sc = screenCoord( p );
+      Vec3f mp = io().mouse.click();
+      Vec3f sc = mScene->project(p);//screenCoord( p );
       Vec3f dist = (v - sc);
       return (dist.len() < rad) ? true : false;
     } 
 
     void ObjectController :: onMouseDown(const Mouse& m){
-      for (auto& i : selectMap){
-        if (i.second->active) {
-          if ( pntClicked(i.second->pos, .05 ) ) {
-            i.second->select=true;
-          }  
-          if (i.second->select) i.second->store();      
+      
+      if (io().mode( ControlMode::Edit )){
+        for (auto& i : selectMap){
+          if (i.second->active) {
+            if ( pntClicked(i.second->pos, .05 ) ) {
+              i.second->select=true;
+            }  
+            if (i.second->select) i.second->store();      
+          }
         }
       }
     }
 
     void ObjectController :: onMouseDrag(const Mouse& m){
-      for (auto& i : selectMap){
-        if (i.second->active) {
-          if (i.second->select) i.second->touch();
+      if (io().mode( ControlMode::Edit )){
+
+        for (auto& i : selectMap){
+          if (i.second->active) {
+            if (i.second->select) i.second->touch();
+          }
         }
       }
     }
 
     void ObjectController :: onFrame(){
-      for (auto& i : selectMap){
-        if (i.second->active) {
-          i.second->update();
+      if (io().mode( ControlMode::Edit) ){
+        for (auto& i : selectMap){
+          if (i.second->active) {
+            i.second->update();
+          }
         }
       }
     }

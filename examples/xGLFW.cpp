@@ -16,12 +16,11 @@
  * =====================================================================================
  */
 
-#include "util/glfw_window.h"
+#include "util/glfw_window.hpp"
 #include "gfx_app.h"
 #include "gl_mesh.hpp"
 #include "gfx_mesh.h"
 #include "gfx_shader.h"
-//#include "gfx_glm.h"
 
 using namespace gfx;
 
@@ -96,7 +95,7 @@ const char * frag2 = GLSL(120,
 );
 
 
-struct MyApp : App<Window> {
+struct MyApp : GFXApp<Window> {
 
   MBO mbo;
   Mesh mesh;

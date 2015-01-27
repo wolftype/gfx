@@ -53,11 +53,11 @@ namespace gfx {
                         
         }
         
-        void enable()   {   glEnableVertexAttribArray( mAtt.id );  GL::error("enable vattrib"); }
-        void disable()  {   glDisableVertexAttribArray( mAtt.id ); GL::error("disable vattrib");}
+        void enable()  const {   glEnableVertexAttribArray( mAtt.id );  GL::error("enable vattrib"); }
+        void disable() const {   glDisableVertexAttribArray( mAtt.id ); GL::error("disable vattrib");}
 
         //Data is not sent here, just pointed to
-        void pointer(){
+        void pointer() const {
             glVertexAttribPointer(mAtt.id, mSize, mAtt.datatype, bNormal, mStride, mData);  
             GL::error("pointer");
         }
@@ -96,19 +96,19 @@ namespace gfx {
           vatt.push_back( VertexAttrib(id,name,stride,offset) );
         }
               
-          void enable(){
+          void enable() const{
             for (int i=0;i<vatt.size();++i){
               vatt[i].enable();
             }
           }
 
-          void pointer(){
+          void pointer() const {
             for (int i=0;i<vatt.size();++i){
               vatt[i].pointer();
             }
           }
 
-          void disable(){
+          void disable() const{
             for (int i=0;i<vatt.size();++i){
               vatt[i].disable();
             }

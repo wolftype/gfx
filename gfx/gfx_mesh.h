@@ -60,7 +60,9 @@ namespace gfx {
 
         float operator[] (int idx) { return ((float*)&(Pos[0]))[idx]; }
 
-        void print() { }
+        void print() {
+          cout << Pos << Norm << Col << Tex << endl;  
+        }
      };
 
 
@@ -237,8 +239,8 @@ namespace gfx {
         #ifdef GL_IMMEDIATE_MODE
         
           //immediate mode!
-          void drawVertices(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-              glColor4f(r,g,b,a);
+          void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+              //glColor4f(r,g,b,a);
               GL::Begin( mMode);
               for (int i = 0; i < mVertex.size(); ++i){
                   GL::vertex( mVertex[i].Pos );
@@ -246,7 +248,7 @@ namespace gfx {
               glEnd();
           }
 
-          void drawElementsColor() {
+          void drawElementsColor() const {
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::color( mVertex[ mIndex[i] ].Col );
@@ -256,8 +258,8 @@ namespace gfx {
               glEnd();
           }
 
-           void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-              glColor4f(r,g,b,a);  
+           void drawElements() const {//float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) const {
+              //glColor4f(r,g,b,a);  
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::normal( mVertex[ mIndex[i] ].Norm );
@@ -679,18 +681,21 @@ namespace gfx {
                   
           for (int i = 0; i <= stacks; ++i){
           
-              float v = -1.0 + 2.0* i/stacks;
+              float v = -1.0 + 2.0 * i/stacks;
               
               for (int j = 0; j < slices; ++j){
                   
                   float u = 1.0* j/slices;
 
+                   //angle around y axis
                    Quat qu = Quat( PI*u, Vec3f(0,1,0));
+                   //angle around z axis
                    Quat qv = Quat( PIOVERFOUR * v, Vec3f(0,0,1) ) ;
         
                    Vec3f tv = Quat::spin( Vec3f(1,0,0),  qu * qv ) ;
-                   m.add( tv * rad, tv );
-      
+                   m.add( tv * rad, tv.unit() );
+
+                  //only one point at each pole: 
                   if (i == 0 || i == stacks) {
                       break;
                   }
@@ -699,31 +704,42 @@ namespace gfx {
           }
           
           //BOTTOM 
-          for (int j = 0; j < slices; ++j){
-              m.add(j+1).add(0);
+        //  m.add(0).add(1).add(2);
+          for (int j = 1; j <= slices; j+=1){
+              m.add(0).add(j).add(j+1).add(0);
           }
+         // m.add(0).add(1);
           
           //m.add(1);
           
           for (int i = 0; i < stacks -1; ++i){
-              static bool color = 0;
-              color = !color;
+             // static bool color = 0;
+            //  color = !color;
+              int a, b;
               for (int j = 0; j < slices; ++j){
-                  static bool xcolor = 0;
-                  xcolor = !xcolor;                
-                  int a = 1 + i * slices + j;
-                  if (a == 0) continue;
+                 // static bool xcolor = 0;
+                 // xcolor = !xcolor;   
+                               
+                  a = 1 + i * slices + j;
+                  //if (a == 0) continue;
                   
-                  int b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Next Higher Latitude or North Pole
+                  b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Next Higher Latitude or North Pole
                   
                  // int c = ( j < slices - 1 ) ? a + 1 : 1 + i * slices;
                   
-                  int idx[2] = {a,b};
-                  m.add(idx,2);
-                  m[a].Col.set(color,xcolor,1,1);
-                  m[b].Col.set(color,xcolor,1,1);
+                  m.add(a).add(b); 
+                
+                  if (a==1) m[a].Col.set( 1,0,0,1);
+                  if (a==2) m[a].Col.set( 0,1,0,1);
+                  if (a==3) m[a].Col.set( 0,0,1,1);
+
+                //  m[b].Col.set(color,xcolor,1,1);
               }
-              m.add( 1 + i * slices ); //repeat south pole every strip
+              a= 1 + i * slices ;
+              b =  ( i < stacks - 2) ? a + slices : m.num() - 1;
+              m.add(a).add(b); 
+
+                            //m.add( 1 + i * slices ); //repeat every strip
           }
           
           m.last().Col.set(0,1,0,1);
@@ -773,16 +789,21 @@ namespace gfx {
             float z = h * i / stacks;
             for (int j = 0; j < slices; ++j){
                 float rad = 2.0 * PI * j / slices;
-                float x = cos(rad) * (1.0-z) * r;
-                float y = sin(rad)  * (1.0-z) * r;
+                float x = cos(rad) * (h-z) * r;
+                float y = sin(rad)  * (h-z) * r;
                 m.add( Vertex( Vec3f(x,y,z), Vec3f(x,y,z),Vec4f(1,1,1,1), Vec2f(z, 1.0* j/slices) ) );
                 m.add(i * slices + j);
             }
             m.add(i*slices);
         }
+        int peak = m.index().back();
+
+        for (int j=0; j<slices; ++j){
+            m.add(j).add(peak);      
+        }
         
         m.mode(GL::LL); 
-    m.store(); 
+        m.store(); 
         return m;
     
     }
