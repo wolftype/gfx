@@ -127,6 +127,10 @@ namespace gfx{
       glColor4f(r,g,b,a);
     }
 
+    void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+      glColor4f(r,g,b,a);
+    }
+
     template<class A, class B>
     void drawAt(const A& a, const B& p){
       glPushMatrix(); 

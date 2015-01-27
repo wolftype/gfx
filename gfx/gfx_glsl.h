@@ -15,14 +15,6 @@
 
 #include "gfx_lib.h"
 
-#ifndef STRINGIFY
-//#define R"(A) #A
-#endif
-
-//#ifndef GL_IMMEDIATE_MODE
-//#define GLES_CHECK lowp
-//#endif
-
 namespace gfx{
 
     namespace GLSL{
@@ -218,8 +210,6 @@ namespace gfx{
                                 
                 vec4 pos =  vec4(position,1.0);
                 vec4 nor = vec4(normal,1.0);
-                
-                //xm = submodel;
                 
                 gl_PointSize = 1.0;
                 gl_Position = doVertex(pos);
@@ -708,7 +698,7 @@ namespace gfx{
 /*-----------------------------------------------------------------------------
  *  FIXED FUNCTION SHADER CODE
  *-----------------------------------------------------------------------------*/
-string FFLightingVert = STRINGIFY(
+string FFLightingVert = R"(
     varying vec4 color;
     varying vec3 normal;
     varying vec3 lightDir;
@@ -722,10 +712,10 @@ string FFLightingVert = STRINGIFY(
       lightDir = normalize(vec3(gl_LightSource[0].position.xyz - V));
       gl_Position = vertex; 
     }
-  );
+  )";
 
 
-string FFLightingFrag = STRINGIFY(
+string FFLightingFrag = R"(
     uniform float lighting;
     varying vec4 color;
     varying vec3 normal;
@@ -743,7 +733,7 @@ string FFLightingFrag = STRINGIFY(
       final_color += gl_LightSource[0].specular * spec;
       gl_FragColor = mix(color, final_color, .8); //color;//
     }
-  );
+  )";
 
 
         // static string SVert = R"(

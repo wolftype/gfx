@@ -1,6 +1,6 @@
 /*! @file
  *
- *  gfx_data.h
+ *  gfx_patch.h
  *
  *  graphics0-related data structs
  *

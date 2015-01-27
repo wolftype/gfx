@@ -103,6 +103,8 @@ namespace gfx{
 #define ZERO(x) (fabs(x)<FPERROR?0:x)
 #endif
 
+#endif
+
 } //gfx::
 
 #endif
