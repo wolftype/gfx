@@ -81,8 +81,8 @@ struct WindowData {
      Vec3f drag() { return Vec3f(dx,dy,0); }
 
      //confusing! get rid of these . . .
-     Vec3f move, accel, cat, dragAccum;
-     Vec3f biv, bivCat, dragBiv, dragBivCat;
+     //Vec3f move, accel, cat, dragAccum;
+     //Vec3f biv, bivCat, dragBiv, dragBivCat;
 
      int gesture;  // stores major direction of mouse movement (Mouse::Up, Mouse::Down, Mouse::Left, Mouse::Right)
      int button;   // which button is down
@@ -91,10 +91,9 @@ struct WindowData {
      bool isDown(){ return state & IsDown; }
      bool isMoving() { return state & IsMoving; }
      bool newClick(){ return state & Click; }   
-     
-     
+      
+    //calculate gesture
      void calc(){
-        //gesture
         int mdir = 0;
         if ( fabs(dx) >= fabs(dy) ) mdir = dx > 0 ? Mouse::Right : Mouse::Left;
         else if ( fabs(dx) < fabs(dy) ) mdir = dy < 0 ? Mouse::Up : Mouse::Down; 
@@ -183,7 +182,7 @@ struct WindowData {
     bool trigger=true; ///< used to flag state...
 
     /*-----------------------------------------------------------------------------
-     *  MODES
+     *  CONTROL MODES
      *-----------------------------------------------------------------------------*/
     int mMode = ControlMode::Navigate;                          ///<  Mode State 
     /*! Set Mode */
@@ -199,12 +198,11 @@ struct WindowData {
 
   };
 
-//Adapted FROM ALLOCORE (removed dependency on window context)
-
+/// Somewhat Adapted FROM ALLOCORE (removed dependency on window context)
 /// Controller for handling input events
 
 /// Note: The return value of the event handlers could determine whether or not
-/// the event should be propagated to other handlers.
+/// the event should be propagated to other handlers.  Right now this is void, so it can't.
 class InputEventHandler{
 
   bool bActive;
@@ -240,14 +238,6 @@ public:
   /// Return self
   InputEventHandler& inputEventHandler(){ return *this; }
 
-//  bool attached() const { return NULL != mWindow; }
-//  TWIN& window(){ return *mWindow; }
-//  const TWIN& window() const { return *mWindow; }
-//  InputEventHandler& window(TWIN * v){ mWindow=v; return *this; }
-
-protected:
-//  TWIN * mWindow; //Q: do we even need this reference back to window ?
-//  void removeFromWindow(){}
 };
 
 
@@ -258,7 +248,6 @@ class WindowEventHandler {
 public:
   WindowEventHandler() {}// : mWindow(NULL){}
   virtual ~WindowEventHandler(){}
-
 
   /// Called after window is created with valid OpenGL context
   virtual void onCreate(){ }
@@ -278,14 +267,6 @@ public:
   /// Return self
   WindowEventHandler& windowEventHandler(){ return *this; }
 
-//  bool attached() const { return NULL != mWindow; }
-//  TWIN& window(){ return *mWindow; }
-//  const TWIN& window() const { return *mWindow; }
-//  WindowEventHandler& window(TWIN * v){ mWindow=v; return *this; }
-
-protected:
-//  TWIN * mWindow; //Q: do we even need this reference back to window ?
-//  void removeFromWindow(){}
 };
 
 /*-----------------------------------------------------------------------------
@@ -312,7 +293,7 @@ struct Interface {
     for (auto& i : mWindowEventHandlers){
       i->onFrame();
     }
-    CONTEXT::SwapBuffers(); //<-- Swap Buffers only AFTER all window events onFrame() 
+    CONTEXT::SwapBuffers(); //<-- Swap Buffers only AFTER all window events enact onFrame() method 
   }
 
   static void OnResize(int w, int h){
@@ -343,7 +324,6 @@ struct Interface {
       if (i->active()) i->onMouseDown(io.mouse);
     }
   }
-
 
   static void OnMouseMove(const Mouse& m){
     io.mouse.state = m.state; io.mouse.x=m.x; io.mouse.y=m.y;

@@ -96,7 +96,8 @@ namespace gfx{
       }
      }
 
-    void SceneController :: onMouseMove(const Mouse& m){  
+    void SceneController :: onMouseMove(const Mouse& m){
+      viewCalc();
     }
 
     void SceneController :: onMouseDrag(const Mouse& m){ 
@@ -146,9 +147,12 @@ namespace gfx{
         /* io().mouse.bivCat = vd().z.cross( io().mouse.cat ); */
 
         //GLU FUNCS (to do: replace these with our own to eliminate reliance on glu)
-        Vec3f v1 = mScene->unproject( io().pos(1.0)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 1.0,  mScene->xf );
-        Vec3f v2 = mScene->unproject( io().pos(0.0)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.0,  mScene->xf );
-        Vec3f v3 = mScene->unproject( io().pos(0.5)); //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.5,  mScene->xf );   
+        Vec3f v1 = mScene->unproject( io().pos(1.0));
+         //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 1.0,  mScene->xf );
+        Vec3f v2 = mScene->unproject( io().pos(0.0)); 
+        //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.0,  mScene->xf );
+        Vec3f v3 = mScene->unproject( io().pos(0.5)); 
+        //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.5,  mScene->xf );   
 
         //Get vec of Mouse Position pointing into Z Space 
         vd().ray   = ( v3 - v2 ).unit();

@@ -82,7 +82,7 @@ namespace gfx{
                 bind();
             }
 
-             /// Call BEFORE Enabling Vertex Attributes
+             /// Call bind BEFORE Enabling Vertex Attributes
             void bind() const { 
                 vertex.bind(); 
                 index.bind(); 
@@ -93,8 +93,22 @@ namespace gfx{
                 index.unbind(); 
                 vertex.unbind();   
             } 
+ 
+             /// Here we can pass in vertex Attributes to point to . . . 
+            // (useful for OPENGLES2.0 where there is no Vertex Array Object)
+            void bind(const VertexAttributes& vatt) const { 
+                bind(); 
+                vatt.enable();
+                vatt.pointer();
+            }
+
+            void unbind(const VertexAttributes& vatt) const{
+               vatt.disable();
+               unbind();
+            }
+ 
                                  
-            //Enable Vertex Attributes FIRST             
+            //Enable Vertex Attributes Before Calling DrawElements 
             void drawElements( int num = -1, int off = 0) const { // GLenum mode,
                 index.drawElements(mode, num, off);
             }
@@ -114,22 +128,7 @@ namespace gfx{
                 drawElements();
               vao.unbind();
             }
-
-
-
-            /// Here we can pass in vertex Attributes to point to . . . 
-            // (useful for OPENGLES2.0 where there is no Vertex Array Object)
-            void bind(const VertexAttributes& vatt) const { 
-                bind(); 
-                vatt.enable();
-                vatt.pointer();
-            }
-
-            void unbind(const VertexAttributes& vatt) const{
-               vatt.disable();
-               unbind();
-            }
-             
+       
             /// Update Vertex Info               
             void update(Vertex * val){
                 vertex.update(val);
@@ -198,6 +197,7 @@ namespace gfx{
           
             static MeshBuffer& Init(){
               static MeshBuffer m;
+              cout << "initializing mesh buffer" << endl;
               return m;
             }
             private:

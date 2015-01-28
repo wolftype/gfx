@@ -190,7 +190,7 @@ namespace gfx{
                 //Specular Coefficient (not used here)
                 float sf = max(0.0, dot(L,H) );
                     
-                return vec4((sourceColor * df).xyz , 1 );
+                return vec4((sourceColor * df).rgb , sourceColor.a );
             }
 
         )";
@@ -210,7 +210,7 @@ namespace gfx{
                 vec4 pos =  vec4(position,1.0);
                 vec4 nor = vec4(normal,1.0);
                 
-                gl_PointSize = 1.0;
+                gl_PointSize = 5.0;
                 gl_Position = doVertex(pos);
             }
         )";

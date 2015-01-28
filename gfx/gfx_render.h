@@ -42,23 +42,41 @@ namespace gfx{
   template<class T>
   struct Renderable {
     
+    ///Look up by type
     static vector<MBO>& Get(){
       return MeshBuffer<T>::Get();
     }
 
+    /// Look up by address
     static MBO& Get(const T& t){
       return MeshBuffer<T>::Get(t);
     }
 
-    static void UpdateColor(const T& t, float r, float g, float b, float a){
+    static void SetUpdate(){
+      vector<MBO>& vm = Get();
+      for (auto& m : vm ){
+          m.bUpdate=true;
+      }
+    }
+
+    static void UpdateColor(float r, float g, float b, float a){
       vector<MBO>& vm = Get();
       for (auto& m : vm ){
         if (m.shouldUpdate()){
           m.mesh.color(r,g,b,a);
           m.update();
+          m.bUpdate=false;
         }
       }
     }
+
+    static void Update(){
+      vector<MBO>& vm = Get();
+      for (auto& m : vm ){
+          m.update();
+      }
+    }
+
 
     static Mat4f ModelMatrix(const T& t){
       printf(R"(no matrix model defined for this type)");
@@ -105,18 +123,18 @@ namespace gfx{
   template<class T>
   struct Drawable {
     
-    static void Immediate(const T& t){
+    static void Draw(const T& t){
        printf("Drawable<T>::Immediate routine is not yet specialized\n");
     }
 
     template<class B>
-    static void Immediate(const B& b){
-      Drawable<B>::Immediate(b);
+    static void Draw(const B& b){
+      Drawable<B>::Draw(b);
     }
 
   };
 
-  template<> void Drawable<MBO>::Immediate(const MBO& m){
+  template<> void Drawable<MBO>::Draw(const MBO& m){
     m.mesh.drawElements();
   }
 
@@ -135,14 +153,14 @@ namespace gfx{
     void drawAt(const A& a, const B& p){
       glPushMatrix(); 
       glTranslatef( p[0], p[1], p[2] );
-      Drawable<A>::Immediate(a);
+      Drawable<A>::Draw(a);
       glPopMatrix();
     }
 
     template<typename A>
     void draw(const A& a){
       glPushMatrix(); 
-      Drawable<A>::Immediate(a);
+      Drawable<A>::Draw(a);
       glPopMatrix();      
     }
   }
@@ -172,7 +190,7 @@ namespace gfx{
 
       GFXRenderNode * mParent;                                              ///< Pointer to Parent Process
       
-      Vec3f light;                                                          ///< Light Position  
+      Vec3f light = Vec3f(1,1,4);                                                          ///< Light Position  
 
       bool bImmediate;                                                      ///< Use Fixed Function or Programmable
       void immediate(bool b) { bImmediate = b; }
@@ -239,12 +257,6 @@ namespace gfx{
       ///Default initialization enables depth and blend
       virtual void init(){
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-          
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                
         string V = useES() ? DefaultVertES : DefaultVert;        ///< These basic shaders are defined in gfx_glsl.h 
         string F = useES() ? DefaultFragES : DefaultFrag; 
               
@@ -280,9 +292,9 @@ namespace gfx{
       }
 
      void bindModelView( const Mat4f& mat ){ 
-        static float mv[16];
-        (mScene->mvm()*mat).fill(mv);
-        program -> uniform("modelView", mv );   
+         static float mv[16];
+         (mScene->mvm()*mat).fill(mv);
+         program -> uniform("modelView", mv );   
       }
 
       virtual void process(){
@@ -296,21 +308,27 @@ namespace gfx{
         }
       }
 
+      template<class T>
+      void update(const T& t){
+        Renderable<T>::Update(t);
+      }
 
       template<class T>
-      void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0){
+      void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){
          if (bImmediate) {
            render::begin(r,g,b,a);
            render::draw(t); 
          }
          else {
-          Renderable<T>::UpdateColor(t,r,g,b,a); ///< currently updates mesh twice -- (once here and once in Draw routine if positions are modified)
+          if (bUpdate) {
+            Renderable<T>::SetUpdate();
+          }
+          Renderable<T>::UpdateColor(r,g,b,a); ///
           Renderable<T>::Draw(t,this);  ///< pass "this" to Renderable<T>::Draw in order to access current model view and vertex attributes
          }        
       }
 
       void draw(MBO& m, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
-        cout << "mbo" << endl;
         if (bImmediate){
            render::begin(r,g,b,a);
            render::draw(m); 
@@ -354,14 +372,18 @@ namespace gfx{
 
   template<>
   void Renderable<MBO> :: Draw(const MBO& m, GFXRenderer * _i){   
-    _i->bindModelView(); ///< identity matrix
-    m.render(_i->vatt);
+   // _i->program->bind(); // shader is already bound at this point
+      _i->bindModelView(); ///< identity matrix
+      m.render(_i->vatt);
+   // _i->program->unbind();
   }
 
   template<>
   void Renderable<MBO> :: Draw(const MBO& m, const Mat4f& model, GFXRenderer * _i){
-    _i->bindModelView(model); ///< modelview * submodel matrix
-    m.render(_i->vatt);
+   // _i->program->bind();
+      _i->bindModelView(model); ///< modelview * submodel matrix
+      m.render(_i->vatt);
+    //_i->program->unbind();
   }
 
   /* template<> */

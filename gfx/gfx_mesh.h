@@ -25,6 +25,33 @@ using namespace std;
  
 
 namespace gfx {
+
+  struct VertexPosition {
+     Vec3f Pos;
+     Vec3f Norm;
+
+     VertexPosition( const Vec3f& pos, const Vec3f& norm=Vec3f(0,0,1)) : Pos(pos), Norm(norm) {}
+     VertexPosition( float x, float y, float z ) : Pos(x,y,z), Norm(0,0,1) {}
+ 
+     static GLvoid * on() { return (GLvoid*)sizeof(Vec3f); }
+
+      float operator[] (int idx) { return Pos[idx]; }
+
+  };
+
+  struct VertexColor {
+     Vec4f Col;
+     Vec2f Tex;
+
+     VertexColor( const Vec4f& col = Vec4f(1,1,1,1), const Vec2f& tex=Vec2f(0,0)) : Col(col), Tex(tex) {}
+     VertexColor( float r, float g, float b, float a=1.0 ) : Col(r,g,b,a), Tex(0,0) {}
+ 
+     static GLvoid * ot() { return (GLvoid*)sizeof(Vec4f); }
+
+     float operator[] (int idx) { return Col[idx]; }
+
+  };
+
     
   /*!
    *  VERTEX DATA Interleaved
@@ -92,8 +119,8 @@ namespace gfx {
         Vec4f mColor;
         
         /// Vertices for VertexArray
-        vector< Vertex > mVertex;
-        vector< Vertex > mStore;     //Original Stored copy
+        vector< Vertex> mVertex;
+        vector< Vertex> mStore;     //Original Stored copy
    
         ///Indices for ElementArray
         vector< INDEXTYPE > mIndex;

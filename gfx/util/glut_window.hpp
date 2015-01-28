@@ -129,9 +129,9 @@ struct GlutContext {
   static vector<WindowData*> mWindows;
   static int currentWindow;
 
-  void create(int w, int h, int offsetW = 0, int offsetH = 0){
+  void create(int w, int h, string name = "glut window", int offsetW = 0, int offsetH = 0){
     
-    int id = glutCreateWindow("glut window");
+    int id = glutCreateWindow(name.c_str());
            
     //WINDOW CALLBACKS
     glutDisplayFunc(GlutInterface<GlutContext>::Draw);         
@@ -175,7 +175,7 @@ struct GlutContext {
 
   static void Animate(int){
     glutPostRedisplay();
-    glutSwapBuffers();
+    //glutSwapBuffers(); ///< do not call swap buffers here -- let interface Draw func call context's swapbuffers...
     glutTimerFunc(20, Animate, 0);
   }
 

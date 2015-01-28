@@ -581,6 +581,7 @@ namespace gfx {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         
         glPointSize(5);
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glEnable(GL_LINE_SMOOTH);
         
         //frontBackDiff();

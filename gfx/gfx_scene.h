@@ -274,7 +274,6 @@ namespace gfx{
     } 
     
     Mat4f proj(){
-      //return XMat::identity();
       return bUseFrust ? frust() : fovy();
     }
 
@@ -347,7 +346,7 @@ namespace gfx{
       //cast view coords into 3D world coordinates (not yet tested)
       Vec3f unproject(const Vec3f& v){
 
-        Mat4f ipm = !(camera.proj()*mod());
+        Mat4f ipm = !(camera.proj()*mvm());
         Vec4f sc ( 
                       (2*(v[0]))-1,//-camera.view.l))/camera.view.width() -1, 
                       (2*(v[1]))-1,//-camera.view.b))/camera.view.height() -1,
@@ -355,8 +354,13 @@ namespace gfx{
                       1
                     ); 
 
-        
-        return ipm * sc;
+        Vec4f vp = ipm * sc;
+
+         vp[0] /= vp[3];
+         vp[1] /= vp[3];
+         vp[2] /= vp[3];
+
+        return Vec3f(vp[0],vp[1],vp[2]);
       }
 
     void push(bool bImmediate){        

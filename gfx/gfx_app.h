@@ -76,16 +76,19 @@ public GFXRenderer
   WINDOWCONTEXT& context() { return mContext; }
   WindowData& windowData() { return mContext.windowData(); }
 
-  Scene scene;
-  SceneController sceneController;
-  ObjectController objectController;
+  Scene scene;                            ///< modelviewprojection matrix transforms
 
-  Vec3f mColor; ///< Background Color
+  SceneController sceneController;        ///< interface to matrix transforms 
+  ObjectController objectController;      ///< interface to objects on screen
+
+  Vec3f mColor;                           ///< Background Color
+
+  GFXio& io() { return mContext.interface.io; } ///< get io
 
   /*-----------------------------------------------------------------------------
-   *  Constructor: Pass in width and height of window, and any command line arguments
+   *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
-  GFXApp(int w=800, int h=400, int argc = 0, char ** argv = NULL) :
+  GFXApp(int w=800, int h=400, string name = "GFXApp", int argc = 0, char ** argv = NULL) :
   GFXRenderer(w,h,this), mColor(.2,.2,.2)
   {
 
@@ -93,9 +96,9 @@ public GFXRenderer
       *  1. Initialize Window and Callbacks
       *-----------------------------------------------------------------------------*/
       WINDOWCONTEXT::System -> Initialize();
-      mContext.create(w,h);
+      mContext.create(w,h,name);
 
-      //add this application to list of listeners to window and input events
+      //add this to window context's list of listeners to events
       mContext.interface.addWindowEventHandler(this);
       mContext.interface.addInputEventHandler(this); 
 
@@ -131,16 +134,16 @@ public GFXRenderer
       }
      
       /*-----------------------------------------------------------------------------
-       * 4. Enable Presets (depth func, blend func)
-       *-----------------------------------------------------------------------------*/
-       GL::enablePreset();
-
-      /*-----------------------------------------------------------------------------
        * 5. Set up Programmable Rendering Pipeline
        *-----------------------------------------------------------------------------*/
        GFXRenderer::parent(this);
        GFXRenderer::scene(&scene);
        GFXRenderer::init();
+
+      /*-----------------------------------------------------------------------------
+       * 4. Enable Presets (depth func, blend func)
+       *-----------------------------------------------------------------------------*/
+       GL::enablePreset();
 
   }
 
@@ -208,7 +211,7 @@ public GFXRenderer
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){ 
-
+    GL::enablePreset();
     onDraw();
   }
 

@@ -151,6 +151,7 @@ namespace gfx {
           selectMap[ sa.str() ] = new ObjectPtr<A>(this,a); 
           stringstream sb; sb << b;  
           selectMap[ sb.str() ] = new ObjectPtr<B>(this,b); 
+          selectMap[ sb.str() ] -> active = false; 
 
           selectMap[ sa.str() ] -> remote = true;
           selectMap[ sa.str() ] -> remotePtr = selectMap[sb.str()];
