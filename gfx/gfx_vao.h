@@ -26,23 +26,30 @@ namespace gfx {
 struct VAO  {
 
   GLuint id;
-  
+
   VAO(){
     generate();
     bind();
   }
 
   void generate(){
+#ifndef GFX_USE_GLES
     GENVERTEXARRAYS(1,&id); //<-- This macro calls appropriate glGenVertexArray function (or glGenVertexArrayAPPLE, etc.)
+#endif
   }
 
   void bind() const {
+#ifndef GFX_USE_GLES    
     BINDVERTEXARRAY(id);    //<-- This macro calls appropriate glBindVertexArray function
+#endif
   }
 
   void unbind() const {
+#ifndef GFX_USE_GLES
     BINDVERTEXARRAY(0);
+#endif
   }
+
 
 };
 

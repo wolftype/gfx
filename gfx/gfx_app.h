@@ -122,8 +122,10 @@ public GFXRenderNode                //< has onRender() method called by mRendere
       mContext.interface.OnResize(w,h);
 
       /*-----------------------------------------------------------------------------
-       * 3.  Initialize GLEW and check for features
+       * 3.  Initialize GLEW and check for features (if not using GLES
        *-----------------------------------------------------------------------------*/
+
+#ifndef GFX_USE_GLES
       glewExperimental = true;
       GLenum glewError = glewInit();
       if (glewError != GLEW_OK){
@@ -135,7 +137,7 @@ public GFXRenderNode                //< has onRender() method called by mRendere
       } else if (GLEW_ARB_vertex_array_object){
         printf("genVertexArrays supported\n");
       }
-     
+#endif
       /*-----------------------------------------------------------------------------
        * 5. Set up Programmable Rendering Pipeline
        *-----------------------------------------------------------------------------*/
@@ -144,9 +146,10 @@ public GFXRenderNode                //< has onRender() method called by mRendere
        mRenderer.init();
 
       /*-----------------------------------------------------------------------------
-       * 4. Enable Presets (depth func, blend func)
+       * 4. Enable Presets (depth func, blend func) see gfx_gl.h
        *-----------------------------------------------------------------------------*/
        GL::enablePreset();
+
 
   }
 

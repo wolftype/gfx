@@ -499,8 +499,10 @@ namespace gfx {
     
         
         inline void lightPos(float x, float y, float z, float w =1.0){
+
             GLfloat lp[] = {x,y,z,w};	
             glLightfv(GL_LIGHT0, GL_POSITION, lp);
+
         }
     
         inline void local() { glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); }
@@ -584,8 +586,7 @@ namespace gfx {
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glEnable(GL_LINE_SMOOTH);
         
-        //frontBackDiff();
-        
+    
         glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
         
         GLushort gs = 1024 + 512 + 256 + 128 + 64 + 32 + 16 + 8 + 4 + 2;
@@ -644,6 +645,18 @@ namespace gfx {
 
     inline void push() { glPushMatrix(); }
     inline void pop() { glPopMatrix(); }
+
+#else
+
+    inline void enablePreset(){
+        
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
+    }
 
 #endif
 

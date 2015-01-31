@@ -264,7 +264,7 @@ namespace gfx {
         }
 
         //GL_IMMEDIATE_MODE DEFAULT = 1
-        #ifdef GL_IMMEDIATE_MODE
+        #ifdef GFX_IMMEDIATE_MODE
         
           //immediate mode!
           void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {

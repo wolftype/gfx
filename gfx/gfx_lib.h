@@ -12,13 +12,13 @@
 
     #ifdef __ios__
 
+        #define GFX_USE_GLES
+
         #include <OpenGLES/ES1/gl.h>
         #include <OpenGLES/ES1/glext.h>
 
         #include <OpenGLES/ES2/gl.h>
         #include <OpenGLES/ES2/glext.h>
-
-        #define GFX_USE_GLES
 
 //        #define glGenFramebuffers glGenFramebuffersOES
 //        #define glBindFramebuffer glBindFramebufferOES
@@ -35,36 +35,34 @@
 
   #elif defined(__raspberry__)
 
+      #define GFX_USE_GLES
+
       #include "bcm_host.h"
       #include "GLES2/gl2.h"
       #include "GLES2/gl2ext.h"
       #include "EGL/egl.h"
       #include "EGL/eglext.h"
 
-      #define GFX_USE_GLES
       #include "gfx_macros.h"
 
 	#elif defined(__linux__)
-		
-		#include <GL/glew.h>
-		#include <GL/gl.h>
-//    #include <GL/glu.h>
-		#include <GL/glut.h>
-		#include <GL/glext.h>
-        
-    #define GL_IMMEDIATE_MODE
-        
-
+      #define GFX_IMMEDIATE_MODE
+	    #define GFX_USE_GLEW
+      	
+		  #include <GL/glew.h>
+		  #include <GL/gl.h>
+		  #include <GL/glut.h>
+		  #include <GL/glext.h>
         
   #else //defined(__APPLE__) || defined(__OSX__)
 
-      //printf("APPLE SYSTEM\n");
+      #define GFX_IMMEDIATE_MODE
+	    #define GFX_USE_GLEW
+
       #include <GL/glew.h>
       #include <OpenGL/OpenGL.h>
       #include "GLUT/GLUT.h"
 
-      #define GL_IMMEDIATE_MODE
-  
   #endif
 
 #ifndef GFX_USE_GLES

@@ -21,8 +21,7 @@
 #define gfx_egl_h
 
 #include "gfx_lib.h"
-//#include <EGL/egl.h>
-//#include <bcm_host.h>
+#include "gfx_control.h"
 
 #include <iostream>
 #include <string.h>
@@ -339,7 +338,7 @@ namespace gfx {
 //SINGLETON
 struct BCM {
   
-  static BCM& Initialize(int argc, char**argv){
+  static BCM& Initialize(){
     static BCM TheBCM;
     return TheBCM;
   }
@@ -347,7 +346,7 @@ struct BCM {
   template<class APP>
   void Start(APP * app){
     while(true){       
-         app -> onFrame();
+         app -> mContext.interface.OnDraw();
          usleep(166);
       }    
   }
@@ -356,13 +355,13 @@ struct BCM {
 
    ~BCM() {
      bcm_host_deinit();
-     cout << "bcm_host_deinit()\n";
+     printf("bcm_host_deinit()\n");
    }
 
   private: 
     BCM() {
       bcm_host_init();
-      cout << "bcm_host_init()\nv
+      printf("bcm_host_init()\n");
     }
 };
 
@@ -371,6 +370,7 @@ struct RPIinterface : Interface<CONTEXT>{
 
   static void Draw(){
     Interface<CONTEXT>::OnDraw();
+    printf("ondraw");
   }
 
 };
@@ -381,7 +381,7 @@ struct RPIContext {
 
    RPIinterface<RPIContext> interface;
 
-   static vector<WindowData*> mWindows;
+   static vector<WindowData*> mWindowData;
    static int currentWindow;
    WindowData& windowData() { return *mWindowData[currentWindow]; }
    void setViewport(){
@@ -389,11 +389,12 @@ struct RPIContext {
    } 
 
    static BCM * System;
+  
    static EGL::Window * mWindow;
   
-   static void Create(int w, int h){
+  static void create(int w, int h, string name){
        mWindow = new EGL::Window();
-       mWindows.push_back( new WindowData(w,h,0) );
+       mWindowData.push_back( new WindowData(w,h,0) );
        currentWindow = 0;
    }
 
@@ -409,10 +410,10 @@ struct RPIContext {
    }
 };
 
-vector<WindowData*> RPIContext::mWindows;
+vector<WindowData*> RPIContext::mWindowData;
 int RPIContext::currentWindow;
-EGL::Window * RPIContext::mWindow;
 BCM * RPIContext::System;
+EGL::Window * RPIContext::mWindow;
 
 
 } //gfx ::

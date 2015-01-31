@@ -125,7 +125,6 @@ namespace gfx{
    *  though it is easier to overload free functions than methods, ADL doesn't work
    *  for generic types later on... ]
    *  *-----------------------------------------------------------------------------*/
-
   template<class T>
   struct Drawable {
     
@@ -141,11 +140,13 @@ namespace gfx{
   };
 
   template<> void Drawable<MBO>::Draw(const MBO& m){
+#ifdef GFX_IMMEDIATE_MODE
     m.mesh.drawElements();
+#endif
   }
 
   namespace render{
-
+#ifdef GFX_IMMEDIATE_MODE
     void begin(float r=1.0,float g=1.0,float b=1.0,float a=1.0){
       glNormal3f(0,0,1);
       glColor4f(r,g,b,a);
@@ -169,8 +170,26 @@ namespace gfx{
       Drawable<A>::Draw(a);
       glPopMatrix();      
     }
-  }
-    
+
+#else
+   void begin(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+     printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
+   }
+   void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+     printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
+   }
+   template<class A, class B>
+   void drawAt(const A& a, const B& p){
+     printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
+   }
+   template<typename A>
+   void draw(const A& a){
+     printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
+   }
+#endif 
+
+} //render::
+  
 
   /*!
    *  A GFXRenderNode is the root node of all processes
@@ -231,7 +250,9 @@ namespace gfx{
        *  Root Render Node Operator
        *-----------------------------------------------------------------------------*/
       virtual void operator()(){
+#ifndef GFX_USE_GLES       
         if (bImmediate) GL::lightPos( light[0], light[1], light[2] );
+#endif
         //if(mParent) mParent->enter();
           onRender();
           //process();
