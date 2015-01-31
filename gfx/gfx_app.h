@@ -210,13 +210,13 @@ public GFXRenderNode                //< has onRender() method called by mRendere
      clear(); 
      update();
 
-     scene.push( mRenderer.immediate() ); ///< push matrices
+     scene.push( mRenderer.immediate() );     ///< push matrices
 
       mRenderer.enter();                      ///< bind shader and update shader uniforms
           onRender();                         ///< call this->onRender() method (defaults to this->onDraw())  
       mRenderer.exit();                       ///< unbind shader
     
-     scene.pop( mRenderer.immediate() );  ///< pop matrices
+     scene.pop( mRenderer.immediate() );      ///< pop matrices
     
      scene.step();                            ///< update camera physics
      

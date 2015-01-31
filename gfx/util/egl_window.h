@@ -212,12 +212,12 @@ namespace gfx {
                 for(int i=0; i<numConfig; ++i){
                 
                     
-                    // cout<<"Config #"<<i<<"\n";
-                    // cout << "Buffer: " << get(i, Buffer) << "\n";
-                    // cout << "Red: " << get(i, Red) << "\n";
-                    // cout << "Green: " << get(i, Green) << "\n";
-                    // cout << "Blue: " << get(i, Blue) << "\n";
-                    // cout << "Alpha: " << get(i, Alpha) << "\n";
+                     /* cout<<"Config #"<<i<<"\n"; */
+                     /* cout << "Buffer: " << get(i, Buffer) << "\n"; */
+                     /* cout << "Red: " << get(i, Red) << "\n"; */
+                     /* cout << "Green: " << get(i, Green) << "\n"; */
+                     /* cout << "Blue: " << get(i, Blue) << "\n"; */
+                     /* cout << "Alpha: " << get(i, Alpha) << "\n"; */
                     
                     EGLint var = get(i, ConfigCav);
                     
@@ -230,18 +230,18 @@ namespace gfx {
                           break;
                     }
 
-                        // cout << "ConfigId: " << get(i, ConfigId) << "\n";
-                        // cout << "Depth: " <<get(i, Depth) << "\n";
-                        // cout << "PBufferW: " <<get(i, PBufferW) << "\n";
-                        // cout << "PBufferH: " <<get(i, PBufferH) << "\n";
-                        // cout << "PBufferP: " <<get(i, PBufferP) << "\n";
-                        // cout << "Renderable: " <<get(i, Renderable) << "\n"; 
-                        // cout << "VisualId: " <<get(i, VisualId) << "\n"; 
-                        // cout << "VisualType: " <<get(i, VisualType) << "\n"; 
-                        // cout << "SampleBuf: " <<get(i, SampleBuf) << "\n"; 
-                        // cout << "Samples: " <<get(i, Samples) << "\n"; 
-                        // cout << "Surface: " <<get(i, SurfaceType) << "\n"; 
-                        // cout << "Transparent: " <<get(i, Transparent) << "\n"; 
+                         /* cout << "ConfigId: " << get(i, ConfigId) << "\n"; */
+                         /* cout << "Depth: " <<get(i, Depth) << "\n"; */
+                         /* cout << "PBufferW: " <<get(i, PBufferW) << "\n"; */
+                         /* cout << "PBufferH: " <<get(i, PBufferH) << "\n"; */
+                         /* cout << "PBufferP: " <<get(i, PBufferP) << "\n"; */
+                         /* cout << "Renderable: " <<get(i, Renderable) << "\n"; */ 
+                         /* cout << "VisualId: " <<get(i, VisualId) << "\n"; */ 
+                         /* cout << "VisualType: " <<get(i, VisualType) << "\n"; */ 
+                         /* cout << "SampleBuf: " <<get(i, SampleBuf) << "\n"; */ 
+                         /* cout << "Samples: " <<get(i, Samples) << "\n"; */ 
+                         /* cout << "Surface: " <<get(i, SurfaceType) << "\n"; */ 
+                         /* cout << "Transparent: " <<get(i, Transparent) << "\n"; */ 
                 }
                     
                 set();
@@ -253,6 +253,7 @@ namespace gfx {
                 attributes[ Green ] = 8;
                 attributes[ Blue ] = 8;
                 attributes[ Alpha ] = 8;
+                attributes[ Depth ] = 16;
                 attributes[SurfaceType] = EGL_WINDOW_BIT;
             }
         };
