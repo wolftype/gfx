@@ -33,7 +33,7 @@
  *
  *                  WINDOWCONTEXT template parameter (e.g. GlutContext) must have:
  *                    System() (singleton method)
- *                    Initialize() method
+ *                        with an Initialize() method
  *                    Start() method
  *                    SwapBuffers() method
  *                    create(int w, int h) method
@@ -69,7 +69,7 @@ template<class WINDOWCONTEXT>
 struct GFXApp : 
 public InputEventHandler,
 public WindowEventHandler,
-public GFXRenderer 
+public GFXRenderNode                //< has onRender() method called by mRenderer 
 {
 
   WINDOWCONTEXT mContext;
@@ -77,6 +77,7 @@ public GFXRenderer
   WindowData& windowData() { return mContext.windowData(); }
 
   Scene scene;                            ///< modelviewprojection matrix transforms
+  GFXSceneRenderer mRenderer;              ///< shader pipeline
 
   SceneController sceneController;        ///< interface to matrix transforms 
   ObjectController objectController;      ///< interface to objects on screen
@@ -89,7 +90,7 @@ public GFXRenderer
    *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
   GFXApp(int w=800, int h=400, string name = "GFXApp", int argc = 0, char ** argv = NULL) :
-  GFXRenderer(w,h,this), mColor(.2,.2,.2)
+  mColor(.2,.2,.2)
   {
 
      /*-----------------------------------------------------------------------------
@@ -118,6 +119,8 @@ public GFXRenderer
       mContext.interface.addInputEventHandler(&objectController);
       mContext.interface.addWindowEventHandler(&objectController);
 
+      mContext.interface.OnResize(w,h);
+
       /*-----------------------------------------------------------------------------
        * 3.  Initialize GLEW and check for features
        *-----------------------------------------------------------------------------*/
@@ -136,9 +139,9 @@ public GFXRenderer
       /*-----------------------------------------------------------------------------
        * 5. Set up Programmable Rendering Pipeline
        *-----------------------------------------------------------------------------*/
-       GFXRenderer::parent(this);
-       GFXRenderer::scene(&scene);
-       GFXRenderer::init();
+       mRenderer.child(this); 
+       mRenderer.scene(&scene);
+       mRenderer.init();
 
       /*-----------------------------------------------------------------------------
        * 4. Enable Presets (depth func, blend func)
@@ -154,10 +157,18 @@ public GFXRenderer
   virtual void setup() = 0;
 
   /*-----------------------------------------------------------------------------
-   *  User must Define onDraw() in a subclass. onDraw() is called by onFrame() method;
+   *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
+
+  template<class T>
+  void draw(const T& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){
+    mRenderer.draw(t,r,g,b,a,bUpdate);
+  }
  
+  void draw(MBO& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
+    mRenderer.draw(t,r,g,b,a);
+  }
   /*-----------------------------------------------------------------------------
    *  Starts Graphics Thread.  To be called from main()
    *-----------------------------------------------------------------------------*/
@@ -191,19 +202,25 @@ public GFXRenderer
    *-----------------------------------------------------------------------------*/
   virtual void onFrame(){
 
+     GL::enablePreset();
+
      clear(); 
      update();
 
-     scene.push( GFXRenderNode::bImmediate );
-      (*this)();    //<-- this operator()() is overloaded in GFXRenderNode (see gfx_render.h)
-     scene.pop( GFXRenderNode::bImmediate );
+     scene.push( mRenderer.immediate() ); ///< push matrices
+
+      mRenderer.enter();                      ///< bind shader and update shader uniforms
+          onRender();                         ///< call this->onRender() method (defaults to this->onDraw())  
+      mRenderer.exit();                       ///< unbind shader
     
-     scene.step();
+     scene.pop( mRenderer.immediate() );  ///< pop matrices
+    
+     scene.step();                            ///< update camera physics
      
-     //NOTE: swapbuffers is NOT called here because
-     //we are in just one of many potential windowEventHandler callbacks (which add optional effects)
-     //swapbuffers is called by Interface::onDraw() only after ALL eventhandlers have been called
-     //see gfx_control.h for the Interface class
+     /* NOTE: swapbuffers is NOT called here because
+      * we are in just one of many potential windowEventHandler callbacks (which add optional effects)
+      * swapbuffers is called by Interface::onDraw() only after ALL eventhandlers have been called
+      * see gfx_control.h for the Interface class */
   }
 
   
@@ -211,8 +228,7 @@ public GFXRenderer
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){ 
-    GL::enablePreset();
-    onDraw();
+        onDraw();
   }
 
   /*-----------------------------------------------------------------------------

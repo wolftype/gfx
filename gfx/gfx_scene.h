@@ -320,7 +320,7 @@ namespace gfx{
       }
             
       Mat4f norm(){
-        return (!(mvm().transpose()) );
+        return ( !(mvm().transpose() ) );
       }
 
       //into clip space

@@ -16,10 +16,11 @@
  * =====================================================================================
  */
 
-#include "util/GlutWindow.h"
+#include "gfx/util/glut_window.hpp"
+
 #include "gfx_app.h"
 #include "gfx_mbo.h"
-#include "gfx_process.h"
+#include "gfx_render.h"
 
 using namespace std;
 using namespace gfx;
@@ -28,7 +29,7 @@ using namespace gfx;
 /*!
  *  A Displacement Method
  */
-struct Displacement : public Process {
+struct Displacement : public GFXRenderNode {
 
     MBO * grid;
 

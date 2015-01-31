@@ -321,13 +321,6 @@ namespace gfx{
 
     }
 
-    /* void post(){ */
-    /*  // fbo.attach(*textureB, GL::COLOR); */
-    /*   fbo.bind(); */
-    /*     postProcess(); */
-    /*   fbo.unbind(); */
-    /* } */
-
     void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };
   };
 

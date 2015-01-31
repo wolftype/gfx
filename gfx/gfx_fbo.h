@@ -99,20 +99,17 @@ namespace gfx {
       GL::FORMAT  mFormat;
       GL::ATTACH  mAttachment;
       
-            int mNumAttachments;
+      int mNumAttachments;
       
       GLuint mId;
         
-            GLuint mDepthId, mColorId, mStencilId;
+      GLuint mDepthId, mColorId, mStencilId;
             
       float mClearColor[4];    ///< clear color for bind()
-      float mClearDepth;          ///< clear depth for unbind()
+      float mClearDepth;       ///< clear depth for unbind()
       
       bool mAutoClear;  
       
-      //for reading
-      
-    
     public:
     
         FBO();

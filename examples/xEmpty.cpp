@@ -13,7 +13,7 @@ struct MyApp : GFXApp<GlutContext> {
     printf("SETUP SCENE\n");
     mbo = Mesh::Sphere();
 
-   // immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
+    mRenderer.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
  }
 
  virtual void onDraw(){
@@ -23,9 +23,10 @@ struct MyApp : GFXApp<GlutContext> {
     static float time = 0;
     time += .01;
     float rad = 5.0;
-    light = Vec3f(sin(time)*rad, cos(time)*rad, 1);
+    //mRenderer.light = Vec3f(sin(time)*rad, cos(time)*rad, 1);
+    //
+    cout << scene.norm() << endl;
 
-    cout << scene.mvm() << endl;
  }
 
  

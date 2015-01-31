@@ -21,12 +21,12 @@
 #define gfx_egl_h
 
 #include "gfx_lib.h"
+//#include <EGL/egl.h>
+//#include <bcm_host.h>
 
 #include <iostream>
 #include <string.h>
 
-//#include <EGL/egl.h>
-//#include <bcm_host.h>
 #include <map>
 #include <vector>
 
@@ -347,10 +347,12 @@ struct BCM {
   template<class APP>
   void Start(APP * app){
     while(true){       
-         app -> drawFunc();
+         app -> onFrame();
          usleep(166);
       }    
   }
+
+  static void Terminate(){}
 
    ~BCM() {
      bcm_host_deinit();
@@ -360,22 +362,42 @@ struct BCM {
   private: 
     BCM() {
       bcm_host_init();
-      cout << "bcm_host_init()\n";
+      cout << "bcm_host_init()\nv
     }
 };
 
+template<class CONTEXT>
+struct RPIinterface : Interface<CONTEXT>{
+
+  static void Draw(){
+    Interface<CONTEXT>::OnDraw();
+  }
+
+};
+
 //Context
+//To be used as template parameter to GFXApp, 
 struct RPIContext {
+
+   RPIinterface<RPIContext> interface;
+
+   static vector<WindowData*> mWindows;
+   static int currentWindow;
+   WindowData& windowData() { return *mWindowData[currentWindow]; }
+   void setViewport(){
+     glViewport(0,0, windowData().width(),windowData().height());  
+   } 
 
    static BCM * System;
    static EGL::Window * mWindow;
   
-   template<class APPLICATION>
-   static void Create(APPLICATION * _app, int w, int h){
-     mWindow = new EGL::Window();
+   static void Create(int w, int h){
+       mWindow = new EGL::Window();
+       mWindows.push_back( new WindowData(w,h,0) );
+       currentWindow = 0;
    }
 
-   static EGL::Window& window() { return *mWindow; }
+  // static EGL::Window& window() { return *mWindow; }
 
    ~RPIContext(){
      delete mWindow;
@@ -387,6 +409,8 @@ struct RPIContext {
    }
 };
 
+vector<WindowData*> RPIContext::mWindows;
+int RPIContext::currentWindow;
 EGL::Window * RPIContext::mWindow;
 BCM * RPIContext::System;
 

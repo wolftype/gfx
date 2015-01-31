@@ -13,18 +13,23 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:  pretty awesome
  *
  * =====================================================================================
  */
 //#include "gl_lib.h"
 
-namespace lynda {
+namespace gfx {
 
   struct Texture {
 
+    //typedef TexType GL_UNSIGNED_BYTE;
+
     GLuint tID;
     int width, height;
+
+    GLenum mType = GL_FLOAT;//UNSIGNED_BYTE;
+    void type(GLenum t) { mType = t; }
 
     GLuint id() const { return tID; }
     
@@ -34,6 +39,7 @@ namespace lynda {
 
     void init(){
 
+      printf("initialzing texture %d %d\n",width,height);
       /*-----------------------------------------------------------------------------
        *  Generate Texture and Bind it
        *-----------------------------------------------------------------------------*/
@@ -44,7 +50,7 @@ namespace lynda {
        *  Allocate Memory on the GPU
        *-----------------------------------------------------------------------------*/
        // target | lod | internal_format | width | height | border | format | type | data
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, mType, NULL);
         
       /*-----------------------------------------------------------------------------
        *  Set Texture Parameters
@@ -76,8 +82,8 @@ namespace lynda {
        *  Load data onto GPU
        *-----------------------------------------------------------------------------*/
       // target | lod | xoffset | yoffset | width | height | format | type | data
-	    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_FLOAT, data );
-      glGenerateMipmap(GL_TEXTURE_2D);
+	    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, mType, data );
+     //... glGenerateMipmap(GL_TEXTURE_2D);
 
       unbind();
 
@@ -86,4 +92,4 @@ namespace lynda {
 
   };
 
-}
+} //gfx::

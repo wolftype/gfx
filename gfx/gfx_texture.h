@@ -291,7 +291,7 @@ namespace gfx {
     setDefaultParam(); 
 
       if (mTarget != GL::CUBEMAP){  
-      cout << "generating 2d texture" << endl;
+      //cout << "generating 2d texture" << endl;
           glTexImage2D (mTarget, 0, mIFormat, mWidth, mHeight, 0, mFormat, mType,  mData);
           GL::error("texture generate assignment");
       } else {

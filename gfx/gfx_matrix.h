@@ -384,10 +384,10 @@ namespace gfx {
                     m.at(1,2)*m.at(2,1)*m.at(3,4)*m.at(4,3) + m.at(1,2)*m.at(2,3)*m.at(3,1)*m.at(4,4) + m.at(1,2)*m.at(2,4)*m.at(3,3)*m.at(4,1)+
                     m.at(1,3)*m.at(2,1)*m.at(3,2)*m.at(4,4) + m.at(1,3)*m.at(2,2)*m.at(3,4)*m.at(4,1) + m.at(1,3)*m.at(2,4)*m.at(3,1)*m.at(4,2)+
                     m.at(1,4)*m.at(2,1)*m.at(3,3)*m.at(4,2) + m.at(1,4)*m.at(2,2)*m.at(3,1)*m.at(4,3) + m.at(1,4)*m.at(2,3)*m.at(3,2)*m.at(4,1)-
-                    m.at(1,1)*m.at(2,2)*m.at(3,4)*m.at(4,3) + m.at(1,1)*m.at(2,3)*m.at(3,2)*m.at(4,4) + m.at(1,1)*m.at(2,4)*m.at(3,3)*m.at(4,2)-
-                    m.at(1,2)*m.at(2,1)*m.at(3,3)*m.at(4,4) + m.at(1,2)*m.at(2,3)*m.at(3,4)*m.at(4,1) + m.at(1,2)*m.at(2,4)*m.at(3,1)*m.at(4,3)-
-                    m.at(1,3)*m.at(2,1)*m.at(3,4)*m.at(4,2) + m.at(1,3)*m.at(2,2)*m.at(3,1)*m.at(4,4) + m.at(1,3)*m.at(2,4)*m.at(3,2)*m.at(4,1)-
-                    m.at(1,4)*m.at(2,1)*m.at(3,2)*m.at(4,3) + m.at(1,4)*m.at(2,2)*m.at(3,3)*m.at(4,1) + m.at(1,4)*m.at(2,3)*m.at(3,1)*m.at(4,2);
+                    m.at(1,1)*m.at(2,2)*m.at(3,4)*m.at(4,3) - m.at(1,1)*m.at(2,3)*m.at(3,2)*m.at(4,4) - m.at(1,1)*m.at(2,4)*m.at(3,3)*m.at(4,2)-
+                    m.at(1,2)*m.at(2,1)*m.at(3,3)*m.at(4,4) - m.at(1,2)*m.at(2,3)*m.at(3,4)*m.at(4,1) - m.at(1,2)*m.at(2,4)*m.at(3,1)*m.at(4,3)-
+                    m.at(1,3)*m.at(2,1)*m.at(3,4)*m.at(4,2) - m.at(1,3)*m.at(2,2)*m.at(3,1)*m.at(4,4) - m.at(1,3)*m.at(2,4)*m.at(3,2)*m.at(4,1)-
+                    m.at(1,4)*m.at(2,1)*m.at(3,2)*m.at(4,3) - m.at(1,4)*m.at(2,2)*m.at(3,3)*m.at(4,1) - m.at(1,4)*m.at(2,3)*m.at(3,1)*m.at(4,2);
                   
             
                 return Mat4(

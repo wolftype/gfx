@@ -16,13 +16,9 @@
  * =====================================================================================
  */
 
-#include "util/gfx_egl.h"
+#include "util/egl_window.h"
 
 #include "gfx_app.h"
-
-#include "gfx_renderer.h"
-#include "gfx_mbo.h"
-#include "gfx_process.h"
 
 using namespace gfx;
 /*-----------------------------------------------------------------------------
@@ -31,34 +27,28 @@ using namespace gfx;
  *-----------------------------------------------------------------------------*/
 struct MyApp : App<RPIContext> {
 
-  MBO * mbo;
+  MBO mbo;
   float time = 0;
 
-  MyApp(int w, int h, int argc, char ** argv) : App<RPIContext>(w,h,argc,argv) {
-      init();
-      process = new gfx::MotionTrace(_w,_h,this);  
+  MyApp(int w, int h, string name) : App<RPIContext>(w,h,name) {
+      // process = new gfx::MotionTrace(_w,_h,this);  
   }
 
-  void init(){
-    mbo = new MBO( Mesh::Circle(1,10) );  
+  void setup(){
+    mbo = MBO( Mesh::Circle(1,10) );  
   }
   
   virtual void update(){
-    mbo -> mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
-    mbo -> update();
+    mbo.mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
+    mbo.update();
   }
   
   virtual void onDraw(){
     time+=.015;      
     update();
-    pipe.line(*mbo);
+    draw(mbo);
   }
 
-  virtual void onFrame(){
-    clear();
-    (*process)();
-    RPIContext::SwapBuffers();
-  }
 };
 
 
