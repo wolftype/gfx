@@ -55,7 +55,6 @@ namespace gfx {
             mData(NULL)
             { }
       
-//            VBO(GLvoid * udata, int num,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC);
             VBO(GLvoid * udata, int num, GLsizeiptr s, 
                 GL::BUFFER b = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC)
             : mId(0),
@@ -171,18 +170,9 @@ namespace gfx {
             GLsizeiptr size() const { return mDataSize; }
             GLuint num() const { return mNum; }
             
-//      void map(GLenum);
-//      void unmap();
-            
   };
   
-    
-    /* /// Two Buffer (vertex and elements) */
-    /* struct VEBO{ */
-    /*     VBO vertex, index; */
-    /*     VBO& operator [] (int idx) { return (&vertex)[idx]; } */
-    /*     VBO operator [] (int idx) const { return (&vertex)[idx]; } */
-    /* }; */
+
     
 } // gfx::
 

@@ -69,15 +69,18 @@ template<class WINDOWCONTEXT>
 struct GFXApp : 
 public InputEventHandler,
 public WindowEventHandler,
-public GFXRenderNode                //< has onRender() method called by mRenderer 
+public GFXSceneNode                //< has onRender() method called by mRenderer 
 {
 
   WINDOWCONTEXT mContext;
   WINDOWCONTEXT& context() { return mContext; }
   WindowData& windowData() { return mContext.windowData(); }
 
-  Scene scene;                            ///< modelviewprojection matrix transforms
-  GFXSceneRenderer mRenderer;              ///< shader pipeline
+  Scene scene;                             ///< modelviewprojection matrix transforms
+
+  GFXRenderNode mRenderer;
+  
+  GFXShaderNode mSceneRenderer;           ///< shader pipeline
 
   SceneController sceneController;        ///< interface to matrix transforms 
   ObjectController objectController;      ///< interface to objects on screen
@@ -140,10 +143,15 @@ public GFXRenderNode                //< has onRender() method called by mRendere
 #endif
       /*-----------------------------------------------------------------------------
        * 5. Set up Programmable Rendering Pipeline
+       *
+       *  "this" is a GFXSceneNode bound to mRenderer, a GFXShaderNode (default)
+       *  to pipe draw methods into a different shader, bind "this" to another
+       *  subclassed GFXRenderNode and optionally overload the virtual update() method
        *-----------------------------------------------------------------------------*/
-       mRenderer.child(this); 
-       mRenderer.scene(&scene);
-       mRenderer.init();
+       mRenderer << mSceneRenderer << this; 
+       mSceneRenderer.init();
+       GFXSceneNode::mScenePtr = &scene;
+      // mRenderer.scene(&scene);
 
       /*-----------------------------------------------------------------------------
        * 4. Enable Presets (depth func, blend func) see gfx_gl.h
@@ -164,14 +172,14 @@ public GFXRenderNode                //< has onRender() method called by mRendere
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
-  template<class T>
-  void draw(const T& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){
-    mRenderer.draw(t,r,g,b,a,bUpdate);
-  }
+  /* template<class T> */
+  /* void draw(const T& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){ */
+  /*   mRenderer.draw(t,r,g,b,a,bUpdate); */
+  /* } */
  
-  void draw(MBO& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
-    mRenderer.draw(t,r,g,b,a);
-  }
+  /* void draw(MBO& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0){ */
+  /*   mRenderer.draw(t,r,g,b,a); */
+  /* } */
   /*-----------------------------------------------------------------------------
    *  Starts Graphics Thread.  To be called from main()
    *-----------------------------------------------------------------------------*/
@@ -183,7 +191,7 @@ public GFXRenderNode                //< has onRender() method called by mRendere
   /*-----------------------------------------------------------------------------
    *  Optional method for updating physics etc -- called onFrame();
    *-----------------------------------------------------------------------------*/
-  virtual void update(){}
+  virtual void onAnimate(){}
 
   /*-----------------------------------------------------------------------------
    *  Clear Window Contents
@@ -208,14 +216,17 @@ public GFXRenderNode                //< has onRender() method called by mRendere
      GL::enablePreset();
 
      clear(); 
-     update();
+     onAnimate();
 
      scene.push( mRenderer.immediate() );     ///< push matrices
 
-      mRenderer.enter();                      ///< bind shader and update shader uniforms
-          onRender();                         ///< call this->onRender() method (defaults to this->onDraw())  
-      mRenderer.exit();                       ///< unbind shader
-    
+      //mRenderer calls one upstream render (namely, this)
+      //which is this app's onRender method
+      //below onRender() defaults to onDraw()
+      //BUT we can rebind pipeline with overloaded << operator.  
+      //see examples/xRendertoTexture.cpp
+      mRenderer.onRender();
+         
      scene.pop( mRenderer.immediate() );      ///< pop matrices
     
      scene.step();                            ///< update camera physics
@@ -231,7 +242,9 @@ public GFXRenderNode                //< has onRender() method called by mRendere
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){ 
+    //mRenderer.program->bind();
         onDraw();
+   // mRenderer.program->unbind();
   }
 
   /*-----------------------------------------------------------------------------
@@ -258,6 +271,8 @@ public GFXRenderNode                //< has onRender() method called by mRendere
   virtual void onDestroy(){ }
   virtual void onResize(int w, int h){
     scene.resize(w,h);
+    set(w,h);
+    mRenderer.set(w,h);
   }
 
 };

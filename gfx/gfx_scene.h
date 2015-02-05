@@ -393,9 +393,9 @@ namespace gfx{
     } 
 
     void pushMatrices(){
-        
+       
      // FIXED FUNCTION PIPELINE  
-    #ifdef GL_IMMEDIATE_MODE
+    #ifdef GFX_IMMEDIATE_MODE
 
         Vec3f look = camera.pos() + camera.forward(); 
       
@@ -428,7 +428,7 @@ namespace gfx{
     }
 
     void popMatrices(){
-    #ifdef GL_IMMEDIATE_MODE
+    #ifdef GFX_IMMEDIATE_MODE
 
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
@@ -437,18 +437,7 @@ namespace gfx{
       glPopMatrix();
     
     #endif
-     }    
-  
-     /* void getMatrices(){ */
-    /* #ifdef GL_IMMEDIATE_MODE */
-     /*  glGetDoublev(GL_PROJECTION_MATRIX, xf.projd); */  
-     /*  glGetDoublev(GL_MODELVIEW_MATRIX, xf.modelViewd); */
-     /*  glGetIntegerv(GL_VIEWPORT, xf.viewport); */  
-      
-     /*  xf.toFloats(); */
-    /* #endif */
-    /* } */ 
-   
+     }       
 
   };
       

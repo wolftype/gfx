@@ -33,21 +33,18 @@ struct MyApp : GFXApp<GlutContext> {
 
     slab.init();
     
-//    float * cval = new float[slab.width*slab.height*4];
-    unsigned char * cval = new  unsigned char [slab.width*slab.height*4];
+    float * cval = new float [slab.width*slab.height*4];
         
     for (int i =0;i<slab.width;++i){
       for (int j=0;j<slab.height;++j){
-          cval[i*slab.height*4+j*4] = 255*(float)i/slab.width;
-          cval[i*slab.height*4+j*4+1] = 255*(float)j/slab.height;
-          cval[i*slab.height*4+j*4+2] = 255*(float)j/i;
-          cval[i*slab.height*4+j*4+3] = 128; 
-          
+          cval[i*slab.height*4+j*4] = (float)i/slab.width;
+          cval[i*slab.height*4+j*4+1] = (float)j/slab.height;
+          cval[i*slab.height*4+j*4+2] = (float)j/i;
+          cval[i*slab.height*4+j*4+3] = .5; 
       }
     }
 
-    slab.texture->data(cval);
-    slab.texture->update();
+    slab.texture->update(cval);
  }
 
  virtual void onDraw(){

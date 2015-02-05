@@ -17,64 +17,54 @@
  * =====================================================================================
  */
 
-#include "util/GlutWindow.h"
-#include "gfx_renderer.h"
-#include "gfx_mbo.h"
-#include "gfx_process.h"
+#include "util/glut_window.hpp"
+#include "gfx_app.h"
 
 using namespace gfx;
+
+typedef GlutContext CONTEXT;
+
+
 /*-----------------------------------------------------------------------------
- * example use of gfx_renderer with mesh buffer objects
- * Call Renderer::initGL() after initializing window context 
+ * example use of gfx_renderer with mesh buffer objects and motion trace
  *-----------------------------------------------------------------------------*/
-//template<class CONTEXT>
-struct App : Renderer {
+struct MyApp : GFXApp<CONTEXT> {
 
-  MBO * mbo;
+  MBO mbo;
   float time = 0;
+
+   MotionBlur motionblur;
+
+
+  void setup(){
+    glLineWidth(10);
+    mbo = MBO( Mesh::Sphere() );
+
+    mRenderer.immediate(false);  
+
+    mRenderer << motionblur << mSceneRenderer;
+
+    //init after
+    motionblur.set( width, height);
+    motionblur.init();
+
+  }
   
-  App(int w, int h, int argc, char ** argv) : Renderer(w,h) {
-      Window::System -> Initialize(argc, argv);
-      Window::template Create(this,w,h);
-      Renderer::initGL(Renderer::GL, Renderer::BUFFERED);
-      init();
-      process = new gfx::MotionTrace(w,h,this);  
-  }
-
-  void start(){
-    Window::System -> Start();
-  }
-
-  void init(){
-    mbo = new MBO( Mesh::Circle(1,10) );  
-    scene.camera.pos(0,0,5);
+   void onAnimate(){
+    time +=.015;
+    mbo.mesh.moveTo( sin(time) * 3,0,0);
+    mbo.update();
   }
   
-  void update(){
-    mbo -> mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
-    mbo -> update();
+   void onDraw(){
+    draw(mbo);
   }
 
-  void onResize(int w, int h){
-    scene.resize(w, h);
-    if(process) delete process;
-    process = new gfx::MotionTrace(w,h,this);
-  }
-
-  void onDraw(){
-    time+=.005;    
-    update();
-    pipe.line(*mbo);
-  }
-
-  virtual void onFrame(){
-    clear(Window::window().width(), Window::window().height() );
-    (*process)();
-  }
 };
 
+
 int main(int argc, char ** argv){
-  App app(1600,1200, argc, argv);
+  MyApp app;//1600,1200, "test");
   app.start();
   return 0;
 }

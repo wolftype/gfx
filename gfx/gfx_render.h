@@ -31,7 +31,6 @@
 #include "gfx_vattrib.h"
 #include "gfx_shader.h"
 #include "gfx_texture.h"
-//#include "temp/gl_texture.hpp"
 #include "gfx_scene.h"
 #include "gfx_control.h"
 
@@ -193,11 +192,54 @@ namespace gfx{
 
   /*!
    *  A GFXRenderNode is the root node of all processes
-   *  Usually contains a shader program and pre or post processes.
+   *
+   *  Has a pointer to a "mDownstream" rendernode 
+   *  and multiple pointers to mUpstream rendernodes
+   *
+   *  The virtual method, onRender(), specifies how
+   *  the node should bind or onbind its upstream and downstream
+   *  graphics processing events
    */
   struct GFXRenderNode {      
+ 
+      ShaderProgram * program;
+           
+      bool bVisited=false;                                                  ///< Avoid circular dependencies by setting this flag
+      virtual bool singular() { return true; }                              ///< Control whether there can be multiple upstream processes
+
+      GFXRenderNode * mDownstream = NULL;                                   ///< Pointer to one downstream process (for re-setting state)
       
-      GFXRenderNode * mChild = NULL;                                        ///< Pointer to another process
+      GFXRenderNode& downstream( GFXRenderNode * p ){
+        mDownstream = p;
+        return *this;
+      }
+
+      /// Finds Base Root of RenderGraph
+      GFXRenderNode& root(){
+        GFXRenderNode * p = this;
+        GFXRenderNode * tmp = mDownstream;
+        while(tmp!=NULL) {
+          p = tmp;
+          tmp = tmp->mDownstream;
+        }   
+        return *p;  
+      }
+
+      GFXRenderNode& downstream(){
+        return *mDownstream;
+      }
+
+      GFXRenderNode& bindDownstream(GFXRenderNode& r){
+        r.downstream(mDownstream);
+        return *this;
+      }
+
+      GFXRenderNode& bindUpstream(GFXRenderNode& r){
+        for(auto& i : mUpstream) r << i;
+        return *this;
+      }
+
+      vector<GFXRenderNode*> mUpstream;                                     ///< Pointers to multiple upstream processes (to be pulled)
      
       Vec3f light = Vec3f(1,1,4);                                           ///< Light Position  
 
@@ -214,55 +256,28 @@ namespace gfx{
 
       //Setters
       bool useES(){ return bES; }
-      void child(GFXRenderNode * p) { mChild = p; }
- //     void parent(GFXRenderNode * c) { mParent(c); }
-
-
-      /*-----------------------------------------------------------------------------
-       *  Pre and Post Processing
-       *-----------------------------------------------------------------------------*/
-  //    vector<GFXRenderNode*> mPre;                                          ///< List of Pre-Processing steps
-  //    vector<GFXRenderNode*> mPost;                                         ///< List of Post-Processing steps
-     // vector<GFXRenderNode*> mOuter;                                        ///< List of Outer-Processing steps
-
-   //   void pre(GFXRenderNode& p) { mPre.push_back(&p); p.parent(this); }    ///< Add a Pre-Processing step
-   //   void post(GFXRenderNode& p) { mPost.push_back(&p); p.parent(this); }  ///< Add a Post-Processing step
-
-  //    void preProcess(){ for (auto& i : mPre ) (*i)(); }                    ///< Execute Pre-Processing steps
-  //    void postProcess(){ for (auto& i : mPost ) (*i)(); }                  ///< Execute Post-Processing steps
-    //  void outerProcessEnter()
 
       /// Subclasses can implement their own init and process();
       virtual void init(){}
-
-
       virtual void enter(){}
       virtual void exit(){}
       virtual void update(){}
-      
-      /* virtual void process(){ */ 
-      /*   onRender(); */ 
-      /* } */
-      
-      virtual void onRender(){}
-    
-      /*-----------------------------------------------------------------------------
-       *  Root Render Node Operator
-       *-----------------------------------------------------------------------------*/
-      virtual void operator()(){
-#ifndef GFX_USE_GLES       
-        if (bImmediate) GL::lightPos( light[0], light[1], light[2] );
-#endif
-        //if(mParent) mParent->enter();
-          onRender();
-          //process();
-        //if(mParent) mParent->leave(); 
-        //postProcess();
+      virtual void onRender(){
+        for (auto& i : mUpstream) i->onRender();  
       }
 
       GFXRenderNode& operator << (GFXRenderNode * r){
-          child(r);
+          if(singular()) mUpstream.clear();
+          mUpstream.push_back(r);
+          r->downstream(this);
           return *r;
+      }
+
+      GFXRenderNode& operator << (GFXRenderNode& r){
+          if(singular()) mUpstream.clear();
+          mUpstream.push_back(&r);
+          r.downstream(this);
+          return r;
       }
   };
 
@@ -272,85 +287,166 @@ namespace gfx{
  *  Basic Shader Code.  Default Version 
  *-----------------------------------------------------------------------------*/
 struct GFXShaderNode : GFXRenderNode {
-   
-   ShaderProgram * program;
+ 
    VertexAttributes vatt;
+   virtual bool singular() { return false; } 
 
    virtual void init(){
 
         string V = useES() ? DefaultVertES : DefaultVert;        ///< These basic shaders are defined in gfx_glsl.h 
         string F = useES() ? DefaultFragES : DefaultFrag; 
               
-        program = new ShaderProgram(V,F,0);                      ///< The 0 here means load directly from string, not from file                                                                   
-        program->bind();                                                    
-      
-          bindAttributes();
-
-        program->unbind();
+        program = new ShaderProgram(V,F);                                                              
+        bindAttributes();
     }
 
 
-   //Default Attributes include position, sourceColor, normal, and texCoord
+   //Default Attributes include position, sourceColor, normal, and texCoord (AUTOMATE THIS?)
    virtual void bindAttributes(){
         //shader id | name | size of vertex data container | offset into container of each parameter
-        vatt.add(program->id(), "position", sizeof(Vertex), 0); 
-        vatt.add(program->id(), "sourceColor", sizeof(Vertex), Vertex::oc() ); 
-        vatt.add(program->id(), "normal", sizeof(Vertex), Vertex::on()); 
-        vatt.add(program->id(), "texCoord", sizeof(Vertex), Vertex::ot()); 
+        program->bind();
+          vatt.add(program->id(), "position", sizeof(Vertex), 0); 
+          vatt.add(program->id(), "sourceColor", sizeof(Vertex), Vertex::oc() ); 
+          vatt.add(program->id(), "normal", sizeof(Vertex), Vertex::on()); 
+          vatt.add(program->id(), "texCoord", sizeof(Vertex), Vertex::ot());
+        program->unbind(); 
    }
 
-   virtual void updateUniforms(){}
+  // virtual void updateUniforms(){}
 
-   virtual void enter(){
-      program->bind();
-      updateUniforms();
-   }
+   /* virtual void enter(){ */
+   /*    program->bind(); */
+   /*    updateUniforms(); */
+   /* } */
 
-   virtual void exit(){
-     program->unbind();
-   }
+   /* virtual void exit(){ */
+   /*   program->unbind(); */
+   /* } */
 
     virtual void onRender(){
-        if (bImmediate) {
-          mChild->onRender();
-        } else {
+      //  if ( root().immediate() ) {
+      //    for (auto& i : mUpstream){ i->onRender(); }
+      //  } else {
           program -> bind();
-            updateUniforms();
-            mChild -> onRender();
+         //   updateUniforms(); // note, this may be unnecessary: upstream nodes will reach downstream here and update uniforms
+            for (auto& i : mUpstream){ 
+              i->update(); // upstream nodes update this downstream node's values (see e.g. GFXSceneNode) 
+              i->onRender(); 
+            }
           program -> unbind();
-        }    
+      //  }    
     }
 
 };
 
+  
+/*-----------------------------------------------------------------------------
+ *  Scene Node To Update Downstream Shader Matrix Uniforms and Call Upstream Mesh Nodes
+ *-----------------------------------------------------------------------------*/
+  struct GFXSceneNode : GFXRenderNode {
+       
+       virtual bool singular() { return true; } 
+      
+       Scene * mScenePtr;
+     //  void scene(Scene * s) { mScene = s; }  
+     //  Scene& scene() { return *mScene; }                        ///< Access matrix transforms
+      
+       /* virtual void init(){ */
+       /*    GFXShaderNode * shader = new GFXShaderNode; */
+       /*    shader->init(); */
+       /*    (*shader) << this; */
+       /* } */
+
+
+      /// Bind model view projection and normal matrices to downstream shader (and light position...)
+      /// (if such uniforms exist)
+       virtual void update(){
+            ShaderProgram& dp = *downstream().program;
+            dp.uniform_if("lightPosition", light[0], light[1], light[2] ); //2.0, 2.0, 2.0);  
+            dp.uniform_if("projection",  mScenePtr->xf.proj);
+            dp.uniform_if("normalMatrix", mScenePtr->xf.normal);  
+            dp.uniform_if("modelView",  mScenePtr->xf.modelView );
+       }
+
+       void updateModelView(){
+            static float mv[16];
+            (mScenePtr->mvm()).fill(mv);
+            ShaderProgram& dp = *downstream().program;
+            dp.uniform_if("modelView", mv);
+       }
+
+      /// Multiply modelview by some object-specific matrix
+       void updateModelView( const Mat4f& mat ){ 
+           static float mv[16];
+           (mScenePtr->mvm()*mat).fill(mv);
+           ShaderProgram& dp = *downstream().program;
+           dp.uniform_if("modelView", mv);   
+      }
+
+      void draw(MBO& m, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
+       // if ( root().immediate() ){
+       //    render::begin(r,g,b,a);
+       //    render::draw(m); 
+       // }else {
+            GFXShaderNode& sn = *(GFXShaderNode*)mDownstream;
+            updateModelView(); ///< identity matrix
+            m.render(sn.vatt); 
+       // }
+      }
+
+
+
+      /* template<class T> */
+      /* void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){ */
+      /*    if (bImmediate) { */
+      /*      render::begin(r,g,b,a); */
+      /*      render::draw(t); */ 
+      /*    } */
+      /*    else { */
+      /*     if (bUpdate) { */
+      /*       Renderable<T>::SetUpdate(); */
+      /*     } */
+      /*     Renderable<T>::UpdateColor(r,g,b,a); /// */
+      /*     Renderable<T>::Draw(t,this);  ///< pass "this" to Renderable<T>::Draw in order to access current model view and vertex attributes */
+      /*    } */        
+      /* } */
+  };
+
 
   /*-----------------------------------------------------------------------------
    *  BASIC RENDERER FOR RENDERABLES IN A SCENE (works with OPENGLES2.0 so  VERTEX ARRAY OBJECTS)
+   *
+   *  gfx_app has one of these objects, called mRenderer, which is the basis of all 
+   *  scene graph renderings: all other render nodes feed into this one.
    *-----------------------------------------------------------------------------*/
   struct GFXSceneRenderer : public GFXShaderNode {
     
-      //GFXRenderer(int w, int h, GFXRenderNode * r = NULL) : GFXRenderNode(w,h,r) {}
-        Scene * mScene;
-        void scene(Scene * s) { mScene = s; }  
-        Scene& scene() { return *mScene; }                        ///< Access matrix transforms
+       virtual bool singular() { return true; } 
+        
+       Scene * mScene;
+       void scene(Scene * s) { mScene = s; }  
+       Scene& scene() { return *mScene; }                        ///< Access matrix transforms
 
+      /// Bind model view projection and normal matrices to shader (and light position...)
        virtual void updateUniforms(){
-            program -> uniform("lightPosition", light[0], light[1], light[2] ); //2.0, 2.0, 2.0);  
-            program -> uniform("projection",  scene().xf.proj);
-            program -> uniform("normalMatrix", scene().xf.normal);  
-            program -> uniform("modelView",  scene().xf.modelView );
+
+            if (program->uniformExists("lightPosition")) program -> uniform("lightPosition", light[0], light[1], light[2] ); //2.0, 2.0, 2.0);  
+            if (program->uniformExists("projection")) program -> uniform("projection",  scene().xf.proj);
+            if (program->uniformExists("normalMatrix")) program -> uniform("normalMatrix", scene().xf.normal);  
+            if (program->uniformExists("modelView"))  program -> uniform("modelView",  scene().xf.modelView );
        }
 
        void updateModelView(){
             static float mv[16];
             (mScene->mvm()).fill(mv);
-            program -> uniform("modelView", mv);
+            if (program->uniformExists("modelView")) program -> uniform("modelView", mv);
        }
 
+      /// Multiply modelview by some object-specific matrix
        void updateModelView( const Mat4f& mat ){ 
            static float mv[16];
            (mScene->mvm()*mat).fill(mv);
-            program -> uniform("modelView", mv);   
+          if (program->uniformExists("modelView")) program -> uniform("modelView", mv);   
       }
 
       template<class T>
@@ -434,35 +530,44 @@ struct GFXShaderNode : GFXRenderNode {
 
 
   /*!
-   *  A SLAB billboards a texture to the screen
+   *  A SLAB billboards a texture to the screen (with optional alpha)
    *
    */
   struct Slab : public GFXShaderNode {
-           
+  
+    virtual bool singular() { return false; }          
+
     MBO * rect;
     Texture * texture;
-
-   // int width, height;
-   // Slab(int w=100, int h=100) : width(w), height(h) {}
+    float amt=1.0;
 
     virtual void init(){
       program = new ShaderProgram( useES() ? ClipSpaceVertES : ClipSpaceVert, 
-                                   useES() ? TFragES : TFrag, 0 );
-
-      program->bind();
-
+                                   useES() ? TFragAlphaES : TFragAlpha, 0);
       bindAttributes();
 
       rect = new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); 
       texture = new Texture( width, height );
     }
 
-    virtual void onRender(){// process(){     
+    virtual void onRender(){
+      
+      if (!bVisited) {
+        bVisited=true;
+        for (auto& i : mUpstream){ i->onRender(); }
+      }
+
+     //glViewport(0,0,width,height);
+      if (mDownstream) glViewport(0,0,mDownstream->width, mDownstream->height);
+
       program->bind();
+       program->uniform("alpha",amt);
        texture -> bind();
           rect ->render( vatt );
        texture -> unbind();
       program->unbind();
+
+      bVisited=false;
     }
 
   };
@@ -473,23 +578,19 @@ struct GFXShaderNode : GFXRenderNode {
    */
   struct Blur : public GFXShaderNode {
 
+     virtual bool singular() { return false; }
+
       MBO * rect;
       Texture * texture;
 
       float ux=.1;
       float uy=.1;
       float amt=1;
-
-    //  int width, height;
-    //  Blur(int w=100, int h=100) : width(w), height(h) {}
-
-     
+    
       virtual void init(){
       
         program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
                                    bES ? TFragBlurES : TFragBlur, 0);
-        program->bind();
-
         bindAttributes();
       
         rect = new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); 
@@ -497,76 +598,166 @@ struct GFXShaderNode : GFXRenderNode {
 
      }
 
-
     virtual void updateUniforms(){
          this->program->uniform("ux",ux);
          this->program->uniform("uy",uy);
          this->program->uniform("bluramt",amt);
     }
 
+     virtual void onRender(){
+       
+     if (!mUpstream.empty() && !bVisited) {
+        bVisited=true;
+        for (auto& i : mUpstream){ i->onRender(); }
+      }
 
-     virtual void onRender(){//process(){
-       program->bind();
+      if (mDownstream) glViewport(0,0,mDownstream->width, mDownstream->height);
+
+        program->bind();
         updateUniforms();
         texture->bind();
+        
             //don't repeat edge pixels
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
            rect ->render( vatt );
         texture -> unbind();
-       program->unbind(); 
+       program->unbind();
+        
+       bVisited=false;
+ 
      }
 
   };
 
   /*!
-   *  A RENDER TO TEXTURE Process renders into a texture bound to the framebuffer colorbuffer
+   *  A RENDER TO TEXTURE node renders into a texture bound to the
+   *   framebuffer colorbuffer and draws it to the screen
    *
-   *  NO shader required for this step . . .
-
+   *   use witin an app:
+   *
+   *   RenderToTexture r2t;
+   *   Slab slab;
+   *
+   *   mRenderer << slab << r2t << this; 
+   *
    */
-  struct RenderToTexture : public GFXRenderNode { 
-    
-    FBO fbo;                                    ///< A Framebuffer
-    Texture * textureA;                         ///< Texture in which to render
-    Texture * textureB;                         ///< Secondary Texture for swapping buffers
+struct RenderToTexture : GFXRenderNode {
 
-    
-    virtual void init(){
-      //initialize texture
-      textureA = new Texture( width, height );
-      textureB = new Texture( width, height );
+   virtual bool singular() { return false; }
+ 
+   FBO fbo;
+     
+   Texture * texture;
+   Texture * textureB;
 
-      // Attach texture to FrameBuffer's ColorBuffer  
-      fbo.attach(*textureA, GL::COLOR);          
+   void init(){
+     fbo.set(width,height);
+     fbo.init();
+
+     texture = new Texture(width,height);
+     textureB = new Texture(width,height);
+
+     fbo.attach(*texture);
+   }
+   
+   void swap() { 
+      Texture * tmp = texture; texture = textureB; textureB = tmp;  
+      fbo.attach(*texture);
+    };
+
+
+   void onRender(){
+           
+      fbo.bind();
+      fbo.clear();
+
+        for (auto& i : mUpstream) { i->onRender(); }  
+
+      fbo.unbind();
+      swap();
+
+      //glViewport(0,0,root().width, root().height); //the downstream slab will reset this . . .
+    }
+ 
+};
+
+/*!
+ *  MotionBlur renders to a texture twice, then
+ *  draws a combination
+ *
+ *  mRenderer << motionBlur << this;
+ */
+struct MotionBlur : GFXRenderNode {
+
+   virtual bool singular() { return false; }
+
+    //ra pulls from upstream
+    RenderToTexture ra,rb;
+    Slab lastFrame;
+    Slab outputMix;
+
+    void init(){
+
+      ra.set(width,height); 
+      rb.set(width,height);
+      ra.init();
+      rb.init();
+      
+      rb.fbo.depth(false);
+
+      lastFrame.set(width,height);
+      lastFrame.init();
+
+      outputMix.set(width,height);
+      outputMix.init(); 
+      outputMix.amt=.995;
+
+      //confusing for now because of difference between
+      //binding into a node process and binding a texture result
+      //could overload so that slabs "know" they are being bown to
+      //a framebuffer capture and automatically point to their texture
+    
+      //bind capture call to upstream render calls
+      bindUpstream(ra);
+
+      //bind lastFrame to texture output result of capture call
+      lastFrame.texture = ra.texture;
+
+      //bind outputMix to texture B of local capture
+      outputMix.texture = rb.textureB;
+
+      //bind outputMix and lastFrame into local capture
+      rb << outputMix;
+      rb << lastFrame;
+
+      //bind both outer and inner capture calls to outputMix
+      outputMix << ra;
+      outputMix << rb;
+
+      //fixme: why do slabs need to know what is downstream? because of root().immediate check ...
+      //for now disabled but needs a fix for immediate mode to work without mucking stuff up
+
+ //     bindDownstream(mix);
+ //     bindDownstream(slab); 
+ //     bindDownstream(rb);
+
+
     }
 
+    void onRender(){
 
-    virtual void enter(){
-      fbo.attach(*textureA, GL::COLOR);  
-      fbo.bind();               
-     
-       // glColorMask(GL_TRUE,GL_TRUE,GL_FALSE,GL_TRUE); //test
-        glViewport(0, 0, width, height ); 
-        glClearColor(0,0,0,0);
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-       
-    }      
-        
-     virtual void exit(){
-      fbo.unbind(); 
-     }
 
-     virtual void onRender(){//process(){
-       enter();
-        mChild->onRender();
-       exit();
-     }
+      //outputMix onRender() pulls process down from upstream and displays results
+      outputMix.texture = rb.textureB;
+      outputMix.onRender();
 
-    void swap() { Texture * tmp = textureA; textureA = textureB; textureB = tmp;  };
 
-  };
+    }
+
+};
+
 
 } //gfx::
 

@@ -17,35 +17,37 @@
  */
 
 #include "util/egl_window.h"
+//#include "util/glut_window.hpp"
 
 #include "gfx_app.h"
 
 using namespace gfx;
+
 /*-----------------------------------------------------------------------------
  * example use of gfx_renderer with mesh buffer objects
- * Call Renderer::initGL() after initializing window context 
  *-----------------------------------------------------------------------------*/
-struct MyApp : App<RPIContext> {
+struct MyApp : GFXApp<RPIContext> {
 
   MBO mbo;
   float time = 0;
 
-  MyApp(int w, int h, string name) : App<RPIContext>(w,h,name) {
+  MyApp(int w, int h, string name) : GFXApp<RPIContext>(w,h,name) {
       // process = new gfx::MotionTrace(_w,_h,this);  
   }
 
   void setup(){
-    mbo = MBO( Mesh::Circle(1,10) );  
+    mbo = MBO( Mesh::Circle(1,10) );
+    mRenderer.immediate(false);  
   }
   
-  virtual void update(){
-    mbo.mesh.moveTo( sin(time) * scene.camera.lens.width()/2.0,0,0);
+   void update(){
+    mbo.mesh.moveTo( sin(time) * 3,0,0);//scene.camera.lens.width()/2.0,0,0);
     mbo.update();
   }
   
-  virtual void onDraw(){
+   void onDraw(){
     time+=.015;      
-    update();
+   // update();
     draw(mbo);
   }
 
@@ -53,7 +55,7 @@ struct MyApp : App<RPIContext> {
 
 
 int main(int argc, char ** argv){
-  MyApp app(21,14, argc, argv);
+  MyApp app(1600,1200, "test");
   app.start();
   return 0;
 }

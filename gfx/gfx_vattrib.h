@@ -27,14 +27,14 @@ namespace gfx {
         VertexAttrib() : bNormal(GL_FALSE),  mData(NULL) {}
         
         //Pass in a ShaderProgramID, attribute name as written in shader, and packing
-        VertexAttrib( GLuint s, string attrib, GLsizei stride, GLvoid * data = NULL ) 
+        VertexAttrib( GLuint s, string attrib, GLsizei stride, GLvoid * data ) 
         : bNormal(GL_FALSE), mStride(stride), mData(data) {            
             get(s, attrib);
             enable();
             pointer();
         }
 
-        void set(GLuint s, string attrib, GLsizei stride, GLvoid * data = NULL){
+        void set(GLuint s, string attrib, GLsizei stride, GLvoid * data ){
             mStride = stride;
             mData = data;
             get(s, attrib);

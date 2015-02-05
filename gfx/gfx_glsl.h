@@ -146,7 +146,7 @@ namespace gfx{
 
         
         /*-----------------------------------------------------------------------------
-         *  FUNCTION TO TRANSFORM VERTEX
+         *  FUNCTION TO TRANSFORM VERTEX (see also cubemap version below)
          *-----------------------------------------------------------------------------*/
         string VCalc = R"(
             vec4 doVertex (vec4 v) {
@@ -276,7 +276,6 @@ namespace gfx{
                 gl_FragColor = litColor;      //mix(litColor, texColor, .5);
             }
         )";   
-
 
         
          /*-----------------------------------------------------------------------------
@@ -525,8 +524,56 @@ namespace gfx{
         }
     )";
          
+ 
+    /*-----------------------------------------------------------------------------
+    *  CLIP SPACE VERTEX SHADER (FOR CUBE SLABS) use with FUseCubeMap
+    *-----------------------------------------------------------------------------*/
+    string CubeClipSpaceVertES = R"( 
+
+      attribute vec3 position; 
+      attribute vec3 normal;
+      attribute vec4 sourceColor;
+      attribute vec3 texCoord;
+
+      varying lowp vec3 vTexDir;
+      varying vec4 colorDst;   
+
+      void main(void){  
+        vTexDir = texCoord;
+        colorDst = sourceColor; 
+        vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
+        gl_Position = vec4(position,1.0);
+        }
+    )"; 
     
     
+    string CubeClipSpaceVert = R"( 
+
+        attribute vec3 position; 
+        attribute vec3 normal;
+        attribute vec4 sourceColor;
+        attribute vec3 texCoord;
+
+        varying vec3 vTexDir;
+        varying vec4 colorDst;   
+
+      void main(void){  
+        vTexDir = texCoord;
+        colorDst = sourceColor; 
+        vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
+        gl_Position = vec4(position,1.0);
+        }
+    )";
+    
+     string CubeFrag = R"(
+        uniform samplerCube cubeMap;            
+        varying vec3 vTexDir;
+        
+        void main(void){
+            gl_FragColor = textureCube(cubeMap, vTexDir).rgba; 
+        }
+    )"; 
+           
     /*-----------------------------------------------------------------------------
      *  DEFAULT MESH BUFFER OBJECT SHADER (FOR VERTICES)
      *-----------------------------------------------------------------------------*/
@@ -536,60 +583,60 @@ namespace gfx{
     string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
     string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
-    // string TFragBasic = R"(     
-    // 
-    //   uniform sampler2D tex; 
-    //   varying lowp vec2 texco; 
-    // 
-    //   void main(void){
-    //       //  vec4 nc = colorDst
-    //         vec4 texColor = texture2D(tex, texco);   
-    //     gl_FragColor = texColor;
-    //     }
-    // ); 
-        
-    /// Cubemapping function [in progress]
-    string VMakeCubemap = R"(
+    //Make a vertex shader, passing in a function for doVertex() calculations . . . 
+    string makeVert(string tCalc){
+      return AVertex + Varying + UMatrix + NTransform + VLighting + tCalc + MVert;
+    }        
+
+   
+    /*-----------------------------------------------------------------------------
+     *  RENDER TO A CUBEMAP (position function) -- change uniform cmFace every pass
+     *-----------------------------------------------------------------------------*/
+    string MakeCubemapVert = R"(
             
-          uniform cmFace;
-          varying vec3 vTexDir;
+          uniform int cmFace;
+          uniform float uFar;
+          uniform float uNear;
+          //varying vec3 vTexDir;
              
-          vec4 cubemap(vec4 vertex){
-          vec3 n = normalize(vertex.xyz); //NORMAL
+          vec4 doVertex(vec4 v){
+        
+           vec4 vertex = modelView * v;
+           
+           vec3 n = normalize(vertex.xyz); 
                 
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
-                if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
-        else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
-        else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
-        else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
-        else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
-        else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
+                    if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
+            else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
+            else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
+            else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
+            else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
+            else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
                 
-                // convert into screen-space:  
-        // simplified perspective projection since fovy = 90 and aspect = 1  
-        vertex.zw = vec2(  
-          (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
-          -vertex.z  
-        );  
-        return vertex;  
-            }
+            // convert into screen-space:  
+            // simplified perspective projection since fovy = 90 and aspect = 1  
+            vertex.zw = vec2(  
+              (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
+              -vertex.z  
+            );  
+          
+            return vertex;  
+            
+          }
+
         )";
         
-        string FUseCubemap = R"(
-            uniform samplerCube cubeMap;            
-            varying vec3 vTexDir;
-            
-            void main(void){
-                textureCube(cubeMap, vTexDir).rgb 
-            }
-        )";   
+  
            
 
+          /*-----------------------------------------------------------------------------
+           *  UNUSED ANTI-ALIASING
+           *-----------------------------------------------------------------------------*/
     string FXDB = R"(
       uniform sampler2D sampleTexture; 
       uniform vec2 frameBufSize;
