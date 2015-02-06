@@ -76,9 +76,9 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
   WINDOWCONTEXT& context() { return mContext; }
   WindowData& windowData() { return mContext.windowData(); }
 
-  Scene scene;                             ///< modelviewprojection matrix transforms
+  Scene scene;                            ///< modelviewprojection matrix transforms
 
-  GFXRenderNode mRenderer;
+  GFXRenderNode mRenderer;                ///< root render node (pulls all attached nodes downstream)
   
   GFXShaderNode mSceneRenderer;           ///< shader pipeline
 

@@ -3,10 +3,10 @@
  *
  *       Filename:  gfx_layout.h
  *
- *    Description:  layout of monitors and speakers
+ *    Description:  
  *
  *        Version:  1.0
- *        Created:  02/18/2014 17:18:26
+ *        Created:  02/05/2015 15:42:26
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,6 +15,7 @@
  *
  * =====================================================================================
  */
+
 
 
 #ifndef  gfx_layout_INC
@@ -27,30 +28,30 @@ namespace gfx{
      /// MONITORS Row-Column GRID layout, use 1 x 1 for a single screen
     struct Layout{  
   
-      ///Constructor defaults width of 1920 and height of 1080 (asus)  
+      ///Constructor defaults width of 21.5 and height of 14.5 (asus)  
       //
-      Layout( int M, int N, float w = 1920, float h = 1080, float wb = 100, float hb = 100) :
-      numRow(M), numCol(N), screenWidth(w/100), screenHeight(h/100), wPitch(wb/100), hPitch(hb/100) {}
+      Layout( int M, int N, float w = 21.5, float h = 14.5, float wb = 1.0, float hb = 1.0) :
+      numRow(M), numCol(N), screenWidth(w), screenHeight(h), wPitch(wb), hPitch(hb) {}
     
       int numRow; int numCol;                 ///< Number of Rows and Columns in Multidisplay
-      float screenWidth; float screenHeight;  ///< Width of individual screens in pixels
-      float wPitch; float hPitch;             ///< Bezel width and height in pixels
+      float screenWidth; float screenHeight;   ///< Width of individual screens in inches
+      float wPitch; float hPitch;              ///< Bezel
 
       Vec3f speakerL, speakerR;               ///< Speaker positions      
     
-      //Total Width of MxN Display IN PIXELS or INCHES?
+      //Total Width of MxN Display
       float totalWidth(){
         return numCol * screenWidth + (numCol-1) * wPitch;
       }  
       
-      //Total Height of MxN Display IN PIXELS or INCHES?
+      //Total Height of MxN Display
       float totalHeight(){
         return numRow * screenHeight + (numRow-1) * hPitch;
       } 
       
       //gets Pose (bottom left corner) of Mth Row and Nth Col screen
       Pose poseOf( int M, int N){
-        //cout << "BOTTOM " << left(M,N) << " " << bottom(M,N) << endl; 
+        cout << "BOTTOM " << left(M,N) << " " << bottom(M,N) << endl; 
 
         return Pose( 
           left(M,N),

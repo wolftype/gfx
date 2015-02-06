@@ -252,8 +252,8 @@ namespace gfx{
     
     bool bUseFrust;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
+    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }
@@ -304,10 +304,11 @@ namespace gfx{
       camera.lens.width( _w );
       camera.lens.height( _h ); 
 
-      float w = (float)_w/100; 
-      float h = (float)_h/100; 
-      Pose pose(-w/2.0,-h/2.0, 0); //pose in the middle?
-      //eye | pose | aspect | height 
+      float w = (float)_w;///100; //< dividing pixels by 100 here?
+      float h = (float)_h;///100; //< dividing pixels by 100 here? 
+
+      Pose pose(-w/2.0,-h/2.0, 0); //<-- pose based on bottom left of screen
+      //<--------------------------eye | pose | aspect | height 
       camera.view = gfx::View( camera.pos(), pose, (float)w/h, h);
     }
 

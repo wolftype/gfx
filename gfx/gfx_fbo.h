@@ -47,6 +47,7 @@ struct FBO{
       GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
       if (status != GL_FRAMEBUFFER_COMPLETE){
           cout <<"****************\nframebuffer incomplete\n*****************" << endl;
+#ifndef GFX_USE_GLES
           switch(status){
             case GL_FRAMEBUFFER_UNDEFINED: cout<< "undefined"<<endl; break;
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: cout << "incomplete attachment" << endl; break; 
@@ -58,6 +59,7 @@ struct FBO{
             case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:cout<<"incomplete layer targets"<<endl;break;
             default: GL::error("framebuffer check");
           }
+#endif
         }
     }
 
@@ -83,7 +85,7 @@ struct FBO{
     bind();
       glGenRenderbuffers(1, &mDepthID);
       glBindRenderbuffer(GL_RENDERBUFFER, mDepthID);
-      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
       glBindRenderbuffer(GL_RENDERBUFFER, 0);
       glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthID);
     unbind();
