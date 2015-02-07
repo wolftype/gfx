@@ -29,164 +29,113 @@ using namespace gfx;
 /*!
  *  A Displacement Method
  */
-struct Displacement : public GFXRenderNode {
+struct DisplacementSlab : public GFXShaderNode {
 
     MBO * grid;
+    Texture * texture;
 
-    float spacing, amt;
-
-    //pass in num points
-    Displacement(int w, int h, float s, Renderer * r) : 
-    Process(w,h,r), spacing(s) { init(); }
+    float spacing=0.1;
+    float amt=1.0;
 
     virtual void init(){
-     initShader();
 
-  //  Mesh m = Mesh::UV(vec, w, h);
-    grid = new MBO( Mesh::HexaGrid(width,height,spacing) );//Mesh::Grid2D(width,height,spacing) );//
-    grid -> mode = GL::L;
-    // Mesh::Grid2D(w,h,.1) );//
+     string vert = ufloat("amt") + AVertex + Varying + VDisplaceCalcSimple + MVert;
+
+     this->program = new ShaderProgram( 
+                          vert,//makeDisplacementVert(bES),
+                          //ClipSpaceVert,
+                          // DefaultVert,
+                          DefaultFrag);
+
+
+     bindAttributes(); //default
+
+     grid = new MBO( Mesh::HexaGrid(40,40,spacing) );//new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); //
+     grid -> mode = GL::L;
    }
 
-   virtual void initShader(){
-    this->program = new ShaderProgram( 
-                        DisplacementVert, 
-                        DefaultFrag, 0);
-    this->bindAll();
-   } 
 
+  virtual void onRender(){ 
+       for (auto& i : mUpstream) i->onRender();
 
-  virtual void update(){
-     this->program->uniform("amt",amt);
-  }
+       if (mDownstream) glViewport(0,0,mDownstream->width, mDownstream->height);
 
-  virtual void enter(){
-      this->bind();
-       this->bind( renderer -> scene.xf ); 
-       //this->bindModelViewIdentity();
-  }
-
-  virtual void leave(){
-    this->unbind();
-  }
-
-  virtual void operator()(){
-      enter();
-       update();     
-       this->line(*grid); 
-      this->unbind();    
-  }
-
-  virtual void draw(){
-    this->line(*grid);
+       program->bind();  
+          this->program->uniform("amt",amt); 
+          texture->bind();
+          grid->render(vatt);
+          texture->unbind(); 
+       program->unbind();    
   }
 
 };
 
 
-struct MyProcess : public Process {
+struct Displace : public GFXRenderNode {
 
-  R2T r2t;
-  Slab slab;
-  Blur blur;
-
-  Displacement dispmap;
-  bool bDrawDispMap;
-
-  MyProcess(int w, int h, Renderer * r) : 
-  Process(w,h,r), r2t(w,h,r), dispmap(40,40,.1,r), 
-  blur(w,h), slab(w,h), bDrawDispMap(false)
-  { init(); } 
+  RenderToTexture r2t;
+  DisplacementSlab dispmap;
+  bool bDrawDispMap=false;
 
   virtual void init(){
 
-    slab.initRect();                // Initialze a rectangle
-    slab.texture = r2t.textureB;
-    blur.rect = slab.rect;          // Share resources
-    blur.texture = slab.texture;  
+    r2t.set(width,height);
+    r2t.init();
+    dispmap.set(width,height);
+    dispmap.init();
+    dispmap.texture = r2t.texture;
 
-   // r2t.post(blur);
-
+    dispmap << r2t;
+    bindUpstream(r2t);
+    bindDownstream(dispmap); 
   }
 
-  void operator()(){
-
-   // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    r2t();        // Render to Offscreen Texture 
-
-   // r2t.swap();
-   // r2t.fbo.attach(*r2t.textureB, GL::COLOR);
-    r2t.fbo.bind();
-      blur();
-    r2t.fbo.unbind();
-    
-    //switch to original viewport
-    glViewport(0, 0, renderer -> contextWidth, renderer -> contextHeight ); 
-    //renderer -> clear();
-
-    if (bDrawDispMap){
-      slab();
-    }
-    else {
-      slab.texture->bind();
-      //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glLineWidth(1);
-        dispmap();
-      slab.texture->unbind();
-    }
-
-    r2t.swap();   // Swap textures
+  void onRender(){
+    dispmap.onRender();
   }
 
 };
 
 
 
-struct MyApp : public App<Window> {
+struct MyApp : public GFXApp<GlutContext> {
 
   float time = 0;
 
   MBO * mbo;
   MBO * grid;
-  MyProcess * process;
+  Displace process;
 
-  MyApp(int w, int h) : App<Window>(w,h) { init(); }
-
-  void init(){
+  void setup(){
     mbo = new MBO( Mesh::Circle() );
-    grid = new MBO( Mesh::Grid2D(40,40,.1) );
+    //grid =  new MBO( Mesh::HexaGrid(40,40,.1) );//new MBO( Mesh::Grid2D(40,40,.1) );//n
 
-    cout <<  Window::window().width() << " WIDTH " << endl;
-    process = new MyProcess( Window::window().width()/10, Window::window().height()/10, this );
+    mRenderer << process <<  mSceneRenderer;
+
+    process.set(width,height);
+    process.init();
   }
 
-  virtual void update(){
+  virtual void onAnimate(){
     time += .01;
-    process -> blur.ux = sin(time) * .2;
-    process -> blur.uy = cos(time) * .2;
-    process -> blur.amt = .1;// fabs(sin(time));
-    process -> dispmap.amt = sin(time) * 5;
-
+    /* process.blur.ux = sin(time) * .2; */
+    /* process.blur.uy = cos(time) * .2; */
+    /* process.blur.amt = .1;// fabs(sin(time)); */
+    process.dispmap.amt = 1 + sin(time)*10;
+    mbo->mesh.moveTo(sin(time)*5,0,0);
+    mbo->update();
   }
   
   virtual void onDraw(){
-    pipe.line(*mbo);  
+    glLineWidth(10);
+    draw(*mbo);
+   // draw(*grid);
   }
 
-  virtual void onFrame() { 
-     update();          
-     Renderer::clear();
-    
-     (*process)();
-   // Renderer::render(); 
-    
-     Window::SwapBuffers(); 
-  }    
 };
 
 int main(int argc, char ** argv){
-  MyApp app(500,500);// argc, argv);
+  MyApp app;  
   app.start();
   return 0;
 }

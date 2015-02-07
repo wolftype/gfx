@@ -204,7 +204,7 @@ namespace gfx{
  
       ShaderProgram * program;
            
-      bool bVisited=false;                                                  ///< Avoid circular dependencies by setting this flag
+      bool bVisited=false;                                                  ///< You can avoid circular dependencies by setting this flag
       virtual bool singular() { return true; }                              ///< Control whether there can be multiple upstream processes
 
       GFXRenderNode * mDownstream = NULL;                                   ///< Pointer to one downstream process (for re-setting state)
@@ -347,16 +347,7 @@ struct GFXShaderNode : GFXRenderNode {
        
        virtual bool singular() { return true; } 
       
-       Scene * mScenePtr;
-     //  void scene(Scene * s) { mScene = s; }  
-     //  Scene& scene() { return *mScene; }                        ///< Access matrix transforms
-      
-       /* virtual void init(){ */
-       /*    GFXShaderNode * shader = new GFXShaderNode; */
-       /*    shader->init(); */
-       /*    (*shader) << this; */
-       /* } */
-
+       Scene * mScenePtr;                                     ///< pointer to scene matrix transforms
 
       /// Bind model view projection and normal matrices to downstream shader (and light position...)
       /// (if such uniforms exist)

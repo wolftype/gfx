@@ -24,6 +24,36 @@ namespace gfx{
        *-----------------------------------------------------------------------------*/
        string UVar = "uniform float amt;";
 
+        
+       /*-----------------------------------------------------------------------------
+        *  function to return uniform float variable
+        *-----------------------------------------------------------------------------*/
+        string ufloat(string name){
+          return "uniform float " + name + ";\n";
+        }
+       /*-----------------------------------------------------------------------------
+        *  function to return uniform sampler2D variable
+        *-----------------------------------------------------------------------------*/
+        string usampler2D(string name){
+          return "uniform sampler2D " + name + ";\n";
+        }
+        
+        /*-----------------------------------------------------------------------------
+         *  function to return uniform vec variable
+         *-----------------------------------------------------------------------------*/
+
+       /*-----------------------------------------------------------------------------
+        *  Make a list of attributes based on names from type T
+        *-----------------------------------------------------------------------------*/
+       template<class T>
+       string attributes(){
+         string s;
+         for (auto& i : T::Init().Attribute){
+            s += "attribute " + i.first + ";\n";
+         }
+         return s;
+       }
+
       /*-----------------------------------------------------------------------------
        *  TEST VERTEX SHADER
        *-----------------------------------------------------------------------------*/
@@ -136,6 +166,16 @@ namespace gfx{
         )";
 
         /*-----------------------------------------------------------------------------
+         *  Utility function to create a string for a varying vector
+         *-----------------------------------------------------------------------------*/
+         template<int N>
+         string vec(string name, bool bES=false){
+           stringstream s; s << N;
+           string res = bES? "lowp ":"";
+           return "varying " + res + "vec"+s.str()+ " " + name;
+         }
+
+        /*-----------------------------------------------------------------------------
          *  FUNCTION TO CALCULATE NORMAL
          *-----------------------------------------------------------------------------*/
         string NTransform = R"(
@@ -156,17 +196,41 @@ namespace gfx{
         )";
 
          /*-----------------------------------------------------------------------------
-         *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON SAMPLER 
+         *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON Bound SAMPLER 
          *-----------------------------------------------------------------------------*/
         string VDisplaceCalc = R"(
             vec4 doVertex (vec4 v) {
               float z = texture2D(sampleTexture, texco).r * amt;
               vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
               mat4 m = projection * modelView;
-              return m * nv;
+              return m*nv;
             }
         )";
 
+
+        /*-----------------------------------------------------------------------------
+         *  No Projection Matrix
+         *-----------------------------------------------------------------------------*/
+        string VDisplaceCalcSimple = R"(
+            
+            uniform sampler2D sampleTexture;
+
+            vec3 doNormal(){
+              return normal;
+            }
+            vec4 doColor(){
+              texco = texCoord;
+              return sourceColor;
+            }
+            
+            vec4 doVertex (vec4 v) {
+              vec3 tn = doNormal();
+              vec4 sc = doColor();
+              float z = texture2D(sampleTexture, texco).r * amt;
+              vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
+              return nv;
+            }
+        )";
 
         
         /*-----------------------------------------------------------------------------
@@ -215,26 +279,6 @@ namespace gfx{
             }
         )";
  
-        /* string MVertN = R"( */
-            
-        /*     void main(void){ */
-            
-        /*        //colorDst = doColor(); */  
-        /*         colorDst = sourceColor; */
-                
-        /*         texco = texCoord; */
-                                
-        /*         vec4 pos =  vec4(position,1.0); */
-        /*         vec4 nor = vec4(normal,1.0); */
-                
-        /*         //xm = submodel; */
-        /*         vec4 np = doVertex(pos); */
-        /*         gl_PointSize = 10.0; */
-        /*         gl_Position = np; */
-        /*     } */
-        /* ); */       
-        
-
 
         /*-----------------------------------------------------------------------------
          *  MAIN FRAGMENT FUNCTION
@@ -278,10 +322,10 @@ namespace gfx{
         )";   
 
         
+         string TFragMix = R"(
          /*-----------------------------------------------------------------------------
           *  FRAGMENT .5 MIXED WITH TEXTURE
           *-----------------------------------------------------------------------------*/
-         string TFragMix = R"(
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -298,11 +342,11 @@ namespace gfx{
         )"; 
 
         
+
+         string TFragAlphaES = R"(
          /*-----------------------------------------------------------------------------
           *  ALPHA WEIGHTED FRAGMENT SHADER (FOR MOTION BLUR AND TRAILS) 
           *-----------------------------------------------------------------------------*/
-
-         string TFragAlphaES = R"(
 
             uniform sampler2D sampleTexture;
             uniform float alpha;
@@ -580,14 +624,23 @@ namespace gfx{
     string DefaultVertES =  AVertex + VaryingES + UMatrix + NTransform + VLighting + VCalc + MVert;
     string DefaultVert =  AVertex + Varying + UMatrix + NTransform + VLighting + VCalc + MVert;
 
-    string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
-    string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
-    //Make a vertex shader, passing in a function for doVertex() calculations . . . 
-    string makeVert(string tCalc){
-      return AVertex + Varying + UMatrix + NTransform + VLighting + tCalc + MVert;
-    }        
+    //Make a vertex shader, passing in a string for doVertex() calculations . . . 
+    string makeVert(string tCalc, bool bES=false){
+      return AVertex + (bES ? VaryingES : Varying) + UMatrix + NTransform + VLighting + tCalc + MVert;
+    }
+    
+    string makeDisplacementVert(bool bES=false){
+      return UVar + USampler + makeVert(VDisplaceCalc,bES);
+    }
 
+    string makeDefaultVert(bool bES=false){
+      return makeVert(VCalc, bES);
+    }
+    
+   // string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
+   // string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
+     
    
     /*-----------------------------------------------------------------------------
      *  RENDER TO A CUBEMAP (position function) -- change uniform cmFace every pass

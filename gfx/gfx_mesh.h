@@ -26,12 +26,20 @@ using namespace std;
 
 namespace gfx {
 
-  /* struct VertexBase { */
-  /*   virtual GLvoid * on(){ return 0; } */
-  /*   virtual GLvoid * oc(){ return 0; } */
-  /*   virtual GLvoid * ot(){ return 0; } */
-  /*   virtual GLvoid * offset(string s){ return 0; } */
-  /* }; */
+  template<class T> // attribute types
+  struct GLVertexData {
+    static map<string, GLvoid*> Attribute; // map of attribute names and offsets into memory
+
+    static GLVertexData& Init(){
+      static GLVertexData TheGLVertexData;
+      return TheGLVertexData;
+    }
+    private:
+      GLVertexData(){ Make(); }
+      static void Make();
+  };
+  template<class T>
+  map<string,GLvoid*> GLVertexData<T>::Attribute;
 
   struct VertexPosition {
      Vec3f Pos;
@@ -43,7 +51,6 @@ namespace gfx {
      static GLvoid * on() { return (GLvoid*)sizeof(Vec3f); }
 
      float operator[] (int idx) { return Pos[idx]; }
-
   };
 
   struct VertexColor {
@@ -104,6 +111,7 @@ namespace gfx {
         Vec3<float> Norm;       ///< 3d normal
         Vec4<float> Col;        ///< RGBA Color (could be uchar)
         Vec3<float> Tex;        ///< UV Coordinates
+
                 
         VertexTex3D(const Vec3f& pos = Vec3f(0,0,0), 
                const Vec3f& norm = Vec3f(0,0,1), 
@@ -136,7 +144,7 @@ namespace gfx {
           cout << Pos << Norm << Col << Tex << endl;  
         }
      };
-
+     
     
   /*!
    *  VERTEX DATA Interleaved
@@ -179,6 +187,13 @@ namespace gfx {
           cout << Pos << Norm << Col << Tex << endl;  
         }
      };
+
+     template<> void GLVertexData<Vertex>::Make(){
+        Attribute["vec3 position"]=0;
+        Attribute["vec3 normal"]=Vertex::on();
+        Attribute["vec4 sourceColor"]=Vertex::oc();
+        Attribute["vec2 texCoord"]=Vertex::ot();
+     }
 
 
   /*!

@@ -304,8 +304,8 @@ namespace gfx{
       camera.lens.width( _w );
       camera.lens.height( _h ); 
 
-      float w = (float)_w;///100; //< dividing pixels by 100 here?
-      float h = (float)_h;///100; //< dividing pixels by 100 here? 
+      float w = (float)_w/100; //< dividing pixels by 100 here?
+      float h = (float)_h/100; //< dividing pixels by 100 here? 
 
       Pose pose(-w/2.0,-h/2.0, 0); //<-- pose based on bottom left of screen
       //<--------------------------eye | pose | aspect | height 
