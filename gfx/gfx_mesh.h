@@ -313,9 +313,9 @@ namespace gfx {
 
      /// Add a vertex
      MeshData& add(const T& v) { mVertex.push_back(v); return *this;}   
-     MeshData& add(const Vec3f& v) { mVertex.push_back( Vertex(v) ); return *this; }
-     MeshData& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( Vertex(v,n) ); return *this; }
-     MeshData& add(float x, float y, float z) { mVertex.push_back( Vertex( Vec3f(x,y,z) ) ); return *this; }
+     MeshData& add(const Vec3f& v) { mVertex.push_back( T(v) ); return *this; }
+     MeshData& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( T(v,n) ); return *this; }
+     MeshData& add(float x, float y, float z) { mVertex.push_back( T( Vec3f(x,y,z) ) ); return *this; }
 
      /// ADD N VERTICES
      template<typename S>
@@ -327,6 +327,32 @@ namespace gfx {
          for (int i = 0; i < n; ++i) { mVertex.push_back( Vertex(v[i]) ); } 
          return *this;
      }
+
+
+     /*-----------------------------------------------------------------------------
+      *  VIRTUAL (can be overloaded)
+      *-----------------------------------------------------------------------------*/
+      virtual MeshData& color(float r, float g, float b, float a = 1.0) { 
+         // mColor.set(r,g,b,a);   
+        
+          for (int i = 0; i < mVertex.size(); ++i ){
+            mVertex[i].Col = Vec4f(r,g,b,a);//mColor;
+          }   
+        
+          return *this;
+        }
+      
+#ifdef GFX_IMMEDIATE_MODE
+
+        virtual void drawElements() const {
+              GL::Begin( mMode);
+              for (int i = 0; i < mIndex.size(); ++i){  
+                  GL::normal( mVertex[ mIndex[i] ].Norm );
+                  GL::vertex( mVertex[ mIndex[i] ].Pos );
+              }
+              glEnd();
+         }
+#endif
 
   };
 
@@ -411,9 +437,9 @@ namespace mesh{
     class Mesh : public MeshData<Vertex> { 
         
                 
-        /// Base Color
+              /// Base Color
         Vec4f mColor;
-                
+          
     public:
         typedef unsigned short INDEXTYPE;
           
@@ -514,7 +540,7 @@ namespace mesh{
             return *this;
         }
         
-        Mesh&  scale(float s){
+        Mesh& scale(float s){
             
             for (int i = 0; i < num(); ++i){
                mVertex[i].Pos *= s;
@@ -524,7 +550,7 @@ namespace mesh{
         }
 
 
-        Mesh&  scaleA(float s){
+        Mesh& scaleA(float s){
             
           for (int i = 0; i < num(); ++i){
               mStore[i].Pos *= s;
@@ -639,7 +665,7 @@ namespace mesh{
 
         static Mesh Cone( double rad = 1.0 , double h = 1.0, int slices = 10, int stacks = 4);
         static Mesh Dir();
-        static Mesh Circle(double radius = 1, double res = 10);
+        static Mesh Circle(double radius = 1, double res=50);//double res = 10);
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
@@ -989,7 +1015,8 @@ namespace mesh{
     
     inline Mesh Mesh::Circle (double radius, double _res){
         
-        int res = floor( _res * 100);
+        //int res = floor( _res * 100);
+        int res = _res;
         Mesh m;
         
         for (int i = 0; i <= res; ++i){

@@ -228,8 +228,8 @@ class ShaderProgram {
 
 	public:
 
-    map<string, Attribute>& attributes() { return mAttributeMap; }
-    map<string, Uniform>& uniforms() { return mUniformMap; }
+    map<string, Attribute> attributes() const { return mAttributeMap; }
+    map<string, Uniform> uniforms() const { return mUniformMap; }
 
     bool uniformExists(string s){
       return uniforms().find(s) != uniforms().end();
@@ -262,10 +262,8 @@ class ShaderProgram {
   
     void source( string vs, string fs);                     ///< Load from Source
 
-    void begin();
-    void end();
-    void bind() { begin(); }
-    void unbind() { end(); }
+    void bind() const;
+    void unbind() const;
 
     bool linked()  const   { return bLinked; }
     bool loaded()  const   { return bLoaded; }
@@ -448,7 +446,7 @@ inline 	void ShaderProgram::unload(){
 
 	//---------------------------------------------------------------
 
-	inline void ShaderProgram::begin(){
+	inline void ShaderProgram::bind() const {
 		if ( bLoaded == true){
 			if (bActive){
 				glUseProgram(mId);
@@ -459,7 +457,7 @@ inline 	void ShaderProgram::unload(){
 		}
 	}
 
-	inline void ShaderProgram::end(){
+	inline void ShaderProgram::unbind() const{
 	    glUseProgram(0);
 	    GL::error("Shader End");
 

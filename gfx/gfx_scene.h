@@ -299,15 +299,15 @@ namespace gfx{
        camera.lens.height( h );   
      } 
     
-    void resize(int _w, int _h){
+    void resize(int _w, int _h, float dpi=200){
 
       camera.lens.width( _w );
       camera.lens.height( _h ); 
 
-      float w = (float)_w/100; //< dividing pixels by 100 here?
-      float h = (float)_h/100; //< dividing pixels by 100 here? 
+      float w = (float)_w/dpi; //< dividing pixels by 100 here?
+      float h = (float)_h/dpi; //< dividing pixels by 100 here? 
 
-      Pose pose(-w/2.0,-h/2.0, 0); //<-- pose based on bottom left of screen
+      Pose pose(-w/2.0,-h/2.0, 0); //<-- pose in world coordinates based on bottom left of screen
       //<--------------------------eye | pose | aspect | height 
       camera.view = gfx::View( camera.pos(), pose, (float)w/h, h);
     }

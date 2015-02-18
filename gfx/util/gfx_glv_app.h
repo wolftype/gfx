@@ -16,6 +16,9 @@
  * =====================================================================================
  */
 
+#ifndef  gfx_glv_app_INC
+#define  gfx_glv_app_INC
+
 #include "gfx/util/glut_window.hpp"
 #include "gfx/gfx_app.h"
 #include "gfx/util/glv_control.h"
@@ -55,3 +58,4 @@ namespace gfx {
 
 } //gfx::
 
+#endif   /* ----- #ifndef gfx_glv_app_INC  ----- */

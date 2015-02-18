@@ -19,7 +19,12 @@
  *                    }
  *                  
  *                  };
- *                  
+ *                 
+ *
+ *                 Notes: 
+ *
+ *                    immediate mode is set in the ROOT rendernode
+ *                     
  *
  *                  for fancier rendering (i.e. rendering to texture or blur etc)
  *                  overwrite the onFrame() and onRender() methods.
@@ -198,7 +203,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *-----------------------------------------------------------------------------*/
   void clear(){
       if (sceneController.io().mode( ControlMode::Edit ) ){
-        mColor=Vec3f(.2,.2,.2);
+        mColor=Vec3f(.13,.15,.1);
       } else {
         mColor=Vec3f(.1,.1,.1);
       }
@@ -218,7 +223,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
      clear(); 
      onAnimate();
 
-     scene.push( mRenderer.immediate() );     ///< push matrices
+     scene.push( mSceneRenderer.immediate() );     ///< push matrices
 
       //mRenderer calls one upstream render (namely, this)
       //which is this app's onRender method
@@ -227,7 +232,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
       //see examples/xRendertoTexture.cpp
       mRenderer.onRender();
          
-     scene.pop( mRenderer.immediate() );      ///< pop matrices
+     scene.pop( mSceneRenderer.immediate() );      ///< pop matrices
     
      scene.step();                            ///< update camera physics
      

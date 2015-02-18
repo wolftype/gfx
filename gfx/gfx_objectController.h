@@ -55,10 +55,10 @@ namespace gfx {
 
         typedef std::map<string,GenericObjectPtr*> SelectMap;   
         typedef SelectMap::iterator SelectMapIterator;     
-        /// Map of object addresses and information about each
-        SelectMap selectMap;   
         
         public:
+        /// Map of object addresses and information about each
+        SelectMap selectMap;   
         
         void io(GFXio * io) { mIO=io; }
         GFXio& io(){ return *mIO; }
@@ -160,6 +160,7 @@ namespace gfx {
 
         virtual void onMouseDown(const Mouse& m);
         virtual void onMouseDrag(const Mouse& m);
+        virtual void onKeyDown(const Keyboard& k);
 
         /// Called at Frame Rate (i.e. for updating ObjectPtr data)
         virtual void onFrame();
@@ -196,20 +197,7 @@ namespace gfx {
     /*-----------------------------------------------------------------------------
      *  Get Screen Coordinates of Object
      *-----------------------------------------------------------------------------*/
-    /// Screen Coordinates of Target point
-    /* template <class A> Vec3f ObjectController :: screenCoord(const A& p){ */
-    /*    Vec3f sc = mScene->project(p);// XMat::Project( p, xf ); */
-    /*    return sc; */
-    /* } */ 
- 
-    /* /// Screen Coordinates of Target 2D point */
-    /* template <class A> Vec3f ObjectController :: screenCoord2D(const A& p){ */
-     
-    /*     XformMat& xf = mScene->xf; */
-    /*     Vec3f sc = GL::project( p[0], p[1], 0, xf ); */
-    /*     sc[0] /= xf.viewport[2]; sc[1] /= xf.viewport[3]; sc[2] = 0; */     
-    /*     return sc; */
-    /* } */          
+    
 
     template <class A> bool ObjectController :: pntClicked( const A& x, float rad ) {
       Vec3f v = io().click();  // [0,0] is bottom left corner [1.0,1.0] is top right
@@ -226,7 +214,7 @@ namespace gfx {
         for (auto& i : selectMap){
           if (i.second->active) {
             if ( pntClicked(i.second->pos, .05 ) ) {
-              i.second->select=true;
+              i.second->select= !i.second->select;//true;
             }  
             if (i.second->select) i.second->store();      
           }
@@ -250,6 +238,17 @@ namespace gfx {
         for (auto& i : selectMap){
           if (i.second->active) {
             i.second->update();
+          }
+        }
+      }
+    }
+
+    void ObjectController :: onKeyDown(const Keyboard& k){
+      if (io().mode( ControlMode::Edit )){
+        //deselect all with escape key
+        if (k.code == Key::Escape){
+          for (auto& i : selectMap){
+            i.second->select=false;
           }
         }
       }

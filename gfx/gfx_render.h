@@ -6,7 +6,7 @@
  *    Description:  rendering pipelines
  *
  *    GFXRenderNode     organizes the list of pre and post processes. GFXApp inherits from this class
- *    GFXSceneRenderer  specifically manages modelviewprojection matrix uniform updates
+ *    GFXSceneNode  specifically manages modelviewprojection matrix uniform updates
  *    GFXShaderNode        
  *
  *        Version:  1.0
@@ -39,7 +39,7 @@ namespace gfx{
 
   using namespace gfx::GLSL;
 
-  struct GFXSceneRenderer;
+  struct GFXSceneNode;
   
   /*-----------------------------------------------------------------------------
    *  Programmable Pipeline
@@ -89,13 +89,13 @@ namespace gfx{
 
     static void UpdatePosition(const T& t){}
 
-    static void Draw(const T& t, GFXSceneRenderer * _i ){
+    static void Draw(const T& t, GFXSceneNode * _i ){
       printf(R"(Renderable<T>::Draw routine not yet defined for this type: 
               You must delcare a Renderable<CLASSNAME>::Draw function
               See gfx/gfx_render.h)");
     }
 
-    static void Draw(const T& t, const Mat4f& model, GFXSceneRenderer * _i) {
+    static void Draw(const T& t, const Mat4f& model, GFXSceneNode * _i) {
       printf(R"(Renderable<T>::Draw (with ModelMatrix) routine not yet defined for this type: 
               You must delcare a Renderable<CLASSNAME>::Draw function
               See gfx/gfx_render.h)");
@@ -202,7 +202,6 @@ namespace gfx{
    */
   struct GFXRenderNode {      
  
-      ShaderProgram * program;
            
       bool bVisited=false;                                                  ///< You can avoid circular dependencies by setting this flag
       virtual bool singular() { return true; }                              ///< Control whether there can be multiple upstream processes
@@ -284,11 +283,28 @@ namespace gfx{
 
 
 /*-----------------------------------------------------------------------------
+ *  Render into a glViewport
+ *-----------------------------------------------------------------------------*/
+struct GFXViewNode : GFXRenderNode {
+    View view;
+   
+    void onRender(){
+      glViewport(view.l, view.b, view.width(), view.height());
+
+      for (auto& i : mUpstream) i->onRender();
+    }
+};
+
+
+
+/*-----------------------------------------------------------------------------
  *  Basic Shader Code.  Default Version 
  *-----------------------------------------------------------------------------*/
 struct GFXShaderNode : GFXRenderNode {
- 
+   
+   ShaderProgram * program;
    VertexAttributes vatt;
+
    virtual bool singular() { return false; } 
 
    virtual void init(){
@@ -312,21 +328,10 @@ struct GFXShaderNode : GFXRenderNode {
         program->unbind(); 
    }
 
-  // virtual void updateUniforms(){}
-
-   /* virtual void enter(){ */
-   /*    program->bind(); */
-   /*    updateUniforms(); */
-   /* } */
-
-   /* virtual void exit(){ */
-   /*   program->unbind(); */
-   /* } */
-
-    virtual void onRender(){
-      //  if ( root().immediate() ) {
-      //    for (auto& i : mUpstream){ i->onRender(); }
-      //  } else {
+   virtual void onRender(){
+        if ( immediate() ) {
+          for (auto& i : mUpstream){ i->onRender(); }
+        } else {
           program -> bind();
          //   updateUniforms(); // note, this may be unnecessary: upstream nodes will reach downstream here and update uniforms
             for (auto& i : mUpstream){ 
@@ -334,7 +339,7 @@ struct GFXShaderNode : GFXRenderNode {
               i->onRender(); 
             }
           program -> unbind();
-      //  }    
+        }    
     }
 
 };
@@ -347,12 +352,15 @@ struct GFXShaderNode : GFXRenderNode {
        
        virtual bool singular() { return true; } 
       
-       Scene * mScenePtr;                                     ///< pointer to scene matrix transforms
+       Scene * mScenePtr;                                               ///< pointer to scene matrix transforms
+
+       GFXShaderNode& shader(){ return *(GFXShaderNode*)mDownstream; }  ///< reference to shader downstream (to access vertex attributes)
 
       /// Bind model view projection and normal matrices to downstream shader (and light position...)
-      /// (if such uniforms exist)
+      /// (uniform_if means do so only if such uniforms exist)
        virtual void update(){
-            ShaderProgram& dp = *downstream().program;
+            ShaderProgram& dp = *shader().program;
+
             dp.uniform_if("lightPosition", light[0], light[1], light[2] ); //2.0, 2.0, 2.0);  
             dp.uniform_if("projection",  mScenePtr->xf.proj);
             dp.uniform_if("normalMatrix", mScenePtr->xf.normal);  
@@ -362,7 +370,7 @@ struct GFXShaderNode : GFXRenderNode {
        void updateModelView(){
             static float mv[16];
             (mScenePtr->mvm()).fill(mv);
-            ShaderProgram& dp = *downstream().program;
+            ShaderProgram& dp = *shader().program;
             dp.uniform_if("modelView", mv);
        }
 
@@ -370,84 +378,25 @@ struct GFXShaderNode : GFXRenderNode {
        void updateModelView( const Mat4f& mat ){ 
            static float mv[16];
            (mScenePtr->mvm()*mat).fill(mv);
-           ShaderProgram& dp = *downstream().program;
+           ShaderProgram& dp = *shader().program;
            dp.uniform_if("modelView", mv);   
       }
 
       void draw(MBO& m, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
-       // if ( root().immediate() ){
-       //    render::begin(r,g,b,a);
-       //    render::draw(m); 
-       // }else {
-            GFXShaderNode& sn = *(GFXShaderNode*)mDownstream;
-            updateModelView(); ///< identity matrix
-            m.render(sn.vatt); 
-       // }
+        if ( downstream().immediate() ){
+           render::begin(r,g,b,a);
+           render::draw(m); 
+        }else {
+           updateModelView(); ///< identity matrix
+           m.render(shader().vatt); 
+        }
       }
 
-
-
-      /* template<class T> */
-      /* void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){ */
-      /*    if (bImmediate) { */
-      /*      render::begin(r,g,b,a); */
-      /*      render::draw(t); */ 
-      /*    } */
-      /*    else { */
-      /*     if (bUpdate) { */
-      /*       Renderable<T>::SetUpdate(); */
-      /*     } */
-      /*     Renderable<T>::UpdateColor(r,g,b,a); /// */
-      /*     Renderable<T>::Draw(t,this);  ///< pass "this" to Renderable<T>::Draw in order to access current model view and vertex attributes */
-      /*    } */        
-      /* } */
-  };
-
-
-  /*-----------------------------------------------------------------------------
-   *  BASIC RENDERER FOR RENDERABLES IN A SCENE (works with OPENGLES2.0 so  VERTEX ARRAY OBJECTS)
-   *
-   *  gfx_app has one of these objects, called mRenderer, which is the basis of all 
-   *  scene graph renderings: all other render nodes feed into this one.
-   *-----------------------------------------------------------------------------*/
-  struct GFXSceneRenderer : public GFXShaderNode {
-    
-       virtual bool singular() { return true; } 
-        
-       Scene * mScene;
-       void scene(Scene * s) { mScene = s; }  
-       Scene& scene() { return *mScene; }                        ///< Access matrix transforms
-
-      /// Bind model view projection and normal matrices to shader (and light position...)
-       virtual void updateUniforms(){
-
-            if (program->uniformExists("lightPosition")) program -> uniform("lightPosition", light[0], light[1], light[2] ); //2.0, 2.0, 2.0);  
-            if (program->uniformExists("projection")) program -> uniform("projection",  scene().xf.proj);
-            if (program->uniformExists("normalMatrix")) program -> uniform("normalMatrix", scene().xf.normal);  
-            if (program->uniformExists("modelView"))  program -> uniform("modelView",  scene().xf.modelView );
-       }
-
-       void updateModelView(){
-            static float mv[16];
-            (mScene->mvm()).fill(mv);
-            if (program->uniformExists("modelView")) program -> uniform("modelView", mv);
-       }
-
-      /// Multiply modelview by some object-specific matrix
-       void updateModelView( const Mat4f& mat ){ 
-           static float mv[16];
-           (mScene->mvm()*mat).fill(mv);
-          if (program->uniformExists("modelView")) program -> uniform("modelView", mv);   
-      }
-
-      template<class T>
-      void update(const T& t){
-        Renderable<T>::Update(t);
-      }
-
+      // specialize your draw routines by defining a Renderable<T>::Draw(const T& t, GFXSceneNode * r) method
+      // 
       template<class T>
       void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){
-         if (bImmediate) {
+         if (downstream().immediate()) {
            render::begin(r,g,b,a);
            render::draw(t); 
          }
@@ -460,54 +409,39 @@ struct GFXShaderNode : GFXRenderNode {
          }        
       }
 
-      void draw(MBO& m, float r=1.0, float g=1.0, float b=1.0, float a=1.0){
-        if (bImmediate){
-           render::begin(r,g,b,a);
-           render::draw(m); 
-        }else {
-            updateModelView( ); ///< identity matrix
-            m.render(vatt); 
+      //draw many (specialize this by defining a Renderable<vector<T>>::Draw method
+      //where you bind mbo and vertex attributes once, then drawElements() many times)
+      template<class T>
+      void draw(const vector<T>& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate =false){
+          if (downstream().immediate()){
+            render::begin(r,g,b,a);
+            for (auto& i : t) render::draw(i);
+          } else {
+            if (bUpdate) {
+              Renderable<T>::SetUpdate();
+            }
+            Renderable<T>::UpdateColor(r,g,b,a);
+            //for (auto& i : t) Renderable<T>::Draw(i,this);
+            Renderable<vector<T>>::Draw(t, this);
+          }
         }
-      }
-
-      //untested, draw a bunch of things
-      /* template<class T> */
-      /* void draw(T * ptr, int num, float r=1.0,float g=1.0,float b=1.0,float a=1.0){ */
-      /*   MBO& m = Renderable<T>::Get()[0]; //or more ... */
-      /*   m.bind(vatt); */
-      /*   for (int i=0;i<num;++i){ */
-      /*     updateModelView( Renderable<T>::ModelMatrix( ptr[num] ) ); */
-      /*     m.drawElements(); */
-      /*   } */
-      /*   m.unbind(vatt); */
-      /* } */
-
-      /* template<class T, class B> */
-      /* void drawAt(const T& t, const B& p, float r = 1.0, float g=1.0, float b=1.0, float a=1.0){ */
-      /*    if (bImmediate) { */
-      /*     render::begin(r,g,b,a); */ 
-      /*     render::drawAt(t,p); */
-      /*    } */
-      /*    /1* else { *1/ */
-      /*    /1*  Renderable<T>::UpdateColor(t,r,g,b,a); ///< currently updates mesh twice -- (once here and once in Draw routine if positions are modified) *1/ */
-      /*    /1*  Renderable<T>::Draw(t,this);  ///< pass "this" to Renderable<T>::Draw in order to access current model view and vertex attributes *1/ */
-      /*    /1* } *1/ */        
-      /* } */
-
   };
 
 
+
+
   template<>
-  void Renderable<MBO> :: Draw(const MBO& m, GFXSceneRenderer * _i){   
+  void Renderable<MBO> :: Draw(const MBO& m, GFXSceneNode * _i){   
       // shader is already bound at this point
       _i->updateModelView(); ///< identity matrix
-      m.render(_i->vatt);
+       m.render(_i->shader().vatt);
   }
 
   template<>
-  void Renderable<MBO> :: Draw(const MBO& m, const Mat4f& model, GFXSceneRenderer * _i){
+  void Renderable<MBO> :: Draw(const MBO& m, const Mat4f& model, GFXSceneNode * _i){
       _i->updateModelView(model); ///< modelview * submodel matrix
-      m.render(_i->vatt);
+      //GFXShaderNode& sn = *(GFXShaderNode*)_i->mDownstream;
+       m.render(_i->shader().vatt);
   }
 
   /* template<> */

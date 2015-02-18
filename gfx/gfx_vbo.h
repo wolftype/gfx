@@ -90,7 +90,7 @@ namespace gfx {
     
           void bind() const {
                 glBindBuffer(mTarget, mId);//arb?
-            //    GL::error( "vbo bind");
+                GL::error( "vbo bind");
           }
 
           void buffer(){
