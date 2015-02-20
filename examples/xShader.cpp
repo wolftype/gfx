@@ -25,7 +25,7 @@
 
 using namespace gfx;
 
-struct MyApp : GfxApp<Window> {
+struct MyApp : GFXApp<GlutContext> {
 
   VAO * vao;            //<-- Vertex Array Object
   MBO * mbo;            //<-- Vertex Buffer Objects
@@ -37,44 +37,53 @@ struct MyApp : GfxApp<Window> {
    printf("My App Setup\n");
 
    //Compile and Link Shader 
+   
    shader = new ShaderProgram( GLSL::DefaultVert, GLSL::DefaultFrag, 0);  
+   
    //Generate and Bind Vertex Array Object
    vao = new VAO();
-   //Generate Buffer and Bind Vertex Data
-   mbo = new MBO( Mesh::Circle() );   
-   //Declare Attributes
-   VertexAttrib(shader->id(), "position", sizeof(Vertex), 0); 
-   VertexAttrib(shader->id(), "sourceColor", sizeof(Vertex), Vertex::oc() ); 
-   VertexAttrib(shader->id(), "normal", sizeof(Vertex), Vertex::on()); 
-   VertexAttrib(shader->id(), "texCoord", sizeof(Vertex), Vertex::ot()); 
+   vao->bind();
+   
+     //Generate Buffer and Bind Vertex Data
+     mbo = new MBO( Mesh::Circle() );   
+     mbo->bind();
+
+     //Declare Attributes     
+     mbo->bindAttributes(*shader); //this does basically what is commented out below
+
+    //VertexAttrib(shader->id(), "position", sizeof(Vertex), 0); 
+    //VertexAttrib(shader->id(), "sourceColor", sizeof(Vertex), Vertex::oc() ); 
+    //VertexAttrib(shader->id(), "normal", sizeof(Vertex), Vertex::on()); 
+    //VertexAttrib(shader->id(), "texCoord", sizeof(Vertex), Vertex::ot()); 
+    
    //Unbind Vertex Array Object
    vao -> unbind();
+   mbo -> unbind();
+   mSceneRenderer.immediate(false);
+  }
 
-   scene.bImmediate = false;
+  virtual void onAnimate(){
+    static float counter = 0;
+    counter += .05;
+
+    mesh::move( mbo->mesh,sin(counter) * 2.0,0,0);
+    mbo->update();
   }
 
   virtual void onDraw(){
-    static float counter = 0;
-    counter += .01;
-
     shader->bind(); 
+  
       shader -> uniform("lightPosition", 2.0, 2.0, 2.0);  
       shader -> uniform("projection",  scene.xf.proj);
       shader -> uniform("normalMatrix", scene.xf.normal);  
       shader -> uniform("modelView",  scene.xf.modelView ); 
 
-      mbo -> mesh.moveTo( sin(counter) * scene.camera.lens.width()/2.0,0,0);
-      mbo->update();
       vao->bind();
         mbo->drawElements();
       vao->unbind();
 
     shader->unbind();
 
-  }
-
-  virtual void onMouseDown(const Mouse& m){
-  
   }
 
 };

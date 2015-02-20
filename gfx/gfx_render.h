@@ -4,11 +4,33 @@
  *       Filename:  gfx_render.h
  *
  *    Description:  rendering pipelines
+ *                  a rendering graph that makes complicated effects like motion trace easier.
+ *                  provides boolean switchability between fixed function and programmable OpenGL
  *
- *    GFXRenderNode     organizes the list of pre and post processes. GFXApp inherits from this class
- *    GFXSceneNode  specifically manages modelviewprojection matrix uniform updates
- *    GFXShaderNode        
+ *    based on work with Graham Wakefield for the AlloSphere Research Group during our NanoMed project
  *
+ *
+ *    GFXRenderNode the root node, calls all upstream processes, overloads << operator. 
+ *    GFXViewNode   sets the glViewport.  q: how to instantiate multiple with multiple mvp matrices.
+ *    GFXShaderNode binds shader and calls upstream nodes
+ *    GFXSceneNode  points to a scene (matrix manager) and sets modelviewprojection matrix uniform updates, 
+ *                  by updating downstream shader
+ *                  GFXApp currently inherits from this class, but need not: just bind with a sceneController object...
+ *    GFXMeshNode   points to a meshbuffer object and a vertex attribute list, updates downstream shader model transform
+ *                  to do this, the GFXMeshNode::shader() method finds first downstream shader.
+ *    to do: 
+ *    GFXTextureNode points to a texture which it wraps around upstream input (a meshnode). downstream is a SceneNode or ShaderNode.
+ *    GFXEffectsNode points a texture to a framebuffer color buffer, binds an MBO rect (slab) and executes a fragment shader on it 
+ *                    Q: render to screen to to another framebuffer? 
+ *    GFXStereoNode  take upstream input (a SceneNode) and splits it into left and right eyes
+ *    GFXOmniNode    take upstream input (a SceneNode) renders to left and right cubemaps
+ *
+ *    fix initialization so that downstream node calls init(), only upstream nodes that need to be reinitialized are
+ *    test destruction of shader programs
+ *
+ *
+ *    
+ *            
  *        Version:  1.0
  *        Created:  01/20/2015 16:07:11
  *       Revision:  none
@@ -188,7 +210,18 @@ namespace gfx{
 #endif 
 
 } //render::
-  
+ 
+ 
+ enum {
+    GFX_RENDER_NODE,
+    GFX_VIEW_NODE,
+    GFX_SHADER_NODE,
+    GFX_SCENE_NODE,
+    GFX_MESH_NODE,
+    GFX_FRAMEBUFFER_NODE,
+    GFX_EFFECT_NODE
+ };
+
 
   /*!
    *  A GFXRenderNode is the root node of all processes
@@ -199,12 +232,14 @@ namespace gfx{
    *  The virtual method, onRender(), specifies how
    *  the node should bind or onbind its upstream and downstream
    *  graphics processing events
+   *
+   *  It can also register for WindowEvents (such as onResize)
    */
-  struct GFXRenderNode {      
- 
-           
+  struct GFXRenderNode : public WindowEventHandler {      
+     
+      virtual const int nodetype() { return GFX_RENDER_NODE; }
+     
       bool bVisited=false;                                                  ///< You can avoid circular dependencies by setting this flag
-      virtual bool singular() { return true; }                              ///< Control whether there can be multiple upstream processes
 
       GFXRenderNode * mDownstream = NULL;                                   ///< Pointer to one downstream process (for re-setting state)
       
@@ -228,17 +263,20 @@ namespace gfx{
         return *mDownstream;
       }
 
+      /// point argument to this instance's downstream process
       GFXRenderNode& bindDownstream(GFXRenderNode& r){
         r.downstream(mDownstream);
         return *this;
       }
 
+      /// add all of this instance's upstream nodes to argument
       GFXRenderNode& bindUpstream(GFXRenderNode& r){
         for(auto& i : mUpstream) r << i;
         return *this;
       }
 
       vector<GFXRenderNode*> mUpstream;                                     ///< Pointers to multiple upstream processes (to be pulled)
+      void clear() { mUpstream.clear(); }
      
       Vec3f light = Vec3f(1,1,4);                                           ///< Light Position  
 
@@ -256,8 +294,18 @@ namespace gfx{
       //Setters
       bool useES(){ return bES; }
 
+      /// set width and height, call onInit, and recurse on all upstream nodes
+      void init(int w=100, int h=100){
+        set(w,h);
+        onInit();
+        for (auto& i : mUpstream) i->init(w,h);
+      }
+
       /// Subclasses can implement their own init and process();
-      virtual void init(){}
+      virtual void onInit(){
+        
+      }
+      
       virtual void enter(){}
       virtual void exit(){}
       virtual void update(){}
@@ -266,32 +314,84 @@ namespace gfx{
       }
 
       GFXRenderNode& operator << (GFXRenderNode * r){
-          if(singular()) mUpstream.clear();
           mUpstream.push_back(r);
           r->downstream(this);
           return *r;
       }
 
       GFXRenderNode& operator << (GFXRenderNode& r){
-          if(singular()) mUpstream.clear();
           mUpstream.push_back(&r);
           r.downstream(this);
           return r;
+      }
+
+      void resize(int w, int h){
+        onResize(w,h);  
+        for(auto& i : mUpstream) i->resize(w,h);
+      }
+
+      virtual void onResize(int w, int h){
+        set(w,h);
       }
   };
 
 
 
 /*-----------------------------------------------------------------------------
- *  Render into a glViewport
+ *  Render into a viewport (specified as percentage of full screen)
  *-----------------------------------------------------------------------------*/
 struct GFXViewNode : GFXRenderNode {
-    View view;
-   
-    void onRender(){
-      glViewport(view.l, view.b, view.width(), view.height());
+    
+     
+      virtual const int nodetype() { return GFX_VIEW_NODE; }
 
-      for (auto& i : mUpstream) i->onRender();
+    struct View{
+       Vec4f view = Vec4f(0,0,1,1);
+       Vec4f color = Vec4f(.05,.05,.05,1);
+       View(){}
+       View(const Vec4f& v) : view(v) {}
+       View(float l, float b, float r, float t, float red=.05,float green=.05,float blue=.05) : 
+       view(l,b,r,t),color(red,green,blue,1) {}
+    };
+
+    View * view;
+
+    virtual void onInit(){
+      //view.push_back( new View(0,0,.5,.5) );
+      view = new View(0,0,1,1);
+    }
+
+//    void add(float l, float b, float r, float t) { view.push_back( new View(l,b,r,t)); }
+
+    /* void split(int w,int h){ */
+    /*   view.clear(); */
+    /*   for (int i=0;i<w;++i){ */
+    /*     for (int j=0;j<h;++j){ */
+    /*       float l = (float)i/w; */
+    /*       float b = (float)j/h; */
+    /*       view.push_back( new View(l,b,1.0/w,1.0/h) ); */
+    /*     } */
+    /*   } */
+    /* } */
+
+    void onRender(){
+      //for (auto& k : view){ //<-- for all views
+        Vec4f& v = view->view;
+        Vec4f& c = view->color;
+        glViewport((v.x*width), (v.y*height),(v.z*width),(v.w*height));
+        glScissor((v.x*width), (v.y*height),(v.z*width),(v.w*height));
+        glEnable(GL_SCISSOR_TEST); 
+        glClearColor(c[0],c[1],c[2],c[3]);
+        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);      
+          
+          for (auto& i : mUpstream) i->onRender(); //<-- render all upstream nodes
+        
+        glDisable(GL_SCISSOR_TEST);
+     // }
+    }
+
+    virtual void onResize(int w, int h){
+      set(w,h);
     }
 };
 
@@ -302,12 +402,13 @@ struct GFXViewNode : GFXRenderNode {
  *-----------------------------------------------------------------------------*/
 struct GFXShaderNode : GFXRenderNode {
    
+  virtual const int nodetype() { return GFX_SHADER_NODE; }
+
    ShaderProgram * program;
    VertexAttributes vatt;
 
-   virtual bool singular() { return false; } 
 
-   virtual void init(){
+   virtual void onInit(){
 
         string V = useES() ? DefaultVertES : DefaultVert;        ///< These basic shaders are defined in gfx_glsl.h 
         string F = useES() ? DefaultFragES : DefaultFrag; 
@@ -326,6 +427,13 @@ struct GFXShaderNode : GFXRenderNode {
           vatt.add(program->id(), "normal", sizeof(Vertex), Vertex::on()); 
           vatt.add(program->id(), "texCoord", sizeof(Vertex), Vertex::ot());
         program->unbind(); 
+   }
+
+   virtual void enter(){
+     if (!immediate()) program->bind();
+   }
+   virtual void exit(){
+     if (!immediate()) program->unbind();
    }
 
    virtual void onRender(){
@@ -350,11 +458,17 @@ struct GFXShaderNode : GFXRenderNode {
  *-----------------------------------------------------------------------------*/
   struct GFXSceneNode : GFXRenderNode {
        
-       virtual bool singular() { return true; } 
-      
+  virtual const int nodetype() { return GFX_SCENE_NODE; }
+ 
        Scene * mScenePtr;                                               ///< pointer to scene matrix transforms
 
-       GFXShaderNode& shader(){ return *(GFXShaderNode*)mDownstream; }  ///< reference to shader downstream (to access vertex attributes)
+       void scene(Scene*s) { mScenePtr=s; }
+
+       virtual void onResize(int w, int h){
+         mScenePtr -> resize(w,h);
+       }
+
+       GFXShaderNode& shader(){ return *(GFXShaderNode*)mDownstream; }  ///< reference to shader downstream (to access uniforms and vertex attributes)
 
       /// Bind model view projection and normal matrices to downstream shader (and light position...)
       /// (uniform_if means do so only if such uniforms exist)
@@ -396,7 +510,7 @@ struct GFXShaderNode : GFXRenderNode {
       // 
       template<class T>
       void draw(const T& t, float r = 1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){
-         if (downstream().immediate()) {
+         if ( downstream().immediate()) {
            render::begin(r,g,b,a);
            render::draw(t); 
          }
@@ -425,6 +539,13 @@ struct GFXShaderNode : GFXRenderNode {
             Renderable<vector<T>>::Draw(t, this);
           }
         }
+
+        virtual void onRender(){
+          mScenePtr->push( shader().immediate() );
+          for (auto& i : mUpstream) i->onRender();
+          mScenePtr->pop( shader().immediate() );
+        }
+
   };
 
 
@@ -452,6 +573,75 @@ struct GFXShaderNode : GFXRenderNode {
   /*       /1* } *1/ */
   /* } */
 
+ struct GFXMeshNode : public GFXRenderNode {
+ 
+  virtual const int nodetype() { return GFX_MESH_NODE; }
+
+    Vec4f mColor = Vec4f(1,1,1,1);    
+    MBO * mMbo;
+    
+    void mbo(MBO* m) { mMbo=m; } 
+    //GFXMeshNode& add( MBO * m ) { mbo.push_back(m); return *this; }
+
+    GFXSceneNode& scene(){ return *(GFXSceneNode*)mDownstream; }                      ///< reference to scene downstream (to access shader)
+    GFXShaderNode& shader() { 
+     
+      auto * tmp = mDownstream; 
+      //find first downstream shader
+      while (tmp && tmp->nodetype()!=GFX_SHADER_NODE){
+        tmp = tmp->mDownstream;
+      }
+      
+      if (!tmp) printf("error no shader downstream\n");
+      return *(GFXShaderNode*)tmp;
+    }
+
+    virtual void onRender(){
+        if ( shader().immediate() ){
+           render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
+           render::draw(*mMbo); 
+        }else {
+           scene().updateModelView(); ///< identity matrix
+           mMbo->render(shader().vatt); 
+        }
+    }
+ };
+
+template<class T>
+struct GFXMeshNodeT : GFXMeshNode {
+
+  TMBO<T> * mbo;
+  VertexAttributes * vatt;
+
+  //must be bound to a shader downstream already
+  void onInit(){
+    
+    vatt = new VertexAttributes();
+
+    for( auto& i : shader().program->attributes() ){
+      vatt->add(shader().program->id(), i.first, sizeof(T), offset( i.first ) );
+    }
+  
+  }
+
+  GLvoid * offset(string s){
+    if (s == "normal") return T::on();
+    if (s == "sourceColor") return T::oc();
+    if (s == "texCoord") return T::ot();
+    return 0;
+  }
+
+   virtual void onRender(){
+        if ( shader().immediate() ){
+           render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
+           render::draw(*mbo); 
+        } else {
+           //scene().updateModelView(); ///< identity matrix
+           mbo->render(*vatt); 
+        }
+    }
+  
+};
 
 
   /*!
@@ -460,13 +650,12 @@ struct GFXShaderNode : GFXRenderNode {
    */
   struct Slab : public GFXShaderNode {
   
-    virtual bool singular() { return false; }          
 
     MBO * rect;
     Texture * texture;
     float amt=1.0;
 
-    virtual void init(){
+    virtual void onInit(){
       program = new ShaderProgram( useES() ? ClipSpaceVertES : ClipSpaceVert, 
                                    useES() ? TFragAlphaES : TFragAlpha, 0);
       bindAttributes();
@@ -500,10 +689,12 @@ struct GFXShaderNode : GFXRenderNode {
 
   /*!
    *  BLUR Process takes a slab and blurs it in the fragment shader
+   *  then displays it
+   *  (perhaps it should only make the effect on the texture, not render it,
+   *  rendering could be handled downstream)
    */
   struct Blur : public GFXShaderNode {
 
-     virtual bool singular() { return false; }
 
       MBO * rect;
       Texture * texture;
@@ -512,7 +703,7 @@ struct GFXShaderNode : GFXRenderNode {
       float uy=.1;
       float amt=1;
     
-      virtual void init(){
+      virtual void onInit(){
       
         program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
                                    bES ? TFragBlurES : TFragBlur, 0);
@@ -562,22 +753,23 @@ struct GFXShaderNode : GFXRenderNode {
    *
    *   use witin an app:
    *
-   *   RenderToTexture r2t;
-   *   Slab slab;
+   *   RenderToTexture r2t; //<-- captures to framebuffer object
+   *   Slab slab;           //<-- renders to screen (rename Screen?)
    *
+   *   mRenderer.clear()    //<-- empty upstream render
    *   mRenderer << slab << r2t << this; 
    *
    */
 struct RenderToTexture : GFXRenderNode {
 
-   virtual bool singular() { return false; }
- 
+  virtual const int nodetype() { return GFX_FRAMEBUFFER_NODE; }
+
    FBO fbo;
      
    Texture * texture;
    Texture * textureB;
 
-   void init(){
+   void onInit(){
      fbo.set(width,height);
      fbo.init();
 
@@ -603,6 +795,7 @@ struct RenderToTexture : GFXRenderNode {
       fbo.unbind();
       swap();
 
+      //do not reset glViewport here --> this will be set by downstream slab or effect
       //glViewport(0,0,root().width, root().height); //the downstream slab will reset this . . .
     }
  
@@ -610,33 +803,31 @@ struct RenderToTexture : GFXRenderNode {
 
 /*!
  *  MotionBlur renders to a texture twice, then
- *  draws a combination
+ *  renders an outputmix of the two
+ *
+ *  use within an app
  *
  *  mRenderer << motionBlur << this;
  */
 struct MotionBlur : GFXRenderNode {
 
-   virtual bool singular() { return false; }
+  virtual const int nodetype() { return GFX_EFFECT_NODE; }
 
     //ra pulls from upstream
     RenderToTexture ra,rb;
     Slab lastFrame;
     Slab outputMix;
 
-    void init(){
+    void onInit(){
 
-      ra.set(width,height); 
-      rb.set(width,height);
-      ra.init();
-      rb.init();
+      ra.init(width,height);
+      rb.init(width,height);
+      
+
+      lastFrame.init(width,height);
+      outputMix.init(width,height); 
       
       rb.fbo.depth(false);
-
-      lastFrame.set(width,height);
-      lastFrame.init();
-
-      outputMix.set(width,height);
-      outputMix.init(); 
       outputMix.amt=.995;
 
       //confusing for now because of difference between
@@ -673,11 +864,9 @@ struct MotionBlur : GFXRenderNode {
 
     void onRender(){
 
-
       //outputMix onRender() pulls process down from upstream and displays results
       outputMix.texture = rb.textureB;
       outputMix.onRender();
-
 
     }
 

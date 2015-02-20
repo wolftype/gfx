@@ -29,7 +29,7 @@ struct VAO  {
 
   VAO(){
     generate();
-    bind();
+//    bind();
   }
 
   void generate(){

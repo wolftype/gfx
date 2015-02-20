@@ -29,7 +29,7 @@ struct MyApp : GFXApp<GlutContext> {
  virtual void setup(){
 
     mbo = Mesh::Sphere();
-    mRenderer.immediate(false); 
+    mSceneRenderer.immediate(false); 
 
     slab.init();
     

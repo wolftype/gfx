@@ -40,13 +40,14 @@ struct MyApp : GFXApp<CONTEXT> {
     glLineWidth(10);
     mbo = MBO( Mesh::Sphere() );
 
-    mRenderer.immediate(false);  
+    mSceneRenderer.immediate(false);  
 
+    mRenderer.clear();
     mRenderer << motionblur << mSceneRenderer;
 
-    //init after
+    //initialize after stream has been set
     motionblur.set( width, height);
-    motionblur.init();
+    motionblur.onInit();
 
   }
   

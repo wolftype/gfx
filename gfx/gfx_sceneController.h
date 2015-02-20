@@ -90,6 +90,23 @@ namespace gfx{
       
 };   
 
+   void SceneController::viewCalc(){
+        
+        vd().z  = Quat::spin( Vec3f(0,0,1), !model().quat() * camera().quat() ); 
+         
+        Vec3f v1 = mScene->unproject( io().pos(1.0));
+        Vec3f v2 = mScene->unproject( io().pos(0.0)); 
+        Vec3f v3 = mScene->unproject( io().pos(0.5)); 
+
+        //Get vec of Mouse Position pointing into Z Space 
+        vd().ray   = ( v3 - v2 ).unit();
+            
+        io().viewdata.projectFar  = v1 ;
+        io().viewdata.projectNear = v2 ;
+        io().viewdata.projectMid  = v3 ;
+
+    }
+
     void SceneController :: onMouseDown(const Mouse& m){
       if (io().mode(ControlMode::Navigate)){
         tModelRot = mScene -> model.rot(); //save state on click 
@@ -135,35 +152,7 @@ namespace gfx{
     }
 
 
-    void SceneController::viewCalc(){
-        
-        vd().z  = Quat::spin( Vec3f(0,0,1), !model().quat() * camera().quat() ); 
-         
-        /// Bottom Left (0,0) to top right (1,1)
-        /* io().mouse.pos  = Vec3f( io().mouse.x / vd().w, 1 - io().mouse.y / vd().h, 0 ) ; */
-        /* io().mouse.move = Vec3f( io().mouse.dx / vd().w, - io().mouse.dy / vd().h, 0 ) ; */
-        
-        /* io().mouse.cat     = Quat::spin( io().mouse.move * -1, !mScene->cat() ); */
-        /* io().mouse.bivCat = vd().z.cross( io().mouse.cat ); */
-
-        //GLU FUNCS (to do: replace these with our own to eliminate reliance on glu)
-        Vec3f v1 = mScene->unproject( io().pos(1.0));
-         //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 1.0,  mScene->xf );
-        Vec3f v2 = mScene->unproject( io().pos(0.0)); 
-        //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.0,  mScene->xf );
-        Vec3f v3 = mScene->unproject( io().pos(0.5)); 
-        //gfx::GL::unproject( io().mouse.x, vd().h - io().mouse.y , 0.5,  mScene->xf );   
-
-        //Get vec of Mouse Position pointing into Z Space 
-        vd().ray   = ( v3 - v2 ).unit();
-            
-        io().viewdata.projectFar  = v1 ;
-        io().viewdata.projectNear = v2 ;
-        io().viewdata.projectMid  = v3 ;
-
-       // io().mouse.biv     = io().mouse.pos.cross( vd().ray ); //not used?
-
-    }
+ 
 
 
 /*-----------------------------------------------------------------------------

@@ -229,10 +229,10 @@ class ShaderProgram {
 	public:
 
     map<string, Attribute> attributes() const { return mAttributeMap; }
-    map<string, Uniform> uniforms() const { return mUniformMap; }
+    //map<string, Uniform> uniforms() const { return mUniformMap; }
 
     bool uniformExists(string s){
-      return uniforms().find(s) != uniforms().end();
+      return mUniformMap.find(s) != mUniformMap.end();
     }
     
     Shader vert, frag;

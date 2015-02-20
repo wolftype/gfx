@@ -24,91 +24,60 @@
 
 using namespace gfx;
 
-/* struct TexMap : GFXRenderNode { */
+typedef Vertex VERTEXTYPE;
 
-/*   MBO mbo; */
-
-/*   void init(){ */
-/*                                       // w | h | spacing | lambda for assigning texture coordinates */
-/*     auto m = mesh::grid<Vertex>( 10, 10, .2, [](int a, int b){ return Vec2f( (float)a/10, (float)b/10); } ); */
-/*     mbo = m; */
-
-/*   } */
-
-/*   void onRender(){ */
-    
-/*     mbo.render( mDownstream -> vatt ); */
-
-/*   } */
-
-/* }; */
-
-
-template<class T>
-struct GFXMeshNode : GFXShaderNode {
-
-  TMBO<T> mbo;
-
-  void init(){
-    for( auto& i : downstream().program->attributes() ){
-      cout << i.first << endl;
-      vatt.add(downstream().program->id(), i.first, sizeof(T), offset( i.first ) );
-    }
-  }
-
-  GLvoid * offset(string s){
-    if (s == "normal") return T::on();
-    if (s == "sourceColor") return T::oc();
-    if (s == "texCoord") return T::ot();
-    return 0;
-  }
-
-  void onRender(){
-    mbo.render( vatt );
-  }
-  
-};
 
 
 struct MyApp : GFXApp<GlutContext> {
 
+ //Some Texture
  Texture * tex;
+
+ //Some Shader
+ ShaderProgram * shader;
  
- GFXShaderNode shader;
- GFXMeshNode<VertexTexture> mesh;
+ //Some Mesh Buffer 
+ MBO * mesh;
+
 
  virtual void setup(){
 
-    shader.program = new ShaderProgram( ClipSpaceVert, TFragAlpha, 0);
+    shader = new ShaderProgram( ClipSpaceVert, TFragAlpha ); ///<-- these shaders are defined in gfx_glsl.h
 
     //make a texture
     int w = 10; int h = 10;
     tex = new Texture(w,h);
+
+    //we will fill our texture with a function...
+    //data::map takes a width height and depth maps a function with inputs in the range of [0,1)
     auto v = data::map<float>(w,h,4,[](float a, float b, float c){ 
         
         return c < .2 ? a : c < .4 ? b : c < .7 ? 0 : 1; 
     
     } );
-    tex->update( &v[0]);
 
-    //make a map into the texture coordinates
-    auto m = mesh::uvtex<VertexTexture>( 11, 11, .2, [](float a, float b){ return Vec2f(a,b); } );
-    mesh.mbo = m;
+    //update texture data
+    tex->update(&v[0]);
 
-    shader << mesh;
-    mesh.init();
+    //make a mesh that maps into the texture coordinates
+    auto m = mesh::uvtex<VERTEXTYPE>( 11, 11, .2, [](float a, float b){ return Vec2f(a,b); } );
+    mesh = new MBO(m);
 
-    mRenderer.immediate(false);
+    //bind mesh vertex attributes to shader
+    mesh->bindTo(*shader);
+
 }
 
  virtual void onDraw(){
-    shader.program->bind();
-    shader.program->uniform("alpha",1.f);
+    
+    static float counter = 0.0; counter+=.02;
+
+    shader->bind();
+    shader->uniform("alpha", (float)fabs(sin(counter)) );
       tex->bind();
-      mesh.onRender();
-      // mbo.render( vatt );
-    tex->unbind();
-    shader.program->unbind();
+      mesh->render();
+      tex->unbind();
+    shader->unbind();
  }
 
 

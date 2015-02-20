@@ -13,7 +13,7 @@ struct MyApp : GFXApp<GlutContext> {
     printf("SETUP SCENE\n");
     mbo = Mesh::Sphere();
 
-   mRenderer.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
+    mSceneRenderer.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
  }
 
  virtual void onDraw(){

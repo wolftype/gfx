@@ -42,16 +42,21 @@ namespace gfx{
           VBO vertex;
           VBO index;
 
+          //problem with storing attributes here is that not all shaders will have all attributes
+          //so what to do when one mbo goes through multiple shaders?
+          //maybe best to keep this separate, but it is really useful for rapid prototyping
+          //can call mbo.render() to use this bound attrib, or mbo.render(vatt) to call some other list
+          //opengles 3.0 can just use vertex array objects . . .
           VertexAttributes attrib;
           
            //Bind Vertex Attributes with Program Variables
-           void bindTo(const ShaderProgram& program){
+           void bindAttributes(const ShaderProgram& program){
             attrib.vatt.clear(); //clear list of vertex attributes
-            bind(); 
+            //bind(); 
               for (auto& i : program.attributes()){
-                attrib.add( program.id(), i.first, sizeof(T), GLVertexData<T>::Init().Attributes[i.first] );
+                attrib.add( program.id(), i.first, sizeof(T), GLVertexData<T>::Init().Attribute[i.first] );
               }
-            unbind();
+            //unbind();
           }
 
           //Mesh mesh;
@@ -169,6 +174,8 @@ namespace gfx{
             void update(int idx, int num, const S& val){
               vertex.update(idx, num, &val);
             }          
+
+            
 
         };
 

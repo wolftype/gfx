@@ -73,8 +73,8 @@ namespace gfx {
 template<class WINDOWCONTEXT>
 struct GFXApp : 
 public InputEventHandler,
-public WindowEventHandler,
-public GFXSceneNode                //< has onRender() method called by mRenderer 
+//public WindowEventHandler,
+public GFXSceneNode                //< has onRender() method called by mRenderer
 {
 
   WINDOWCONTEXT mContext;
@@ -154,7 +154,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
        *  subclassed GFXRenderNode and optionally overload the virtual update() method
        *-----------------------------------------------------------------------------*/
        mRenderer << mSceneRenderer << this; 
-       mSceneRenderer.init();
+       mRenderer.init();
        GFXSceneNode::mScenePtr = &scene;
       // mRenderer.scene(&scene);
 
@@ -223,7 +223,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
      clear(); 
      onAnimate();
 
-     scene.push( mSceneRenderer.immediate() );     ///< push matrices
+     //scene.push( mSceneRenderer.immediate() );     ///< push matrices
 
       //mRenderer calls one upstream render (namely, this)
       //which is this app's onRender method
@@ -232,7 +232,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
       //see examples/xRendertoTexture.cpp
       mRenderer.onRender();
          
-     scene.pop( mSceneRenderer.immediate() );      ///< pop matrices
+     //scene.pop( mSceneRenderer.immediate() );      ///< pop matrices
     
      scene.step();                            ///< update camera physics
      
@@ -247,9 +247,9 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){ 
-    //mRenderer.program->bind();
+       scene.push( shader().immediate() );
         onDraw();
-   // mRenderer.program->unbind();
+       scene.pop( shader().immediate() );
   }
 
   /*-----------------------------------------------------------------------------

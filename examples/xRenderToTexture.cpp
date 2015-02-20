@@ -22,25 +22,23 @@
 using namespace gfx;
 
 struct R2T : GFXRenderNode {
+ 
  RenderToTexture r2t;
  Blur blur;
 
- void init(){
-    r2t.set(width,height);    
-    r2t.init();
-
-    blur.set(width,height);
-    blur.init();
+ void onInit(){
+    
+    r2t.init(width,height);
+    blur.init(width,height);
+    
     blur.texture = r2t.texture;
 
     blur << r2t;
     
     //bind downstream and upstream
-    bindDownstream(blur);
-    bindUpstream(r2t);
+    bindDownstream(blur); // blur now points to this instance's downstream process
+    bindUpstream(r2t);    // r2t now calls this instance's upstream processes
 
-    //blur.downstream(mDownstream);
-    //for (auto& i : mUpstream) r2t << i;
  }
 
  void onRender(){
@@ -53,29 +51,18 @@ struct R2T : GFXRenderNode {
 struct MyApp : GFXApp<GlutContext> {
 
  MBO mbo;
-
- //RenderToTexture r2t;
- //Blur blur;
-
  R2T r2t;
 
  virtual void setup(){
 
     mbo = Mesh::Sphere();
-    mRenderer.immediate(false); 
+    mSceneRenderer.immediate(false); 
 
-
-   // blur.init();
-  //  blur.texture = r2t.texture;
-    /* slab.init(); */
-    /* slab.texture = r2t.texture; */
-
-   // mRenderer << r2t << this;
-
+    mRenderer.clear();
     mRenderer << r2t << mSceneRenderer;
-
-    r2t.set(width,height);    
-    r2t.init();
+ 
+    r2t.set(width,height);
+    r2t.onInit();
 
  }
 

@@ -41,8 +41,8 @@ namespace gfx{
       {}
 
       /* Implicit Getters and Setters */
-      void   width ( float w )  { mWidth = w;}              ///< set width
-      void   height( float h )  { mHeight = h;}             ///< set height
+      void   width ( float w )  { mWidth = w;}              ///< set width  (pixels)
+      void   height( float h )  { mHeight = h;}             ///< set height (pixels)
       
       float   width()    const {return mWidth;}             ///< get width
       float   height()  const {return mHeight;}             ///< get height
@@ -185,11 +185,12 @@ namespace gfx{
     
 /*-----------------------------------------------------------------------------
  * VIEW: Floating points relative to (0,0) at center Left, Top, Right, Bottom, and methods
+ * note: should this be renamed Clip (and a separate viewport for pixel relations?)
  *-----------------------------------------------------------------------------*/
   struct View {   
 
     //Default Clipspace
-    View(double _l=0, double _t=1, double _r=1, double _b=0) : l(_l), t(_t), r(_r), b(_b) {}
+    View(double _l=0, double _b=0, double _r=1, double _t=1) : l(_l), b(_b), r(_r),t(_t) {}
 
     //Views for multiscreen environments will typically have same eye 
     //CONSTRUCT (called on resize)
@@ -213,7 +214,7 @@ namespace gfx{
       set( eye,bl,br,tl,normal );
     }  
 
-    //SET FUNC (arguments are in world space coordinates)
+    //SET FUNC (arguments are in world space coordinates, output is clipspace...)
     View& set ( Vec3f eye, Vec3f bl, Vec3f br, Vec3f tl, Vec3f normal = Vec3f(0,0,1) ) {
 
       Vec3f ta = bl - eye; Vec3f tb = (br - eye); Vec3f tc = (tl -eye);
@@ -299,13 +300,13 @@ namespace gfx{
        camera.lens.height( h );   
      } 
     
-    void resize(int _w, int _h, float dpi=200){
+    void resize(int _w, int _h, float dpi=100){
 
-      camera.lens.width( _w );
+      camera.lens.width( _w ); //< camera lens set in pixels
       camera.lens.height( _h ); 
 
-      float w = (float)_w/dpi; //< dividing pixels by 100 here?
-      float h = (float)_h/dpi; //< dividing pixels by 100 here? 
+      float w = (float)_w/dpi; //< dividing pixels by dpi here
+      float h = (float)_h/dpi; //< dividing pixels by dpi here
 
       Pose pose(-w/2.0,-h/2.0, 0); //<-- pose in world coordinates based on bottom left of screen
       //<--------------------------eye | pose | aspect | height 
