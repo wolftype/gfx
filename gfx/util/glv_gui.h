@@ -18,6 +18,7 @@
 #ifndef  glv_gui_INC
 #define  glv_gui_INC
 
+#include <iostream>
 #include <sstream>
 
 #include "GLV/glv.h"
