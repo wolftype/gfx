@@ -308,7 +308,7 @@ namespace gfx{
       float w = (float)_w/dpi; //< dividing pixels by dpi here
       float h = (float)_h/dpi; //< dividing pixels by dpi here
 
-      Pose pose(-w/2.0,-h/2.0, 0); //<-- pose in world coordinates based on bottom left of screen
+      Pose pose(-w/2.0,-h/2.0, camera.pos()[2]-5 ); //<-- pose in world coordinates based on bottom left of screen
       //<--------------------------eye | pose | aspect | height 
       camera.view = gfx::View( camera.pos(), pose, (float)w/h, h);
     }

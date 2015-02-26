@@ -100,6 +100,8 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
   GFXApp(int w=800, int h=400, string name = "GFXApp", int argc = 0, char ** argv = NULL) :
   mColor(.2,.2,.2)
   {
+       
+      GFXSceneNode::mScenePtr = &scene;
 
      /*-----------------------------------------------------------------------------
       *  1. Initialize Window and Callbacks
@@ -155,7 +157,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
        *-----------------------------------------------------------------------------*/
        mRenderer << mSceneRenderer << this; 
        mRenderer.init();
-       GFXSceneNode::mScenePtr = &scene;
+
       // mRenderer.scene(&scene);
 
       /*-----------------------------------------------------------------------------
@@ -274,11 +276,13 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *-----------------------------------------------------------------------------*/
   virtual void onCreate(){ }
   virtual void onDestroy(){ }
-  virtual void onResize(int w, int h){
-    scene.resize(w,h);
-    set(w,h);
-    mRenderer.set(w,h);
-  }
+
+  //scene node onresize calls scene.resize
+  /* virtual void onResize(int w, int h){ */
+  /*   scene.resize(w,h); */
+  /*   set(w,h); */
+  /*   mRenderer.set(w,h); */
+  /* } */
 
 };
 

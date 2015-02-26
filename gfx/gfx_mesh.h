@@ -230,6 +230,11 @@ namespace gfx {
       /// Default Draw Mode is Line Loop
       MeshData(GL::MODE m = GL::LL) : mMode(m) {}
 
+      //Pass in vector<T>
+      MeshData(const vector<T>& v) {
+        mVertex=v;
+        store();
+      }
 
       ///Copy Constructor
       MeshData(const MeshData& m){

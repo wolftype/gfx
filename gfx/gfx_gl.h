@@ -474,6 +474,9 @@ namespace gfx {
             glColor4f(v[0],v[1],v[2],v[3]);
         }
 
+       inline void color( float r, float g, float b, float a=1.0){
+            glColor4f(r,g,b,a);
+        }
              
         //Lighting Models
         inline void smooth(){ glShadeModel(GL_SMOOTH); }
