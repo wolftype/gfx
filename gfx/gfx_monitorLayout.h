@@ -29,8 +29,12 @@ namespace gfx{
   
       ///Constructor defaults width of 1920 and height of 1080 (asus)  
       //
-      Layout( int M, int N, float w = 1920, float h = 1080, float wb = 100, float hb = 100) :
+      Layout( int M=4, int N=4, float w = 1920, float h = 1080, float wb = 100, float hb = 100) :
       numRow(M), numCol(N), screenWidth(w/100), screenHeight(h/100), wPitch(wb/100), hPitch(hb/100) {}
+
+      void set(int M, int N, float w, float h, float wb, float hb){
+        numRow = M; numCol = N; screenWidth = w/100; screenHeight=h/100; wPitch = wb/100; hPitch = hb/100;
+      }
     
       int numRow; int numCol;                 ///< Number of Rows and Columns in Multidisplay
       float screenWidth; float screenHeight;  ///< Width of individual screens in pixels

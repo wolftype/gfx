@@ -55,7 +55,7 @@
 #include "gfx_texture.h"
 #include "gfx_scene.h"
 #include "gfx_control.h"
-
+#include "gfx_monitorLayout.h"
 
 namespace gfx{
 
@@ -577,10 +577,11 @@ struct GFXShaderNode : GFXRenderNode {
  
   virtual const int nodetype() { return GFX_MESH_NODE; }
 
-    Vec4f mColor = Vec4f(1,1,1,1);    
-    MBO * mMbo;
+    //Vec4f mColor = Vec4f(1,1,1,1);    
+    vector<MBO*> mMbo;
     
-    void mbo(MBO* m) { mMbo=m; } 
+    GFXMeshNode& add( MBO* m) { mMbo.push_back(m); return *this; }
+    //void mbo(MBO* m) { mMbo=m; } 
     //GFXMeshNode& add( MBO * m ) { mbo.push_back(m); return *this; }
 
     GFXSceneNode& scene(){ return *(GFXSceneNode*)mDownstream; }                      ///< reference to scene downstream (to access shader)
@@ -598,11 +599,11 @@ struct GFXShaderNode : GFXRenderNode {
 
     virtual void onRender(){
         if ( shader().immediate() ){
-           render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
-           render::draw(*mMbo); 
+      //     render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
+           for (auto& m : mMbo) render::draw(*m); 
         }else {
            scene().updateModelView(); ///< identity matrix
-           mMbo->render(shader().vatt); 
+           for (auto& m : mMbo) m->render(shader().vatt); 
         }
     }
  };
@@ -610,7 +611,7 @@ struct GFXShaderNode : GFXRenderNode {
 template<class T>
 struct GFXMeshNodeT : GFXMeshNode {
 
-  TMBO<T> * mbo;
+  TMBO<T>* mbo;
   VertexAttributes * vatt;
 
   //must be bound to a shader downstream already
@@ -633,7 +634,7 @@ struct GFXMeshNodeT : GFXMeshNode {
 
    virtual void onRender(){
         if ( shader().immediate() ){
-           render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
+          // render::begin(mColor[0],mColor[1],mColor[2],mColor[3]);
            render::draw(*mbo); 
         } else {
            //scene().updateModelView(); ///< identity matrix
@@ -872,6 +873,66 @@ struct MotionBlur : GFXRenderNode {
 
 };
 
+
+struct SceneGraph {
+
+    Layout layout;    
+    Scene mScene;
+
+    GFXRenderNode mRenderNode;
+    GFXViewNode mViewNode;
+    GFXShaderNode mShaderNode;
+    GFXSceneNode mSceneNode;
+    GFXMeshNode mMeshNode;
+
+    void init(int w, int h){
+      mSceneNode.scene(&mScene);
+      mShaderNode.immediate(false);
+      mRenderNode << mViewNode << mShaderNode << mSceneNode << mMeshNode;
+      mRenderNode.init(w,h);
+    }
+
+    void onRender(){
+      mScene.push(false);
+        mRenderNode.onRender();
+      mScene.pop(false);
+    }
+
+    //set the frustrum viewport
+    void setView(float z, bool isGrid, int row=0, int col=0){
+            
+      float w = layout.screenWidth;
+      float h = layout.screenHeight;   
+
+      //Single Screen Version:
+      //bottom left corner of screen in pixels
+      Pose p( -w/2.0,-h/2.0, 0);
+
+      layout.speakerL = Vec3f( -w/2.0, 0, 0);
+      layout.speakerR = Vec3f( w/2.0, 0, 0);
+
+      //If we're in multi-screen mode, RE-DO pose positions based on grid layout . . .
+      if (isGrid) {
+        
+        p = layout.poseOf( row, col ); 
+
+        layout.speakerL = Vec3f( 
+          layout.left( row, col ), 
+          layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
+
+        layout.speakerR = Vec3f(
+           layout.left( row, col ) + layout.screenWidth, 
+          layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);
+       }
+
+
+      mScene.viewpose = p;
+      mScene.camera.pos() = Vec3f( 0, 0, z); 
+      mScene.camera.view = gfx::View( mScene.camera.pos(), p, (float)w/h, h );
+
+    }                                    
+
+};
 
 } //gfx::
 
