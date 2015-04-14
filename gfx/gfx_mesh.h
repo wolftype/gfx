@@ -269,12 +269,18 @@ namespace gfx {
        mStore = mVertex;
      }  
 
+     void reset(){
+       mVertex = mStore;
+     }
+
      /// GETTER AND SETTER of VERTEX DATA
      T& operator[] (int idx) { return mVertex[idx]; }
      T operator[] (int idx) const { return mVertex[idx]; }
      
      INDEXTYPE & idx(int ix) { return mIndex[ix]; }
      INDEXTYPE  idx(int ix) const { return mIndex[ix]; }
+
+     T& at(int ix) { return mVertex[ mIndex[ix] ]; }
 
      T& store(int ix) { return mStore[ix]; }
      T store(int ix) const { return mStore[ix]; }
@@ -463,15 +469,17 @@ namespace mesh{
           /*     glEnd(); */
           /* } */
 
-          /* void drawElementsColor() const { */
-          /*     GL::Begin( mMode); */
-          /*     for (int i = 0; i < mIndex.size(); ++i){ */  
-          /*         GL::color( mVertex[ mIndex[i] ].Col ); */
-          /*         GL::normal( mVertex[ mIndex[i] ].Norm ); */
-          /*         GL::vertex( mVertex[ mIndex[i] ].Pos ); */
-          /*     } */
-          /*     glEnd(); */
-          /* } */
+
+           void drawElementsColor(const MeshData<Vertex>& m) {
+              GL::Begin( m.mode());
+              for (int i = 0; i < m.numIdx(); ++i){  
+                  GL::color( m[ m.idx(i) ].Col );
+                  GL::normal( m[ m.idx(i) ].Norm );
+                  GL::vertex( m[ m.idx(i) ].Pos );
+              }
+              glEnd();
+          }
+
 
            void drawElements(const MeshData<Vertex>& m) {
               GL::Begin( m.mode());
@@ -678,8 +686,45 @@ namespace mesh{
                     }
                     
                     if (a=="f"){
+ 
+                        string s = line.substr(2);
+                        string ts = s;
+                        vector<string> tmp;
+                        auto beg=0;
+                        int pl =s.find(" ");
+                        int n=1;
+                        while( pl != string::npos ){
+                           tmp.push_back( s.substr(0,s.find("/")) );
+                           s = s.substr(pl+1);
+                           pl = s.find(" ");
+                           n++;
+                        }
+                        tmp.push_back(s.substr(0,s.find("/")));
+                        stringstream ss;
+                        for (auto& i : tmp){
+                          ss << string(i) << " ";
+                        }
                         
-                        
+                        int a,b,c,d;
+
+                     //   cout << n << endl;
+                        switch(n){
+                            case 3:
+                            {
+                              ss >> a; ss >> b; ss >> c;
+                              add(a-1).add(b-1).add(c-1);
+                              break;
+                            }
+                            case 4:
+                            {
+                              ss >> a; ss >> b; ss >> c; ss >> d;
+                              add(a-1).add(b-1).add(c-1);
+                              add(a-1).add(c-1).add(d-1);
+                              break;
+                            }
+                        }
+
+
                     }
                     
                 }

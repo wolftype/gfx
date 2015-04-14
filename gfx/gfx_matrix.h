@@ -146,18 +146,15 @@ namespace gfx {
       T& operator [] (int i) { return ((T*)&x)[i]; }
       T  operator [] (int i) const { return ((T*)&x)[i]; }
       
-            T * val() { return (T*)&x; }
-            const T * val() const { return (T*)&x; }
+      T * val() { return (T*)&x; }
+      const T * val() const { return (T*)&x; }
+
+      Vec4& operator += (const Vec4& v){ x += v.x; y+=v.y; z+=v.z; w+=v.w; return *this; }
+      Vec4 operator + (const Vec4& v) { return Vec4(x+v.x, y+v.y, z+v.z, w+v.w); }
 
       Vec4 operator *  (T s) const { return Vec4(x*s, y*s, z*s, w*s); }
       Vec4& operator *=  (T s) { x *= s; y *= s; z *= s; w *= s; return *this; }
             
-//            Vec4 operator * (const Mat4<T>& m){
-//                return Vec4(
-//                    
-//                );
-//            }
-      
       Vec3<T> vec3() { return Vec3<T>(x,y,z); }
       
       friend ostream& operator << (ostream&, const Vec4<>&);

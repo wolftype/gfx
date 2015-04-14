@@ -87,6 +87,11 @@ struct Bitmap{
 
 };
 
+
+
+ 
+
+
 } } // gfx::util::
 
 #endif   /* ----- #ifndef gl_data_INC  ----- */

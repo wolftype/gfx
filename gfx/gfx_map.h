@@ -37,6 +37,9 @@ namespace gfx {
           return result;
       }
 
+
+
+
       template<class T, class Lambda>
       vector<T> map(int w, int h, Lambda func){
         vector<T> result;

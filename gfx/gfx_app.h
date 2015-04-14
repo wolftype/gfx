@@ -204,11 +204,11 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *  Clear Window Contents
    *-----------------------------------------------------------------------------*/
   void clear(){
-      if (sceneController.io().mode( ControlMode::Edit ) ){
-        mColor=Vec3f(.13,.15,.1);
-      } else {
-        mColor=Vec3f(.1,.1,.1);
-      }
+   //   if (sceneController.io().mode( ControlMode::Edit ) ){
+   //     mColor=Vec3f(.13,.15,.1);
+   //   } else {
+   //     mColor=Vec3f(.1,.1,.1);
+   //   }
 
      mContext.setViewport();      
      glClearColor( mColor[0],mColor[1],mColor[2], 1 );
