@@ -67,8 +67,7 @@ namespace gfx{
    *  Programmable Pipeline
    *-----------------------------------------------------------------------------*/
   template<class T>
-  struct Renderable {
-    
+  struct RenderableBase {
     ///Look up by type
     static vector<MBO>& Get(){
       return MeshBuffer<T>::Get();
@@ -105,12 +104,22 @@ namespace gfx{
     }
 
 
-    static Mat4f ModelMatrix(const T& t){
-      printf(R"(no matrix model defined for this type)");
-    }
-
     static void UpdatePosition(const T& t){}
 
+  };
+
+  template<class T>
+  struct ModelMatrix{
+    static Mat4f Make(const T& t){
+      printf(R"(no matrix model defined for this type)");
+    }
+  };
+
+  template<class T>
+  struct Renderable : RenderableBase<T> {
+ 
+    using Base = RenderableBase<T>;
+     
     static void Draw(const T& t, GFXSceneNode * _i ){
       printf(R"(Renderable<T>::Draw routine not yet defined for this type: 
               You must delcare a Renderable<CLASSNAME>::Draw function
@@ -121,6 +130,10 @@ namespace gfx{
       printf(R"(Renderable<T>::Draw (with ModelMatrix) routine not yet defined for this type: 
               You must delcare a Renderable<CLASSNAME>::Draw function
               See gfx/gfx_render.h)");
+    }
+
+    static void DrawImmediate(const T& t){
+      printf(R"(Renderable<T>::DrawImmediate routine not yet defined this type)");
     }
   };
 
@@ -146,65 +159,77 @@ namespace gfx{
    *  though it is easier to overload free functions than methods, ADL doesn't work
    *  for generic types later on... ]
    *  *-----------------------------------------------------------------------------*/
-  template<class T>
-  struct Drawable {
-    
-    static void Draw(const T& t){
-       printf("Drawable<T>::Immediate routine is not yet specialized\n");
-    }
+//  template<class T>
+//  struct Drawable {
+//    
+//    static void Draw(const T& t){
+//       printf("Drawable<T>::Immediate routine is not yet specialized\n");
+//    }
+//
+//    template<class B>
+//    static void Draw(const B& b){
+//      Drawable<B>::Draw(b);
+//    }
+//
+//  };
+//
+//  template<> inline void Drawable<MBO>::Draw(const MBO& m){
+//#ifdef GFX_IMMEDIATE_MODE
+//    m.mesh.drawElements();
+//#endif
+//  }
 
-    template<class B>
-    static void Draw(const B& b){
-      Drawable<B>::Draw(b);
-    }
-
-  };
-
-  template<> void Drawable<MBO>::Draw(const MBO& m){
+  template<> inline void Renderable<MBO>::DrawImmediate(const MBO& m){
 #ifdef GFX_IMMEDIATE_MODE
     m.mesh.drawElements();
 #endif
   }
+  
 
   namespace render{
 #ifdef GFX_IMMEDIATE_MODE
-    void begin(float r=1.0,float g=1.0,float b=1.0,float a=1.0){
+    inline void begin(float r=1.0,float g=1.0,float b=1.0,float a=1.0){
       glNormal3f(0,0,1);
       glColor4f(r,g,b,a);
     }
 
-    void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+    inline void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
       glColor4f(r,g,b,a);
     }
 
     template<class A, class B>
-    void drawAt(const A& a, const B& p){
+    inline void drawAt(const A& a, const B& p){
       glPushMatrix(); 
       glTranslatef( p[0], p[1], p[2] );
-      Drawable<A>::Draw(a);
+      //Drawable<A>::Draw(a);
+      Renderable<A>::DrawImmediate(a);
       glPopMatrix();
     }
 
     template<typename A>
-    void draw(const A& a){
+    inline void draw(const A& a){
       glPushMatrix(); 
-      Drawable<A>::Draw(a);
+      //Drawable<A>::Draw(a);
+      Renderable<A>::DrawImmediate(a);
       glPopMatrix();      
     }
 
+    //duplicate symbol test
+    auto test = [](){ return 0; };
+    
 #else
-   void begin(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+   inline void begin(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
      printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
    }
-   void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
+   inline void color(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
      printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
    }
    template<class A, class B>
-   void drawAt(const A& a, const B& p){
+   inline void drawAt(const A& a, const B& p){
      printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
    }
    template<typename A>
-   void draw(const A& a){
+   inline void draw(const A& a){
      printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
    }
 #endif 
@@ -410,8 +435,8 @@ struct GFXShaderNode : GFXRenderNode {
 
    virtual void onInit(){
 
-        string V = useES() ? DefaultVertES : DefaultVert;        ///< These basic shaders are defined in gfx_glsl.h 
-        string F = useES() ? DefaultFragES : DefaultFrag; 
+        string V = useES() ? DefaultVertES() : DefaultVert();        ///< These basic shaders are defined in gfx_glsl.h 
+        string F = useES() ? DefaultFragES() : DefaultFrag(); 
               
         program = new ShaderProgram(V,F);                                                              
         bindAttributes();
@@ -551,14 +576,14 @@ struct GFXShaderNode : GFXRenderNode {
 
 
 
-  template<>
+  template<> inline
   void Renderable<MBO> :: Draw(const MBO& m, GFXSceneNode * _i){   
       // shader is already bound at this point
       _i->updateModelView(); ///< identity matrix
        m.render(_i->shader().vatt);
   }
 
-  template<>
+  template<> inline
   void Renderable<MBO> :: Draw(const MBO& m, const Mat4f& model, GFXSceneNode * _i){
       _i->updateModelView(model); ///< modelview * submodel matrix
       //GFXShaderNode& sn = *(GFXShaderNode*)_i->mDownstream;
@@ -657,8 +682,8 @@ struct GFXMeshNodeT : GFXMeshNode {
     float amt=1.0;
 
     virtual void onInit(){
-      program = new ShaderProgram( useES() ? ClipSpaceVertES : ClipSpaceVert, 
-                                   useES() ? TFragAlphaES : TFragAlpha, 0);
+      program = new ShaderProgram( useES() ? ClipSpaceVertES() : ClipSpaceVert(), 
+                                   useES() ? TFragAlphaES() : TFragAlpha(), 0);
       bindAttributes();
 
       rect = new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); 
@@ -706,8 +731,8 @@ struct GFXMeshNodeT : GFXMeshNode {
     
       virtual void onInit(){
       
-        program = new ShaderProgram( bES ? ClipSpaceVertES : ClipSpaceVert, 
-                                   bES ? TFragBlurES : TFragBlur, 0);
+        program = new ShaderProgram( bES ? ClipSpaceVertES() : ClipSpaceVert(), 
+                                   bES ? TFragBlurES() : TFragBlur(), 0);
         bindAttributes();
       
         rect = new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); 

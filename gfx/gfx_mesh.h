@@ -84,7 +84,7 @@ namespace gfx {
       float * begin() { return &Pos[0]; }
   
   };
-     template<> void GLVertexData<VertexTexture>::Make(){
+     template<> inline void GLVertexData<VertexTexture>::Make(){
         Attribute["position"]=0;
         Attribute["texCoord"]=VertexTexture::ot();
      }
@@ -192,7 +192,7 @@ namespace gfx {
         }
      };
 
-     template<> void GLVertexData<Vertex>::Make(){
+     template<> inline void GLVertexData<Vertex>::Make(){
         Attribute["position"]=0;
         Attribute["normal"]=Vertex::on();
         Attribute["sourceColor"]=Vertex::oc();
@@ -442,14 +442,14 @@ namespace mesh{
   }
 
   //absolute
-  MeshData<Vertex>& move( MeshData<Vertex>& m, float x, float y, float z){
+  inline MeshData<Vertex>& move( MeshData<Vertex>& m, float x, float y, float z){
       for (int i = 0; i < m.vertex().size(); ++i ){
           m[i].Pos = m.store(i).Pos + Vec3f(x,y,z);
       }
       return m;   
   }
 
-  MeshData<Vertex>& color( MeshData<Vertex>& m, float r, float g, float b, float a){
+  inline MeshData<Vertex>& color( MeshData<Vertex>& m, float r, float g, float b, float a){
       for (int i=0; i<m.vertex().size(); ++i){
         m[i].Col = Vec4f(r,g,b,a);
       } 
@@ -457,40 +457,40 @@ namespace mesh{
   }
 
 
-        #ifdef GFX_IMMEDIATE_MODE
-        
-          //immediate mode!
-          /* void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) { */
-          /*     //glColor4f(r,g,b,a); */
-          /*     GL::Begin( mMode); */
-          /*     for (int i = 0; i < mVertex.size(); ++i){ */
-          /*         GL::vertex( mVertex[i].Pos ); */
-          /*     } */
-          /*     glEnd(); */
-          /* } */
+  #ifdef GFX_IMMEDIATE_MODE
+  
+    //immediate mode!
+    /* void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) { */
+    /*     //glColor4f(r,g,b,a); */
+    /*     GL::Begin( mMode); */
+    /*     for (int i = 0; i < mVertex.size(); ++i){ */
+    /*         GL::vertex( mVertex[i].Pos ); */
+    /*     } */
+    /*     glEnd(); */
+    /* } */
 
 
-           void drawElementsColor(const MeshData<Vertex>& m) {
-              GL::Begin( m.mode());
-              for (int i = 0; i < m.numIdx(); ++i){  
-                  GL::color( m[ m.idx(i) ].Col );
-                  GL::normal( m[ m.idx(i) ].Norm );
-                  GL::vertex( m[ m.idx(i) ].Pos );
-              }
-              glEnd();
-          }
+     inline void drawElementsColor(const MeshData<Vertex>& m) {
+        GL::Begin( m.mode());
+        for (int i = 0; i < m.numIdx(); ++i){  
+            GL::color( m[ m.idx(i) ].Col );
+            GL::normal( m[ m.idx(i) ].Norm );
+            GL::vertex( m[ m.idx(i) ].Pos );
+        }
+        glEnd();
+    }
 
 
-           void drawElements(const MeshData<Vertex>& m) {
-              GL::Begin( m.mode());
-              for (int i = 0; i < m.numIdx(); ++i){  
-                  GL::normal( m[ m.idx(i) ].Norm );
-                  GL::vertex( m[ m.idx(i) ].Pos );
-              }
-              glEnd();
-          }
-        
-        #endif
+     inline void drawElements(const MeshData<Vertex>& m) {
+        GL::Begin( m.mode());
+        for (int i = 0; i < m.numIdx(); ++i){  
+            GL::normal( m[ m.idx(i) ].Norm );
+            GL::vertex( m[ m.idx(i) ].Pos );
+        }
+        glEnd();
+    }
+  
+  #endif
 
 
 } // mesh::

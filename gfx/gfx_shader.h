@@ -190,7 +190,7 @@ inline void Shader :: source(string shadersrc, Shader::Type t) {
       compilerCheck(mId);
  }
 
-  void Shader::compilerCheck(GLuint ID){
+  inline void Shader::compilerCheck(GLuint ID){
 	    GLint comp;
 	    glGetShaderiv(mId, GL_COMPILE_STATUS, &comp);
 
@@ -425,7 +425,7 @@ class ShaderProgram {
 	}
 
 
-inline 	void ShaderProgram::unload(){
+  inline void ShaderProgram::unload(){
 
 		if ( vert.id() ){
 			glDetachShader( mId, vert.id() );		
