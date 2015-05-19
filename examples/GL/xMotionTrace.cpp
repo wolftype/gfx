@@ -53,7 +53,7 @@ struct MyApp : GFXApp<CONTEXT> {
   
    void onAnimate(){
     time +=.015;
-    mbo.mesh.moveTo( sin(time) * 3,0,0);
+    mesh::move( mbo.mesh, sin(time) * 3,0,0);
     mbo.update();
   }
   

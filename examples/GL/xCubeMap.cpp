@@ -89,7 +89,7 @@ struct RenderToCubeMap : GFXShaderNode {
   CubeMap * textureB;
 
   void onInit(){
-    program = new ShaderProgram(makeVert(MakeCubemapVert), DefaultFrag, 0);
+    program = new ShaderProgram(makeVert(MakeCubemapVert()), DefaultFrag(), 0);
 
     bindAttributes();
     
@@ -171,7 +171,7 @@ struct CubeSlab : GFXRenderNode {
     CubeMap * texture;
 
     virtual void onInit(){
-      program = new ShaderProgram(CubeClipSpaceVert, CubeFrag);
+      program = new ShaderProgram(CubeClipSpaceVert(), CubeFrag());
       program->bind();
           /* vatt.add(program->id(), "position", sizeof(VertexTex3D), 0); */ 
           /* vatt.add(program->id(), "sourceColor", sizeof(VertexTex3D), VertexTex3D::oc() ); */ 

@@ -17,12 +17,12 @@
  */
 
 
-#include "util/GlutWindow.h"
+#include "util/glut_window.hpp"
 #include "gfx_app.h"
 
-#include "gfx_renderer.h"
+#include "gfx_render.h"
 #include "gfx_mbo.h"
-#include "gfx_process.h"
+//#include "gfx_process.h"
 
 using namespace gfx;
 /*-----------------------------------------------------------------------------
@@ -32,17 +32,18 @@ using namespace gfx;
 
 
 
-struct MyApp : App<Window> {
+struct MyApp : GFXApp<GlutContext> {
+
 
   Mesh mesh;
   MBO * mbo;
   float time = 0;
 
-  MyApp(int w, int h, int argc, char ** argv) : App<Window>(w,h,argc,argv) {
+  MyApp(int w, int h, int argc, char ** argv) :  GFXApp<GlutContext>(w,h,argc,argv) {
       init();
   }
 
-  void init()
+  void setup()
   
   {
 
@@ -76,15 +77,15 @@ struct MyApp : App<Window> {
     scene.camera.pos(0,0,5);
   }
   
-  virtual void update(){
+  void update(){
   }
 
-  virtual void onDraw(){
+  void onDraw(){
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     time+=.005;    
     update();
-    pipe.line(*mbo);
+    render(*mbo);
   }
 
 };

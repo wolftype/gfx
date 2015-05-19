@@ -39,19 +39,19 @@ struct DisplacementSlab : public GFXShaderNode {
 
     virtual void init(){
 
-     string vert = ufloat("amt") + AVertex + Varying + VDisplaceCalcSimple + MVert;
+     string vert = ufloat("amt") + AVertex() + Varying() + VDisplaceCalcSimple() + MVert();
 
      this->program = new ShaderProgram( 
                           vert,//makeDisplacementVert(bES),
                           //ClipSpaceVert,
                           // DefaultVert,
-                          DefaultFrag);
+                          DefaultFrag());
 
 
      bindAttributes(); //default
 
      grid = new MBO( Mesh::HexaGrid(40,40,spacing) );//new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); //
-     grid -> mode = GL::L;
+     grid -> mesh.mode = GL::L;
    }
 
 

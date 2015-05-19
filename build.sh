@@ -3,5 +3,4 @@
 mkdir -p build
 cd build
 cmake ..  
-make -j3
-
+make VERBOSE=1 -j3

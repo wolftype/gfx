@@ -38,7 +38,7 @@ struct MyApp : GFXApp<GlutContext> {
 
    //Compile and Link Shader 
    
-   shader = new ShaderProgram( GLSL::DefaultVert, GLSL::DefaultFrag, 0);  
+   shader = new ShaderProgram( GLSL::DefaultVert(), GLSL::DefaultFrag(), 0);  
    
    //Generate and Bind Vertex Array Object
    vao = new VAO();

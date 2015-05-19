@@ -42,7 +42,7 @@ struct MyApp : GFXApp<GlutContext> {
 
  virtual void setup(){
 
-    shader = new ShaderProgram( ClipSpaceVert, TFragAlpha ); ///<-- these shaders are defined in gfx_glsl.h
+    shader = new ShaderProgram( ClipSpaceVert(), TFragAlpha() ); ///<-- these shaders are defined in gfx_glsl.h
 
     //make a texture
     int w = 10; int h = 10;
@@ -64,7 +64,7 @@ struct MyApp : GFXApp<GlutContext> {
     mesh = new MBO(m);
 
     //bind mesh vertex attributes to shader
-    mesh->bindTo(*shader);
+    mesh->bindAttributes(*shader);
 
 }
 

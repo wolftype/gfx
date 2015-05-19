@@ -496,11 +496,6 @@ namespace mesh{
 } // mesh::
 
      
-     //how to partially specialize from a base
-     //MeshData<Vertex> : MeshData<> etc
-  
-  
-   
 
   /*!
    *  MESH DATA CONTAINER FOR VERTEX AND INDEX INFORMATION

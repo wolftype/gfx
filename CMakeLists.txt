@@ -9,25 +9,32 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
+
 #PROJECT
 project(GFX)
+
 #PROJECT INCLUDE AND LINK
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/gfx/)
 link_directories(${PROJECT_BINARY_DIR})
 
-
 #DEPENDENCIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake_modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
-if(${RPI})#question: how best to check for raspberry vs. linux vs. jetson etc here?
+#RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
+if(${RASPBERRY})
+  
+  message ("**********CONFIGURING GFX LIBRARY BUILD FOR RASPBERRY PI************")
+  message ("**********root set to " ${CMAKE_FIND_ROOT_PATH} "************")
 
   find_package(GLES REQUIRED)
   find_package(EGL REQUIRED)
+  
   include_directories(/usr/local/include)
   include_directories(/opt/vc/include)
   include_directories(/opt/vc/include/interface/vcos/pthreads)
   include_directories(/opt/vc/include/interface/vmcs_host/linux)
+  
   link_directories(/opt/vc/lib)
   link_directories(/usr/lib)
   link_directories(/usr/local/lib)
@@ -35,16 +42,22 @@ if(${RPI})#question: how best to check for raspberry vs. linux vs. jetson etc he
 
   set(libraries ${libraries} pthread bcm_host vchiq_arm vcos m stdc++ vcos rt ${EGL_LIBRARY} ${GLES_LIBRARY})
 
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
+
 else()
+
   message ("CLANG")
   option(USE_CLANG "use clang" ON)
+  
   find_package(OpenGL REQUIRED)
   find_package(Glew REQUIRED)
   find_package(GLUT REQUIRED)
 
-  #GLV is optional
+  #GLV should be optional
   find_package(GLV)
   include_directories(${GLV_INCLUDE_DIR})
+  include_directories(gl2ps)
 
   #GLFW  
 #  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
@@ -58,7 +71,7 @@ else()
   set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ) 
   set(libraries ${libraries} ${GLV_LIBRARY} ) 
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
 
 endif()
@@ -73,22 +86,22 @@ foreach(filename ${examples})
 endforeach()
 
 
-
-
 #PRINT DIRECTORIES
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
+get_property(link_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
 message("LINK DIRECTORES")
-foreach(d ${dirs})
+foreach(d ${link_dirs})
   message(STATUS "link dir='${d}'")
 endforeach()
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 message("INCLUDE DIRECTORES")
-foreach(d ${dirs})
+foreach(d ${inc_dirs})
   message(STATUS "include dir='${d}'")
 endforeach()
 
-
-
+#SET TO A GLOBAL PROPERTY OF THIS SUBDIRECTORY
+set_property(GLOBAL PROPERTY GFX_LIBRARIES "${libraries}")
+set_property(GLOBAL PROPERTY GFX_INCLUDE_DIR "${inc_dirs}")
+set_property(GLOBAL PROPERTY GFX_LINK_DIR "${link_dirs}")
 
 
 

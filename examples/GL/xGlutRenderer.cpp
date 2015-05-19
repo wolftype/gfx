@@ -52,7 +52,7 @@ void initGraphicsObjects(){
   scene.resize(width,height);  //<-- set view width and height (pixels)
 
   sceneNode.scene( &scene );   //<-- attach pointer to scene to sceneNode
-  meshNode.mbo( &circle );     //<-- attach pointer to mesh to meshnode
+  meshNode.add( &circle );     //<-- attach pointer to mesh to meshnode
 
   /*-----------------------------------------------------------------------------
    *  pipeline: rendernode is a root node
