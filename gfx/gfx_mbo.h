@@ -337,9 +337,6 @@ namespace gfx{
            *  STATIC CREATION OF MESH BUFFER SINGLETON OBJECTS FOR DIFFERENT ELEMENTS 
            *  User must specify this to define draw routines
            *
-           *  template<> MakeMeshBuffer<CLASSNAME>::MakeMeshBuffer(){
-           *      mMBO.push_back( meshes....);
-           *  }
            *-----------------------------------------------------------------------------*/
           template<class T>
           struct MeshBuffer{
@@ -385,8 +382,15 @@ namespace gfx{
           template<class T> vector<MBO> MeshBuffer<T>::mMBO; 
           template<class T> map<string,MBO>  MeshBuffer<T>::mMBOmap;  
 
-          //template<>  vector<MBO>& MeshBuffer<MBO>::Get
-                   
+         namespace meshbuffer{
+           
+           template<class T>
+           MBO& make(const T& t){
+              MeshBuffer<T>::Add(t);
+              return MeshBuffer<T>::mbo(t);
+           }
+           
+         } //meshbuffer::
 }
 
 
