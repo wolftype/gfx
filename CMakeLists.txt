@@ -19,7 +19,7 @@ include_directories(${PROJECT_SOURCE_DIR}/gfx/)
 link_directories(${PROJECT_BINARY_DIR})
 
 #DEPENDENCIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
@@ -29,11 +29,12 @@ if(${RASPBERRY})
 
   find_package(GLES REQUIRED)
   find_package(EGL REQUIRED)
-  
-  include_directories(/usr/local/include)
-  include_directories(/opt/vc/include)
-  include_directories(/opt/vc/include/interface/vcos/pthreads)
-  include_directories(/opt/vc/include/interface/vmcs_host/linux)
+ 
+  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/include) 
+  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/local/include)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos/pthreads)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vmcs_host/linux)
   
   link_directories(/opt/vc/lib)
   link_directories(/usr/lib)
@@ -49,7 +50,6 @@ else()
 
   message ("**********CONFIGURING GFX LIBRARY BUILD FOR LOCAL BUILD MACHINE************")
 
-  message ("CLANG")
   option(USE_CLANG "use clang" ON)
   
   find_package(OpenGL REQUIRED)
@@ -57,9 +57,12 @@ else()
   find_package(GLUT REQUIRED)
 
   #GLV should be optional
-  find_package(GLV)
+  find_package(GLV REQUIRED)
   
+ # if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
+  set(libraries ${libraries} ${GLV_LIBRARY} )
+ # endif()
   include_directories(gl2ps)
 
   #GLFW  
@@ -74,7 +77,7 @@ else()
   #small lib just compiles gl2ps 
   add_library(gfx gl2ps/gl2ps.c)
   
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${GLV_LIBRARY} gfx) 
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
@@ -93,12 +96,12 @@ endforeach()
 
 #PRINT DIRECTORIES
 get_property(link_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
-message("LINK DIRECTORES")
+message("GFX LINK DIRECTORES")
 foreach(d ${link_dirs})
   message(STATUS "link dir='${d}'")
 endforeach()
 get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-message("INCLUDE DIRECTORES")
+message("GFX INCLUDE DIRECTORES")
 foreach(d ${inc_dirs})
   message(STATUS "include dir='${d}'")
 endforeach()
