@@ -941,6 +941,9 @@ struct SceneGraph {
         
         p = layout.poseOf( row, col ); 
 
+        cout << "CAMERA POSE" << endl;
+        p.print();
+
         layout.speakerL = Vec3f( 
           layout.left( row, col ), 
           layout.bottom( row, col ) + layout.screenHeight / 2.0, 0);

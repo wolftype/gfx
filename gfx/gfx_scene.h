@@ -253,8 +253,8 @@ namespace gfx{
     
     bool bUseFrust;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
+    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }
