@@ -9,7 +9,7 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
-
+message (${CMAKE_SYSTEM_NAME})
 #PROJECT
 project(GFX)
 
@@ -46,14 +46,50 @@ if(${RASPBERRY})
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
 
-else()
+elseif(${APPLE})
+
+  message ("**********CONFIGURING GFX LIBRARY BUILD FOR OSX************")
+
+  option(USE_CLANG "use clang" ON)
+  
+  find_package(OpenGL REQUIRED)
+  find_package(Glew REQUIRED)
+  find_package(GLUT REQUIRED)
+
+  #GLV should be optional
+  find_package(GLV REQUIRED)
+  
+ # if(${GLV_FOUND})
+  include_directories(${GLV_INCLUDE_DIR})
+  set(libraries ${libraries} ${GLV_LIBRARY} )
+ # endif()
+  include_directories(gl2ps)
+
+  #GLFW  
+#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+#  add_subdirectory(glfw)
+#  link_directories(${PROJECT_BINARY_DIR})
+#  link_directories(${GLFW_BINARY_DIR})
+#  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
+#  include_directories(${PROJECT_SOURCE_DIR}/glm/)
+#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
+
+  #small lib just compiles gl2ps 
+  add_library(gfx gl2ps/gl2ps.c)
+  
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
+
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
   message ("**********CONFIGURING GFX LIBRARY BUILD FOR LOCAL BUILD MACHINE************")
 
   option(USE_CLANG "use clang" ON)
   
   find_package(OpenGL REQUIRED)
-  find_package(Glew REQUIRED)
+  find_package(GLEW REQUIRED)
   find_package(GLUT REQUIRED)
 
   #GLV should be optional
