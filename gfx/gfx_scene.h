@@ -79,70 +79,70 @@ namespace gfx{
   };
     
   
-  /*-----------------------------------------------------------------------------
-   *  Position and Orientation (vec3 and quat)
-   *-----------------------------------------------------------------------------*/
-  struct Pose {
-    Pose(Vec3f p, Quat q = Quat(1,0,0,0)) : mPos(p), mQuat(q) {}// orient(); }
-    Pose(float x, float y, float z) : mPos(x,y,z), mQuat(1,0,0,0) {}// orient(); }
-    Pose() : mPos(0,0,0), mQuat(1,0,0,0) {}
-     
-    Vec3f mPos; //mX, mY, mZ, 
-    Quat mQuat;
-    
-    Quat quat() const { return mQuat; }
-    Quat & quat() { return mQuat; } 
-    Quat rot() const { return mQuat; }
-    Quat &rot() { return mQuat; }
-    
-    Pose& quat( Quat q ) { mQuat = q; return *this; }
-    Pose& rot( Quat q ) { mQuat = q; return *this; }         
-
-        
-    Vec3f px()  const{ return mPos + x(); }
-    Vec3f py()  const{ return mPos + y(); }
-    Vec3f pz()  const{ return mPos + z(); }
-    
-     
-    Vec3f x()  const{ return Quat::spin( Vec3f(1,0,0), mQuat); }
-    Vec3f y()  const{ return Quat::spin( Vec3f(0,1,0), mQuat); }
-    Vec3f z()  const{ return Quat::spin( Vec3f(0,0,1), mQuat); } 
-    
-    Vec3f pos()  const{ return mPos; }
-    Vec3f& pos() { return mPos; }  
-    Pose& pos(float x, float y, float z) { mPos.set(x,y,z); return *this; }
-
-    ///DEPRECATED                        
-    /* template<class T> */
-    /* Pose& set( const T& t){ */
-
-    /*   mPos = Vec3f( t.pos()[0], t.pos()[1], t.pos()[2] ); */ 
-    /*   mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] ); */  
-
-    /*   return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );// */
-    /* } */   
-
-    //set from your library's vec and quat
-    template<class P, class Q>
-    Pose& set( const P& t, const Q& q){
-
-      mPos.set( t[0], t[1], t[2] ); 
-      mQuat.set( q[0], q[1], q[2], q[3] );  
-
-      return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
-    }   
-    
-    Pose& reset(float x = 0.0, float y = 0.0, float z = 0.0, Quat q = Quat(1,0,0,0) ){   
-      mPos.set(x,y,z); 
-      mQuat = q;//Quat(1,0,0,0);
-      return *this;
-    }
-    
-    void print(){
-      cout << mPos << mQuat << endl;
-    }
-     
-  }; 
+//  /*-----------------------------------------------------------------------------
+//   *  Position and Orientation (vec3 and quat)
+//   *-----------------------------------------------------------------------------*/
+//  struct Pose {
+//    Pose(Vec3f p, Quat q = Quat(1,0,0,0)) : mPos(p), mQuat(q) {}// orient(); }
+//    Pose(float x, float y, float z) : mPos(x,y,z), mQuat(1,0,0,0) {}// orient(); }
+//    Pose() : mPos(0,0,0), mQuat(1,0,0,0) {}
+//     
+//    Vec3f mPos; //mX, mY, mZ, 
+//    Quat mQuat;
+//    
+//    Quat quat() const { return mQuat; }
+//    Quat & quat() { return mQuat; } 
+//    Quat rot() const { return mQuat; }
+//    Quat &rot() { return mQuat; }
+//    
+//    Pose& quat( Quat q ) { mQuat = q; return *this; }
+//    Pose& rot( Quat q ) { mQuat = q; return *this; }         
+//
+//        
+//    Vec3f px()  const{ return mPos + x(); }
+//    Vec3f py()  const{ return mPos + y(); }
+//    Vec3f pz()  const{ return mPos + z(); }
+//    
+//     
+//    Vec3f x()  const{ return Quat::spin( Vec3f(1,0,0), mQuat); }
+//    Vec3f y()  const{ return Quat::spin( Vec3f(0,1,0), mQuat); }
+//    Vec3f z()  const{ return Quat::spin( Vec3f(0,0,1), mQuat); } 
+//    
+//    Vec3f pos()  const{ return mPos; }
+//    Vec3f& pos() { return mPos; }  
+//    Pose& pos(float x, float y, float z) { mPos.set(x,y,z); return *this; }
+//
+//    ///DEPRECATED                        
+//    /* template<class T> */
+//    /* Pose& set( const T& t){ */
+//
+//    /*   mPos = Vec3f( t.pos()[0], t.pos()[1], t.pos()[2] ); */ 
+//    /*   mQuat = Quat ( t.quat()[0], t.quat()[1],  t.quat()[2], t.quat()[3] ); */  
+//
+//    /*   return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );// */
+//    /* } */   
+//
+//    //set from your library's vec and quat
+//    template<class P, class Q>
+//    Pose& set( const P& t, const Q& q){
+//
+//      mPos.set( t[0], t[1], t[2] ); 
+//      mQuat.set( q[0], q[1], q[2], q[3] );  
+//
+//      return *this;//-  t.rot()[3], t.rot()[2], t.rot()[1] );//
+//    }   
+//    
+//    Pose& reset(float x = 0.0, float y = 0.0, float z = 0.0, Quat q = Quat(1,0,0,0) ){   
+//      mPos.set(x,y,z); 
+//      mQuat = q;//Quat(1,0,0,0);
+//      return *this;
+//    }
+//    
+//    void print(){
+//      cout << mPos << mQuat << endl;
+//    }
+//     
+//  }; 
   
 
   
