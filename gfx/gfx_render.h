@@ -234,6 +234,11 @@ namespace gfx{
    }
 #endif 
 
+   template<typename A>
+   inline void pipe(const A& a, GFXSceneNode * re){
+      Renderable<A>::Draw(a,re);
+   }
+
 } //render::
  
  
