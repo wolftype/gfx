@@ -175,13 +175,12 @@ namespace gfx{
 //
 //  template<> inline void Drawable<MBO>::Draw(const MBO& m){
 //#ifdef GFX_IMMEDIATE_MODE
-//    m.mesh.drawElements();
 //#endif
 //  }
 
   template<> inline void Renderable<MBO>::DrawImmediate(const MBO& m){
 #ifdef GFX_IMMEDIATE_MODE
-    m.mesh.drawElements();
+    mesh::drawElements( m.mesh );
 #endif
   }
   
@@ -214,9 +213,6 @@ namespace gfx{
       glPopMatrix();      
     }
 
-    //duplicate symbol test
-    auto test = [](){ return 0; };
-    
 #else
    inline void begin(float r=1.0,float g=1.0, float b=1.0, float a=1.0){
      printf("a fixed functionality draw routine has been specified but OpenGL ES does not allow it\n");
@@ -373,7 +369,7 @@ namespace gfx{
 struct GFXViewNode : GFXRenderNode {
     
      
-      virtual const int nodetype() { return GFX_VIEW_NODE; }
+    virtual const int nodetype() { return GFX_VIEW_NODE; }
 
     struct View{
        Vec4f view = Vec4f(0,0,1,1);
@@ -543,6 +539,7 @@ struct GFXShaderNode : GFXRenderNode {
          if ( downstream().immediate()) {
            render::begin(r,g,b,a);
            render::draw(t); 
+           cout << "Hello" << endl;
          }
          else {
           if (bUpdate) {
@@ -554,7 +551,7 @@ struct GFXShaderNode : GFXRenderNode {
       }
 
       //draw many (specialize this by defining a Renderable<vector<T>>::Draw method
-      //where you bind mbo and vertex attributes once, then drawElements() many times)
+      //where you bind mbo and vertex attributes once, then mesh::drawElements() many times)
       template<class T>
       void draw(const vector<T>& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate =false){
           if (downstream().immediate()){

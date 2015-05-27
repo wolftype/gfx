@@ -9,7 +9,7 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
-message (${CMAKE_SYSTEM_NAME})
+#message(${CMAKE_SYSTEM_NAME})
 #PROJECT
 project(GFX)
 
@@ -19,7 +19,7 @@ include_directories(${PROJECT_SOURCE_DIR}/gfx/)
 link_directories(${PROJECT_BINARY_DIR})
 
 #DEPENDENCIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
@@ -82,6 +82,15 @@ elseif(${APPLE})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
 
+  #TARGETS
+  set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
+  file(GLOB examples examples/GL/*.cpp)
+  foreach(filename ${examples})
+    get_filename_component(target ${filename} NAME_WE)
+    add_executable(${target} ${filename} )
+    target_link_libraries(${target} ${libraries} )
+  endforeach()
+
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
   message ("**********CONFIGURING GFX LIBRARY BUILD FOR LOCAL BUILD MACHINE************")
@@ -119,15 +128,6 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
 
 endif()
-
-#TARGETS
-set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
-file(GLOB examples examples/*.cpp)
-foreach(filename ${examples})
-  get_filename_component(target ${filename} NAME_WE)
-  add_executable(${target} ${filename} )
-  target_link_libraries(${target} ${libraries} )
-endforeach()
 
 
 #PRINT DIRECTORIES

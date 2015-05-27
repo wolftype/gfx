@@ -20,6 +20,8 @@
 #include "gfx_constants.h"  
 
 using std::ostream;
+using std::cout;
+using std::endl;
 
 namespace gfx {
 

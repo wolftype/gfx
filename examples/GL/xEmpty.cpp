@@ -11,15 +11,16 @@ struct MyApp : GFXApp<GlutContext> {
  virtual void setup(){
 
     printf("SETUP SCENE\n");
-    mbo = Mesh::Sphere();
+    mbo = Mesh::Circle();
 
-    mSceneRenderer.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
+   // mSceneRenderer.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
  }
 
  virtual void onDraw(){
     
-    draw(mbo,1,0,0);
-
+    //draw(mbo,1,0,0);
+    render::begin(1,1,1,1);
+    mesh::drawElements( mbo.mesh );
  }
 
 

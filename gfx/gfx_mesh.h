@@ -359,6 +359,7 @@ namespace gfx {
       
 
         virtual void drawElements() const {
+              cout << "drawElements undefined use mesh::draw(c)" << endl;
               /* GL::Begin( mMode); */
               /* for (int i = 0; i < mIndex.size(); ++i){ */  
               /*     GL::normal( mVertex[ mIndex[i] ].Norm ); */
