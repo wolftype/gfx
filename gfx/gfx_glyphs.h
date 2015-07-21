@@ -772,7 +772,7 @@ inline void Glyph :: Point2D(const A& v) {
 
 inline void Glyph :: Cone() {
     glTranslated(0,0,-.1);
-  glutWireCone(.05,.1,10,3);
+  glutWireCone(.1,.2,8,3);
 }
 
 inline void Glyph :: Tri(bool down) {

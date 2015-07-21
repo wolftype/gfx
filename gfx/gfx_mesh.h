@@ -450,6 +450,7 @@ namespace mesh{
       return m;   
   }
 
+  //set color
   inline MeshData<Vertex>& color( MeshData<Vertex>& m, float r, float g, float b, float a){
       for (int i=0; i<m.vertex().size(); ++i){
         m[i].Col = Vec4f(r,g,b,a);
@@ -734,6 +735,8 @@ namespace mesh{
         template<class T>
         static Mesh UV( T* p, int w, int h, float tw =1, float th =1);
 
+   //     static Mesh 2D(int w, int h);
+
         static Mesh Point(float x, float y, float z);
 
         template<class T>
@@ -867,7 +870,26 @@ namespace mesh{
       m.store();
       return m;
     }
-    
+
+//  template<class T>    
+//  inline Mesh Mesh::2D(int w, int h){
+//
+//    Mesh m;
+//    for (int i =0;i < w-1; ++i){
+//      for (int j =0;j<h-1;++j){
+//        int a = i*h + j;
+//        int b = a + h:
+//        int c = a + 1;
+//        int d = b + 1;
+//        Vertex va(p[a][0], p[a][1], p[a][2]);
+//        m.add(va);
+//      }
+//    }
+//
+//    m.mode(GL::T);
+//    m.store();
+//    return m;
+//  }
 
    inline Mesh Mesh::HexaGrid(int w, int h, float spacing){
 

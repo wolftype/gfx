@@ -604,7 +604,7 @@ namespace gfx {
         //	GL :: specularMat(.2,.2,.2,0.5);			
          emissionMat(.2,.2,.2,0.5);
         
-        lightPos(1,5,1);
+        lightPos(1,1,5);
         
     }
     

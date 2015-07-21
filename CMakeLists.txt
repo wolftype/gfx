@@ -56,6 +56,10 @@ elseif(${APPLE})
   find_package(Glew REQUIRED)
   find_package(GLUT REQUIRED)
 
+  include_directories(${OPENGL_INCLUDE_DIR})
+  include_directories(${GLEW_INCLUDE_DIR})
+  include_directories(${GLUT_INCLUDE_DIR})
+
   #GLV should be optional
   find_package(GLV REQUIRED)
   
