@@ -184,7 +184,7 @@ enum {
         }
         case BUTTON:
         {
-                  cout << " adding Button to gui " << endl; 
+          //cout << " adding Button to gui " << endl; 
           Button *ns = new Button(glv::Rect(20,20));
           ns -> attachVariable(val, 0);
           s = (Widget*)ns;
@@ -199,8 +199,8 @@ enum {
         }
       }
 
-      s->colors().text.set(0,1,0); 
-      s->colors().fore.set(0,1,0);  
+      s->colors().text.set(0,0,0); 
+      s->colors().fore.set(0,0,0);  
       s->name( _name );
       add((Widget*)s, _name);
     }

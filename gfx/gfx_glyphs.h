@@ -123,6 +123,7 @@ namespace gfx {
         
         //glut cone
          void Cone();
+         void SolidCone();
         //glut wire sphere
          void Sphere(double radius = 1, int slices = 20, int stacks = 20);
         //glut solid sphere
@@ -772,8 +773,15 @@ inline void Glyph :: Point2D(const A& v) {
 
 inline void Glyph :: Cone() {
     glTranslated(0,0,-.1);
-  glutWireCone(.1,.2,8,3);
+    glutWireCone(.1,.2,8,3);
 }
+
+inline void Glyph :: SolidCone() {
+    glTranslated(0,0,-.1);
+    glutSolidCone(.1,.2,8,3);
+}
+
+
 
 inline void Glyph :: Tri(bool down) {
   

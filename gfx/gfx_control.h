@@ -242,8 +242,6 @@ public:
 
 
 /// Subscriber for general Window events
-/// The return value of the event handlers determines whether or not
-/// the event should be propagated to other handlers.
 class WindowEventHandler {
 public:
   WindowEventHandler() {}// : mWindow(NULL){}

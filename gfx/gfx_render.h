@@ -115,7 +115,7 @@ namespace gfx{
     }
   };
 
-  template<class T>
+  template<class T, int Mode=0>
   struct Renderable : RenderableBase<T> {
  
     using Base = RenderableBase<T>;
@@ -178,7 +178,7 @@ namespace gfx{
 //#endif
 //  }
 
-  template<> inline void Renderable<MBO>::DrawImmediate(const MBO& m){
+  template<> inline void Renderable<MBO,0>::DrawImmediate(const MBO& m){
 #ifdef GFX_IMMEDIATE_MODE
     mesh::drawElements( m.mesh );
 #endif
@@ -210,6 +210,14 @@ namespace gfx{
       glPushMatrix(); 
       //Drawable<A>::Draw(a);
       Renderable<A>::DrawImmediate(a);
+      glPopMatrix();      
+    }
+
+    template<typename A>
+    inline void drawB(const A& a){
+      glPushMatrix(); 
+      //Drawable<A>::Draw(a);
+      Renderable<A,1>::DrawImmediate(a);
       glPopMatrix();      
     }
 

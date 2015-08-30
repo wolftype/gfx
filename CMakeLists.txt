@@ -62,6 +62,8 @@ elseif(${APPLE})
 
   #GLV should be optional
   find_package(GLV REQUIRED)
+  message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
+  message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
   
  # if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
@@ -107,6 +109,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
   #GLV should be optional
   find_package(GLV REQUIRED)
+  message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
+  message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
   
  # if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
