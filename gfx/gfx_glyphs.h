@@ -39,9 +39,9 @@ namespace gfx {
         
         /* Line Between Two Points */  
          template<class V>
-        inline void Line2D(const V& v1){ Line2D(V(), v1);}
+         inline void Line2D(const V& v1){ Line2D(V(), v1);}
         
-                 template<class V>  
+         template<class V>  
          void DashedLine(const V& v1, const V& v2, int num = 10); 
          template<class V>
          void DashedLine(const V& v1, int num = 10);
@@ -74,9 +74,10 @@ namespace gfx {
          void Circular(float radius, bool clockwise = 0);
          void FillCircle(double radius = 1.0, int res = 50);
          void DirFillCircle (double radius =1.0, bool clockwise =0, int res =50, bool anim = 0);
-        //circle segment
+         //circle segment
          void Segment(float angle = PI, float radius = 1.0,  bool sign = 0, int res = 20);
-         void Segment2(float angle = PI, float off = 0, float radius = 1.0, int res = 20);
+         //circle segment from angle to angle2
+         void Segment2(float angle = PI, float angle2 = 0, float radius = 1.0, int res = 20);
          void Segment3(float angle = PI, float off = 0, float radius = 1.0,  bool sign = 0,   int res = 20);
                  void DashedSegment(float angle = PI, float radius = 1.0, bool sign =0, int res = 20);
          void DashedSegment2(float t = PI, float t2 = 0, float rad = 1.0, int res = 20);
@@ -219,19 +220,17 @@ inline void Glyph :: DirCircle (double radius, bool clockwise, int res, bool bAn
 
   for (int i = 0; i < 5; ++i) {
 
-    float dt = 0;//( bAnimate? Time::Clock().total() * 2 * PI : 0 );
-      float rad = ( clockwise ? -1 : 1 ) * ( dt/10.0 + ( 2 * PI * i ) / 5  );
-      //if(bAnimate) rad += Time::Clock().time();
-    glPushMatrix();  
+    float dt = 0;
+    float rad =  ( dt/10.0 + ( 2 * PI * i ) / 5  );
     
-      //cout << rad << endl;
-      //Rot rn = Rot::e12( ( clockwise ? -1 : 1 ) * rad );
+     glPushMatrix();  
+    
       Vec2<> t (cos(rad), sin(rad));
       t *= radius;
       glTranslated(t.x, t.y, 0);
       glRotated( 180 * rad / PI, 0, 0, 1);
       glScaled(.5,.5,.5);
-      Glyph::Tri(clockwise);  
+      Glyph::Tri(false);   //no need to deal with sign here Op::AA takes care of it
           
     glPopMatrix();
   }
@@ -245,7 +244,7 @@ inline void Glyph :: DirFillCircle (double radius, bool clockwise, int res, bool
   for (int i = 0; i < 5; ++i) {
 
     float dt = 0;//( bAnimate? Time::Clock().total() * 2 * PI : 0 );
-      float rad = ( clockwise ? -1 : 1 ) * ( dt/10.0 + ( 2 * PI * i ) / 5  );
+      float rad =  ( dt/10.0 + ( 2 * PI * i ) / 5  );
       //if(bAnimate) rad += Time::Clock().time();
     glPushMatrix();  
     
@@ -256,7 +255,7 @@ inline void Glyph :: DirFillCircle (double radius, bool clockwise, int res, bool
       glTranslated(t.x, t.y, 0);
       glRotated( 180 * rad / PI, 0, 0, 1);
       glScaled(.5,.5,.5);
-      Glyph::Tri(clockwise);  
+      Glyph::Tri(false);  
           
     glPopMatrix();
   }
@@ -279,7 +278,7 @@ inline void Glyph :: DirDashedCircle (double radius, bool clockwise, int res, bo
       t*= radius;
       glTranslated(t.x, t.y, 0);
       glRotated( 180 * rad / PI, 0, 0, 1);
-      Glyph::TriLine(clockwise);  
+      Glyph::TriLine(false);  
           
     glPopMatrix();
   }
@@ -772,12 +771,12 @@ inline void Glyph :: Point2D(const A& v) {
 // } 
 
 inline void Glyph :: Cone() {
-    glTranslated(0,0,-.1);
+    glTranslated(0,0,-.2);
     glutWireCone(.1,.2,8,3);
 }
 
 inline void Glyph :: SolidCone() {
-    glTranslated(0,0,-.1);
+    glTranslated(0,0,-.2);
     glutSolidCone(.1,.2,8,3);
 }
 

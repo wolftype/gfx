@@ -200,15 +200,21 @@ namespace gfx{
     inline void drawAt(const A& a, const B& p){
       glPushMatrix(); 
       glTranslatef( p[0], p[1], p[2] );
-      //Drawable<A>::Draw(a);
       Renderable<A>::DrawImmediate(a);
+      glPopMatrix();
+    }
+
+    template<class A, class B>
+    inline void drawBAt(const A& a, const B& p){
+      glPushMatrix(); 
+      glTranslatef( p[0], p[1], p[2] );
+      Renderable<A,1>::DrawImmediate(a);
       glPopMatrix();
     }
 
     template<typename A>
     inline void draw(const A& a){
       glPushMatrix(); 
-      //Drawable<A>::Draw(a);
       Renderable<A>::DrawImmediate(a);
       glPopMatrix();      
     }
@@ -216,7 +222,6 @@ namespace gfx{
     template<typename A>
     inline void drawB(const A& a){
       glPushMatrix(); 
-      //Drawable<A>::Draw(a);
       Renderable<A,1>::DrawImmediate(a);
       glPopMatrix();      
     }
