@@ -73,7 +73,6 @@ namespace gfx {
 template<class WINDOWCONTEXT>
 struct GFXApp : 
 public InputEventHandler,
-//public WindowEventHandler,
 public GFXSceneNode                //< has onRender() method called by mRenderer
 {
 
@@ -84,7 +83,6 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
   Scene scene;                            ///< modelviewprojection matrix transforms
 
   GFXRenderNode mRenderer;                ///< root render node (pulls all attached nodes downstream)
-  
   GFXShaderNode mSceneRenderer;           ///< shader pipeline
 
   SceneController sceneController;        ///< interface to matrix transforms 

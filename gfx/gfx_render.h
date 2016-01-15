@@ -263,25 +263,21 @@ namespace gfx{
 
 
   /*!
-   *  A GFXRenderNode is the root node of all processes
+   *  A GFXRenderNode is the root node and base class of all graphics processes
    *
-   *  Has a pointer to a "mDownstream" rendernode 
+   *  Has a pointer to a mDownstream rendernode 
    *  and multiple pointers to mUpstream rendernodes
    *
    *  The virtual method, onRender(), specifies how
    *  the node should bind or onbind its upstream and downstream
    *  graphics processing events
    *
-   *  It can also register for WindowEvents (such as onResize)
+   *  It can also register to receive WindowEvents (such as onResize)
    */
   struct GFXRenderNode : public WindowEventHandler {      
      
       virtual const int nodetype() { return GFX_RENDER_NODE; }
-     
-      bool bVisited=false;                                                  ///< You can avoid circular dependencies by setting this flag
-
-      GFXRenderNode * mDownstream = NULL;                                   ///< Pointer to one downstream process (for re-setting state)
-      
+         
       GFXRenderNode& downstream( GFXRenderNode * p ){
         mDownstream = p;
         return *this;
@@ -314,24 +310,28 @@ namespace gfx{
         return *this;
       }
 
-      vector<GFXRenderNode*> mUpstream;                                     ///< Pointers to multiple upstream processes (to be pulled)
-      void clear() { mUpstream.clear(); }
+      /// clear all upstream processes
+      void clear() { mUpstream.clear(); }                   
+
+
+      GFXRenderNode * mDownstream = NULL;                                   ///< Pointer to one downstream process (for re-setting state)
+      vector<GFXRenderNode*> mUpstream;                                     ///< Pointers to upstream processes (to be pulled)
      
-      Vec3f light = Vec3f(1,1,4);                                           ///< Light Position  
-
-      bool bImmediate=true;                                                 ///< Use Fixed Function or Programmable
-      void immediate(bool b) { bImmediate = b; }
-      bool immediate() const { return bImmediate; } 
-
       bool bES = false;                                                     ///< Use OpenGL ES or Plain Open GL
+      bool bImmediate=true;                                                 ///< Use Fixed Function (default) or Programmable
+      bool bEnable = true;                                                  ///< Enable this Process
+      bool bVisited=false;                                                  ///< You can avoid circular dependencies by setting this flag
+ 
       int width = 100;
       int height = 100;                                                     ///< Pixels Width and Height
-      bool bEnable = true;                                                  ///< Enable this Process
+      Vec3f light = Vec3f(1,1,4);                                           ///< Light Position  
       
-      void set(int w, int h) { width=w; height=h; }
 
       //Setters
       bool useES(){ return bES; }
+      void immediate(bool b) { bImmediate = b; }
+      bool immediate() const { return bImmediate; } 
+      void set(int w, int h) { width=w; height=h; }
 
       /// set width and height, call onInit, and recurse on all upstream nodes
       void init(int w=100, int h=100){
@@ -414,7 +414,6 @@ struct GFXViewNode : GFXRenderNode {
     /* } */
 
     void onRender(){
-      //for (auto& k : view){ //<-- for all views
         Vec4f& v = view->view;
         Vec4f& c = view->color;
         glViewport((v.x*width), (v.y*height),(v.z*width),(v.w*height));
@@ -426,7 +425,6 @@ struct GFXViewNode : GFXRenderNode {
           for (auto& i : mUpstream) i->onRender(); //<-- render all upstream nodes
         
         glDisable(GL_SCISSOR_TEST);
-     // }
     }
 
     virtual void onResize(int w, int h){

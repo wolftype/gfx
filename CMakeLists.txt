@@ -89,6 +89,7 @@ elseif(${APPLE})
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
 
   #TARGETS
+  if(${BUILD_EXAMPLES})
   set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
   file(GLOB examples examples/GL/*.cpp)
   foreach(filename ${examples})
@@ -96,6 +97,7 @@ elseif(${APPLE})
     add_executable(${target} ${filename} )
     target_link_libraries(${target} ${libraries} )
   endforeach()
+  endif()
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
