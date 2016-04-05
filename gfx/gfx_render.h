@@ -396,11 +396,8 @@ struct GFXViewNode : GFXRenderNode {
     View * view;
 
     virtual void onInit(){
-      //view.push_back( new View(0,0,.5,.5) );
       view = new View(0,0,1,1);
     }
-
-//    void add(float l, float b, float r, float t) { view.push_back( new View(l,b,r,t)); }
 
     /* void split(int w,int h){ */
     /*   view.clear(); */
@@ -434,9 +431,10 @@ struct GFXViewNode : GFXRenderNode {
 
 
 
-/*-----------------------------------------------------------------------------
- *  Basic Shader Code.  Default Version 
- *-----------------------------------------------------------------------------*/
+/*!
+ *  Basic Shader Code.  Default Version. @sa gfx_glsl.h 
+ */
+ 
 struct GFXShaderNode : GFXRenderNode {
    
   virtual const int nodetype() { return GFX_SHADER_NODE; }
@@ -490,9 +488,10 @@ struct GFXShaderNode : GFXRenderNode {
 };
 
   
-/*-----------------------------------------------------------------------------
- *  Scene Node To Update Downstream Shader Matrix Uniforms and Call Upstream Mesh Nodes
- *-----------------------------------------------------------------------------*/
+/*!
+ *  Node To Update Downstream Shader Matrix Uniforms and Call Upstream Mesh Nodes.  
+ *   @sa gfx_app.h which is a subclass of this
+ */
   struct GFXSceneNode : GFXRenderNode {
        
   virtual const int nodetype() { return GFX_SCENE_NODE; }
@@ -550,7 +549,7 @@ struct GFXShaderNode : GFXRenderNode {
          if ( downstream().immediate()) {
            render::begin(r,g,b,a);
            render::draw(t); 
-           cout << "Hello" << endl;
+           //cout << "Hello" << endl;
          }
          else {
           if (bUpdate) {
