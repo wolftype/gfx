@@ -47,6 +47,7 @@ namespace gfx {
      Vec3f Pos;
      Vec3f Norm;
 
+     VertexPosition(){}
      VertexPosition( const Vec3f& pos, const Vec3f& norm=Vec3f(0,0,1)) : Pos(pos), Norm(norm) {}
      VertexPosition( float x, float y, float z ) : Pos(x,y,z), Norm(0,0,1) {}
  
