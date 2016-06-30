@@ -14,8 +14,24 @@ cd build
 
 rm bin/$TARGET
 
-if [ $2 = "configure" ]; then
-  cmake ..
+RUN_CMAKE=1
+MAKE_VERBOSE=1
+
+for i
+  do
+    case $i in
+:e    -q | --quiet)
+      MAKE_VERBOSE=0
+    ;;
+    -c | --cmake)
+      RUN_CMAKE=0
+    ;;
+    esac
+done
+
+if [ $RUN_CMAKE = 1 ]; then
+  echo "RUN_CMAKE = TRUE"
+  cmake -DBUILD_EXAMPLES=1 ..
 fi
 
 make $TARGET

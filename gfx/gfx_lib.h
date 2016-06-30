@@ -61,7 +61,7 @@
 
       #include <GL/glew.h>
       #include <OpenGL/OpenGL.h>
-      #include "GLUT/GLUT.h"
+      #include "GLUT/glut.h"
 
   #endif
 

@@ -16,4 +16,8 @@ if ((NOT GLEW_INCLUDE_DIR) OR (NOT GLEW_LIBRARY))
     NAMES GLEW
     PATHS /usr/local/lib/ #/usr/local/cuda-6.0/samples/common/lib/linux/armv7l/
     DOC "The directory where libGLEW resides")
+else()
+  message("GLEW ALREADY FOUND")
+  message(${GLEW_INCLUDE_DIR})
+  message(${GLEW_LIBRARY})
 endif ((NOT GLEW_INCLUDE_DIR) OR (NOT GLEW_LIBRARY))

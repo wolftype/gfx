@@ -2,6 +2,6 @@
 
 mkdir -p build
 cd build
-cmake ..  
+cmake -DBUILD_EXAMPLES=1 ..  
 make -j3
 

@@ -20,6 +20,7 @@ link_directories(${PROJECT_BINARY_DIR})
 
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+message( ${CMAKE_MODULE_PATH} )
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
@@ -53,11 +54,19 @@ elseif(${APPLE})
   option(USE_CLANG "use clang" ON)
   
   find_package(OpenGL REQUIRED)
-  find_package(Glew REQUIRED)
   find_package(GLUT REQUIRED)
+  find_package(GLEW REQUIRED)
 
-  message( "${GLEW_INCLUDE_DIR}" )
-  message( "${GLEW_LIBRARY}" )
+  if(${GLEW_FOUND})
+    message("GLEW FOUND:")
+    message( "${GLEW_INCLUDE_DIR}" )
+    message( "${GLEW_LIBRARY}" )
+  endif()
+  if(${GLUT_FOUND})
+    message("GLUT FOUND:")
+    message( "${GLUT_INCLUDE_DIR}" )
+    message( "${GLUT_LIBRARY}" )
+  endif()
 
   include_directories(${OPENGL_INCLUDE_DIR})
   include_directories(${GLEW_INCLUDE_DIR})
@@ -109,8 +118,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   option(USE_CLANG "use clang" ON)
   
   find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
   find_package(GLUT REQUIRED)
+  find_package(GLEW REQUIRED)
 
   #GLV should be optional
   find_package(GLV REQUIRED)
