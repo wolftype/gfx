@@ -36,8 +36,8 @@ struct R2T : GFXRenderNode {
     blur << r2t;
     
     //bind downstream and upstream
-    bindDownstream(blur); // blur now points to this instance's downstream process
-    bindUpstream(r2t);    // r2t now calls this instance's upstream processes
+    bindDownstream(blur); // blur points to this instance's downstream process
+    bindUpstream(r2t);    // r2t calls this instance's upstream processes
 
  }
 

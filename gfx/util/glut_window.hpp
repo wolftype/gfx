@@ -93,8 +93,8 @@ struct GlutInterface : Interface<CONTEXT> {
  */
 struct Glut {
 
-  static Glut& Initialize(){
-    static Glut TheGlutInstance;
+  static Glut& Initialize(bool bStereo){
+    static Glut TheGlutInstance(bStereo);
     return TheGlutInstance; 
   }
 
@@ -106,12 +106,13 @@ struct Glut {
   static void Terminate(){}
 
   private:
-    Glut(){
+    Glut( bool bStereo ){
       int argc = 1;
       char c[] = {'G','F','X'};
       char * argv[] = {c,NULL};
+
       glutInit(&argc,argv);
-      glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+      glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | ( bStereo ? GLUT_STEREO : 0) );
     }
 
 };

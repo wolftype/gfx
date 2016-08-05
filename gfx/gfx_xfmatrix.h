@@ -16,10 +16,20 @@ using namespace std;
 
 namespace gfx{
     
+    /*! View Port */
+    struct SimpleView{
+       Vec4f view = Vec4f(0,0,1,1);
+       Vec4f color = Vec4f(.05,.05,.05,1);
+       SimpleView(){}
+       SimpleView(const Vec4f& v) : view(v) {}
+       SimpleView(float l, float b, float r, float t, float red=.05,float green=.05,float blue=.05) : 
+       view(l,b,r,t),color(red,green,blue,1) {}
+    };        
+
+
     /*! Transformation Matrices Container */
     struct XformMat {
 
-       // static float Identity[16];
         float model[16];
         float view[16];
         float modelView[16];
@@ -38,6 +48,7 @@ namespace gfx{
         Mat4f projMatrixf()const { return proj; }
         Mat4f normalMatrixf() const { return normal; }
 
+        /// @todo remember why this is necessary
         void toDoubles() {
             for (int i = 0; i < 16; ++i){
                 modeld[i] = model[i];

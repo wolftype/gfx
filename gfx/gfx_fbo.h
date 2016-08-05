@@ -68,9 +68,21 @@ struct FBO{
      glClearColor(0,0,0,0);
      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    }
+
+   void clearDepth(){
+     glClear(GL_DEPTH_BUFFER_BIT);
+   }   
    
    //could change attachment point or target (e.g. to GL_TEXTURE_CUBE_MAP)
    void attach(const Texture& tex, GLenum attachment = GL_COLOR_ATTACHMENT0, GLenum target = GL_TEXTURE_2D ){
+     bind();
+     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, tex.id(), 0);
+     unbind();
+     checkStatus();
+   }
+ 
+    //could change attachment point or target (e.g. to GL_TEXTURE_CUBE_MAP)
+    void attach(const CubeMap& tex, GLenum attachment = GL_COLOR_ATTACHMENT0, GLenum target = GL_TEXTURE_CUBE_MAP_POSITIVE_X ){
      bind();
      glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, tex.id(), 0);
      unbind();
@@ -112,5 +124,11 @@ struct FBO{
 
 };
 
+
+/// handy fbo template with textures
+//template <class T>
+//struct FBO {
+//
+//};
 
 #endif   /* ----- #ifndef gfx_fbo_INC  ----- */

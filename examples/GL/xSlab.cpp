@@ -17,6 +17,7 @@
  */
 
 #include "gfx_app.h"
+#include "gfx_effects.h"
 #include "util/glut_window.hpp"
 
 using namespace gfx;
@@ -31,7 +32,7 @@ struct MyApp : GFXApp<GlutContext> {
     mbo = Mesh::Sphere();
     mSceneRenderer.immediate(false); 
 
-    slab.init();
+    slab.init(10,10);
     
     float * cval = new float [slab.width*slab.height*4];
         

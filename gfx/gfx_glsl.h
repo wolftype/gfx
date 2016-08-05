@@ -675,6 +675,7 @@ namespace gfx{
           uniform float uNear;
           //varying vec3 vTexDir;
              
+             
           vec4 doVertex(vec4 v){
         
            vec4 vertex = modelView * v;
@@ -708,12 +709,69 @@ namespace gfx{
         )";
     }
         
+
+    
+    /*-----------------------------------------------------------------------------
+     *  RENDER OMNI STEREO TO A CUBE MAP (ripped from wakefield's code in AlloSystem al_OmniStereo.hpp)
+     *-----------------------------------------------------------------------------*/
+    inline string MakeOmniStereoCubeMapVert() { return R"(
+            
+          uniform int cmFace;
+          uniform float uFar;
+          uniform float uNear;
+          
+          uniform float omni_eye;       //0, 1, -1
+          uniform float omni_radius;    //in GL units
+             
+          vec4 doVertex(vec4 v){
+        
+           vec4 vertex = modelView * v;
+                    
+           float l = length(vertex.xz);
+           vec3 n = normalize(vertex.xyz); 
+
+           float displacement = omni_eye *
+            (omni_radius * omni_radius -
+               sqrt(l * l * omni_radius * omni_radius +
+                    omni_eye * omni_eye * (omni_radius * omni_radius - l * l))) /
+            (omni_radius * omni_radius - omni_eye * omni_eye);
+
+             vertex.xz += vec2(displacement * vn.z, displacement * -vn.x);
+           
+                
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
+                    if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
+            else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
+            else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
+            else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
+            else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
+            else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
+                
+            // convert into screen-space:  
+            // simplified perspective projection since fovy = 90 and aspect = 1  
+            vertex.zw = vec2(  
+              (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
+              -vertex.z  
+            );  
+          
+            return vertex;  
+            
+          }
+
+        )";
+    }
+
   
            
 
-          /*-----------------------------------------------------------------------------
-           *  UNUSED ANTI-ALIASING
-           *-----------------------------------------------------------------------------*/
+   /*-----------------------------------------------------------------------------
+    *  UNUSED ANTI-ALIASING
+    *-----------------------------------------------------------------------------*/
     inline string FXDB() { return R"(
       uniform sampler2D sampleTexture; 
       uniform vec2 frameBufSize;

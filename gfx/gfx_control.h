@@ -198,11 +198,11 @@ struct WindowData {
 
   };
 
-/// Somewhat Adapted FROM ALLOCORE (removed dependency on window context)
+/// Somewhat Adapted FROM ALLOCORE (but with removed dependency on window context)
 /// Controller for handling input events
 
 /// Note: The return value of the event handlers could determine whether or not
-/// the event should be propagated to other handlers.  Right now this is void, so it can't.
+/// the event should be propagated to other handlers.  Right now this return type is void, so it can't.
 class InputEventHandler{
 
   bool bActive;

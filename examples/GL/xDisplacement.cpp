@@ -21,6 +21,7 @@
 #include "gfx_app.h"
 #include "gfx_mbo.h"
 #include "gfx_render.h"
+#include "gfx_effects.h"
 
 using namespace std;
 using namespace gfx;
@@ -37,7 +38,7 @@ struct DisplacementSlab : public GFXShaderNode {
     float spacing=0.1;
     float amt=1.0;
 
-    virtual void init(){
+    virtual void init(int w, int h){
 
      string vert = ufloat("amt") + AVertex() + Varying() + VDisplaceCalcSimple() + MVert();
 
@@ -77,12 +78,12 @@ struct Displace : public GFXRenderNode {
   DisplacementSlab dispmap;
   bool bDrawDispMap=false;
 
-  virtual void init(){
-
+  virtual void init(int w, int h){
+    
     r2t.set(width,height);
-    r2t.init();
+    r2t.init(w,h);
     dispmap.set(width,height);
-    dispmap.init();
+    dispmap.init(w,h);
     dispmap.texture = r2t.texture;
 
     dispmap << r2t;
@@ -113,7 +114,7 @@ struct MyApp : public GFXApp<GlutContext> {
     mRenderer << process <<  mSceneRenderer;
 
     process.set(width,height);
-    process.init();
+    process.init(width,height);
   }
 
   virtual void onAnimate(){

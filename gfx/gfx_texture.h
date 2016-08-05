@@ -98,6 +98,61 @@ namespace gfx {
     
   };
 
+/*-----------------------------------------------------------------------------
+ *  OPENGL CUBEMAP TEXTURE 
+ *-----------------------------------------------------------------------------*/
+struct CubeMap {
+  
+  GLuint mID;
+  int mWidth;//, mHeight;
+
+  GLenum mType = GL_UNSIGNED_BYTE;
+  void type(GLenum t) { mType = t; }
+
+  GLuint id() const { return mID; }
+
+  CubeMap(int w) : mWidth(w) { init(); }
+  
+  void init(){
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    generate();
+    alloc();
+    setParam();
+  }
+
+  void generate(){
+    glGenTextures(1, &mID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mID);
+  }
+
+  void alloc(){
+    for (int i = 0;i<6;++i){
+      glTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, //< target
+                    0,                                //< lod
+                    GL_RGBA,                          //< internal format
+                    mWidth, mWidth, 0,               //< width, height, border (cube maps must be equal)
+                    GL_RGBA,                          //< format of data
+                    mType,                            //< data type (e.g. GL_UNSIGNED_BYTE)
+                    NULL);                            //< no actual data yet
+    }
+  }
+
+  void setParam(){
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
+  }
+
+  void bind(){
+    glBindTexture(GL_TEXTURE_CUBE_MAP, mID);
+  }
+  void unbind() { glBindTexture(GL_TEXTURE_CUBE_MAP, 0); }
+};
+
+  
+
 } //gfx::
 
 #endif   /* ----- #ifndef gl_texture_INC  ----- */

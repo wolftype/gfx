@@ -17,6 +17,7 @@
 #define GFX_gl_vattrib_h
 
 #include "gfx_shader.h"
+#include "gfx_data.h"
 
 namespace gfx {
 
@@ -94,6 +95,17 @@ namespace gfx {
         
         void add(GLuint id, string name, GLsizei stride, GLvoid * offset ){
           vatt.push_back( VertexAttrib(id,name,stride,offset) );
+        }
+
+        /// iteratres through programs attributes, finding offset of T to bind vertex attributes @sa gfx_mesh.h 
+        template <class T>
+        void add(const ShaderProgram& p){
+          p.bind();
+          GLVertexData<T>::Init();
+          for( auto& i : p.attributes() ){
+            add(p.id(), i.first, sizeof(T), GLVertexData<T>::Attribute[i.first] );
+          }
+          p.unbind();
         }
               
           void enable() const{

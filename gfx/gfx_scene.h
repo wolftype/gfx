@@ -243,8 +243,10 @@ namespace gfx{
   };
 
   
-/*-----------------------------------------------------------------------------
+/*! 
  *  CAMERA: A moving pose with a view and a lens
+
+  @todo fovy vs. frust (fix frust)
  *-----------------------------------------------------------------------------*/
   struct Camera : public MPose {     
     
@@ -253,8 +255,8 @@ namespace gfx{
     
     bool bUseFrust;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
+    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }

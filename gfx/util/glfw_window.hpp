@@ -68,8 +68,8 @@ struct GLFWInterface : Interface<GLFWContext> {
  */
 struct GLFW {
 
-  static GLFW& Initialize(){////int argc, char ** argv){
-    static GLFW TheGLFW;
+  static GLFW& Initialize(int mode = 0){////int argc, char ** argv){
+    static GLFW TheGLFW(mode);
     return TheGLFW;
   }
 
@@ -87,7 +87,7 @@ struct GLFW {
   }
 
   private:
-    GLFW() {
+    GLFW(int mode) {
       if( !glfwInit() ) exit(EXIT_FAILURE); 
     }
 };
@@ -100,7 +100,6 @@ struct GLFWContext {
     static GLFW * System;
 
     GLFWwindow * mWindow;
-    
     GLFWInterface interface;
     
     static vector<WindowData*> mWindows;
