@@ -20,7 +20,7 @@ MAKE_VERBOSE=1
 for i
   do
     case $i in
-:e    -q | --quiet)
+     -q | --quiet)
       MAKE_VERBOSE=0
     ;;
     -c | --cmake)

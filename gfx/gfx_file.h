@@ -129,6 +129,41 @@ struct File {
      system(command.c_str());
 
    }
+
+  ///Open A filepath into myfile
+  static void Open(std::string filepath, std::fstream& myfile) {
+    // search by going up directory up to 5 times
+    int attempts = 0;
+    std::string nfilepath = filepath;
+    while (attempts < 5) {
+        // try opening and return if successful
+        myfile.open(nfilepath.c_str(), std::ios::in);
+        if (myfile.is_open()) return;
+        // go up 1 dir if file not found
+        nfilepath = "../" + nfilepath;
+        attempts += 1;
+    }
+    // fail 5 times, complain
+    if (!myfile.is_open()) {
+	  printf("file not found\n");
+    //        throw std::invalid_argument("Error: File " + filepath + " Not Found.");
+    }
+    return;
+ }
+
+  /// Read rilepath into a string
+  static std::string Read(std::string filepath) {
+    std::fstream myfile;
+    File::Open(filepath, myfile);
+
+    if (myfile.is_open()){
+      std::string fileString((std::istreambuf_iterator<char>(myfile)), (std::istreambuf_iterator<char>()));
+      return fileString;
+    }
+
+    return "";
+  }
+
    
 }; 
 

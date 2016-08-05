@@ -62,7 +62,7 @@
 
 #include "gfx_lib.h"              //<- Graphics Libraries
 #include "gfx_scene.h"            //<- Matrix transforms (should rename this to gfx_modelViewProjection.h)
-#include "gfx_control.h"          //<- Event Handling
+#include "gfx_control.h"          //<- Event Handling GFXio
 #include "gfx_sceneController.h"  //<- Matrix transforms bound to user inputEvents
 #include "gfx_objectController.h" //<- Objects in Memory bound to user inputEvents and windowEvents
 #include "gfx_render.h"           //<- Graphics Pipeline Rendering Processes
@@ -130,9 +130,8 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
       mContext.interface.OnResize(w,h);
 
       /*-----------------------------------------------------------------------------
-       * 3.  Initialize GLEW and check for features (if not using GLES
+       * 3.  Initialize GLEW and check for features (if not using GLES)
        *-----------------------------------------------------------------------------*/
-
 #ifndef GFX_USE_GLES
       glewExperimental = true;
       GLenum glewError = glewInit();
@@ -177,14 +176,6 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
-  /* template<class T> */
-  /* void draw(const T& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0, bool bUpdate=false){ */
-  /*   mRenderer.draw(t,r,g,b,a,bUpdate); */
-  /* } */
- 
-  /* void draw(MBO& t, float r=1.0, float g=1.0, float b=1.0, float a=1.0){ */
-  /*   mRenderer.draw(t,r,g,b,a); */
-  /* } */
   /*-----------------------------------------------------------------------------
    *  Starts Graphics Thread.  To be called from main()
    *-----------------------------------------------------------------------------*/
@@ -202,11 +193,6 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *  Clear Window Contents
    *-----------------------------------------------------------------------------*/
   void clear(){
-   //   if (sceneController.io().mode( ControlMode::Edit ) ){
-   //     mColor=Vec3f(.13,.15,.1);
-   //   } else {
-   //     mColor=Vec3f(.1,.1,.1);
-   //   }
 
      mContext.setViewport();      
      glClearColor( mColor[0],mColor[1],mColor[2], 1 );
@@ -223,8 +209,6 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
      clear(); 
      onAnimate();
 
-     //scene.push( mSceneRenderer.immediate() );     ///< push matrices
-
       //mRenderer calls one upstream render (namely, this)
       //which is this app's onRender method
       //below onRender() defaults to onDraw()
@@ -232,8 +216,6 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
       //see examples/xRendertoTexture.cpp
       mRenderer.onRender();
          
-     //scene.pop( mSceneRenderer.immediate() );      ///< pop matrices
-    
      scene.step();                            ///< update camera physics
      
      /* NOTE: swapbuffers is NOT called here because
@@ -260,7 +242,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    } 
   
   /*-----------------------------------------------------------------------------
-   *  INPUT EVENT HANDLER METHODS
+   *  INPUT EVENT HANDLER METHODS, CALLED BY mContext.interface
    *-----------------------------------------------------------------------------*/
   virtual void onMouseMove(const Mouse& m){ }
   virtual void onMouseDrag(const Mouse& m){ }

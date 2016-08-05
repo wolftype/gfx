@@ -443,6 +443,7 @@ struct GFXShaderNode : GFXRenderNode {
    VertexAttributes vatt;
 
 
+   /// initialize with default shader
    virtual void onInit(){
 
         string V = useES() ? DefaultVertES() : DefaultVert();        ///< These basic shaders are defined in gfx_glsl.h 

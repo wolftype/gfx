@@ -21,6 +21,7 @@ namespace gfx {
     
 using namespace std;
     
+/// Shader Parameter Base Class for Attributes and Uniforms  
 struct ShaderParam {
     
     enum Type {
@@ -100,7 +101,7 @@ struct Uniform : public ShaderParam {
     
     
 /*-----------------------------------------------------------------------------
- *  Shader Source
+ *  Shader Source Compilation
  *-----------------------------------------------------------------------------*/
 class Shader {
 
@@ -117,13 +118,16 @@ public:
 
     Shader ( Shader::Type t ) : bLoaded(0), bActive(0), mType(t) {}
 
-    Shader( string shaderName, Shader::Type t ) 
+    Shader( string file, Shader::Type t ) 
     : bLoaded(0), bActive(0), mType(t) {
-        load( shaderName, mType );
+        load( file, mType );
     }
     
-    void add(string src);
-    void source(string src, Shader::Type);                    ///< Load Shader Src Code
+    /// Concatenate src into Source Code string;
+    Shader& add(string src);
+
+    /// Set Source Code and Compile
+    void source(string src, Shader::Type);                         ///< Load Shader Src Code
    
     //deprecated for the moment 
     void load(string file, Shader::Type);                           ///< Load Shader File(.frag and .vert)
@@ -134,22 +138,37 @@ public:
     void unload() { glDeleteShader( mId ); mId = -1; }
 
     
+    /// Get CURRENTLY BOUND SHADER PROGRAM
     static const GLint Current() {
         GLint tn;
         glGetIntegerv(GL_CURRENT_PROGRAM, &tn);
         GL::error("Shader Current Program");
         return tn;
     }
+   
+    /// Print out Shader Source Code
+    void print(){
+      printf("%s:\n%s", mType==VERTEX?"Vertex Source":"Fragment Source", mSrc.c_str()); 
+    }
     
 private:
 
+    /// Unique ID
     GLint mId;
-    bool bLoaded, bActive;   
+
+    /// Is Loaded
+    bool bLoaded;
     
+    /// Is Active boolean
+    bool bActive;   
+    
+    /// Source Code String
     string mSrc;
 
+    /// Shader Type (Vertex or Fragment, no support for GEOMETRY yet)
     Shader::Type mType;
     
+    /// Name of Shader (@todo is this needed?)
     string mName;
 
 };
@@ -162,14 +181,14 @@ inline void Shader :: source(string shadersrc, Shader::Type t) {
     compile();
 }
 
-/*-----------------------------------------------------------------------------
- *  Add Source Code To Shader
- *-----------------------------------------------------------------------------*/
-	inline void Shader :: add (string src) {
+  /// Add source code to shader
+	inline Shader& Shader :: add (string src) {
 	    mSrc += src;
+      return *this;
 	}
 
 
+  /// Compile Shader
 	inline void Shader::compile(){
 
 	    string t = mType == VERTEX ? "vertex" : "fragment";
@@ -190,6 +209,7 @@ inline void Shader :: source(string shadersrc, Shader::Type t) {
       compilerCheck(mId);
  }
 
+  /// Check for Compiler errors
   inline void Shader::compilerCheck(GLuint ID){
 	    GLint comp;
 	    glGetShaderiv(mId, GL_COMPILE_STATUS, &comp);
@@ -215,16 +235,17 @@ class ShaderProgram {
 	  bool			bActive;                          ///< Active Boolean
 			
     GLint 	mId;                                ///< Compiled and Linked Shader Program
-        
-    //Change this to a Map (so attributes and uniforms can be indexed by string)            
-    vector<Attribute> mAttribute;               ///< Udata
-    vector<Uniform> mUniform;                   ///< Udata
 
     map<string, Attribute> mAttributeMap;       ///< Udata
     map<string, Uniform> mUniformMap;           ///< Udata	
     
-    typedef map<string, Attribute>::iterator AttIt;
-    typedef map<string, Uniform>::iterator UniIt;
+        
+    //Change this to a Map (so attributes and uniforms can be indexed by string)            
+   // vector<Attribute> mAttribute;               ///< Udata
+   // vector<Uniform> mUniform;                   ///< Udata
+
+  //  typedef map<string, Attribute>::iterator AttIt;
+  //  typedef map<string, Uniform>::iterator UniIt;
 
 	public:
 
@@ -239,6 +260,7 @@ class ShaderProgram {
 
     ShaderProgram() : bLoaded(0), mId(0) {}
 
+    /// Init by loading from file or from source strings directly (default)
     ShaderProgram( string vs, string fs, bool bFile=0) : bLoaded(0), mId(0) {
 	      printf("Shader Program Initialize\n");
         if (bFile) load(vs,fs);
@@ -275,19 +297,28 @@ class ShaderProgram {
     void unload();
     
     void get();                                             ///< get attributes and uniforms
+    void printSource();                                     ///< print shader source
+    void printVariables();                                  ///< print shader uniform and attributes
+    void print(){ printSource(); printVariables(); }        ///< print both source and variables
     
     //unused?
     void setUniformVariable (char * name, float value);     ///< Change a Variable in the Shader 
-		void setTexture (char * name, int id);
+		void setTexture (char * name, int id);                  ///< Unused?
 
+    /// Get ID of uniform by name
     GLint uniform(const char * name) { 
         return mUniformMap[ string(name) ].id; 
     }
-    
+    /// Get ID of attribute by name
     GLint attribute(const char * name) { 
         return mAttributeMap[ string(name) ].id; 
     }        
 
+
+    /*-----------------------------------------------------------------------------
+     *  Setting Uniforms
+     *-----------------------------------------------------------------------------*/
+    /// Set uniform if it exists
     template<class ... TS>
     const ShaderProgram& uniform_if(const char * name, TS ... var){
       if (uniformExists(name)) return uniform(name,var...);
@@ -393,7 +424,7 @@ class ShaderProgram {
 	    link();
       linkCheck(mId);
 
-	    printf("Shader Program id %d: %s %s\n", mId, vs.c_str(), fs.c_str() );
+//	    printf("Shader Program id %d: %s %s\n", mId, vs.c_str(), fs.c_str() );
 
 	    bLoaded = true;
 	    bActive = true;
@@ -415,7 +446,7 @@ class ShaderProgram {
 	    attach(frag);
 	    link();
 
-	    printf("Shader Program: %d: %s %s\n", mId, vs.c_str(), fs.c_str() );
+	//    printf("Shader Program: %d: %s %s\n", mId, vs.c_str(), fs.c_str() );
 
 	    bLoaded = true;
 	    bActive = true;      
@@ -536,54 +567,52 @@ class ShaderProgram {
       {
 
           Uniform u( program, j );
-         // mUniform.push_back( u );
           mUniformMap[ string(u.name) ] = u;
 
-          cout << u.name << " " << uniform( u.name ) << endl; 
-          u.print();
+         // cout << u.name << " " << uniform( u.name ) << endl; 
+         // u.print();
 
       }
 
       for(int j=0; j < numActiveAttributes; j++) {
 
           Attribute a( program, j );
-        //  mAttribute.push_back( a );
           mAttributeMap[ string(a.name) ] = a;
 
-          cout << a.name << " " << attribute( a.name ) << endl; 
-          a.print();
+        //  cout << a.name << " " << attribute( a.name ) << endl; 
+        //  a.print();
 
        }
 
 	    }
  
- /*-----------------------------------------------------------------------------
- *  Deprecated load function
+
+/*-----------------------------------------------------------------------------
+ *  PRINT SHADER SOURCE
  *-----------------------------------------------------------------------------*/
-////inlined
+inline void ShaderProgram::printSource(){
+ printf("Shader Program: %d:\n", mId);
+ vert.print();
+ frag.print();
+ cout << endl;
+}
 
-	//predeclared function
-	// char * textFileRead(const char *fn);		// some memory allocation happens here
-										// be careful...  please don't call load shader 
-										// repeatedly !!!!! (you have been warned)
 
-	inline void Shader::load(string shaderName, Shader::Type t){
-
-	    // bLoaded = false;
-	    // 
-	    // cout << "loading " << shaderName << endl; 
-	    // 
-	    // string filepath =  shaderName;//File::resources + shaderName;
-	    // mSrc = textFileRead( filepath.c_str() );    
-	    // 
-	    // printf("shader src: \n%s\n", mSrc.c_str());
-	    // 
-	    // mName = shaderName;
-	    // mType = t;    
-	    // bLoaded = true;
-	    // 
-	    // compile();
-	} 
+/*-----------------------------------------------------------------------------
+ *  PRINT SHADER UNIFORMS AND ATTRIBUTES
+ *-----------------------------------------------------------------------------*/
+inline void ShaderProgram::printVariables(){
+  cout << "UNIFORMS" << endl;
+  for (auto& i : mUniformMap) {
+    cout << i.first << " " << i.second.id << endl;
+    i.second.print();
+  }
+  cout << "ATTRIBUTES" << endl;
+  for (auto& i : mAttributeMap) {
+    cout << i.first << " " << i.second.id << endl;
+    i.second.print();
+  }
+}
 
  
 /*-----------------------------------------------------------------------------
@@ -655,6 +684,10 @@ class ShaderProgram {
         
     };
   
+
+inline void Shader::load(string file, Shader::Type type ){
+  
+}
 
 } //gfx::
 

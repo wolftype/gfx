@@ -151,24 +151,23 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
 endif()
 
-
-#PRINT DIRECTORIES
 get_property(link_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
-message("GFX LINK DIRECTORES")
-foreach(d ${link_dirs})
-  message(STATUS "link dir='${d}'")
-endforeach()
 get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-message("GFX INCLUDE DIRECTORES")
-foreach(d ${inc_dirs})
-  message(STATUS "include dir='${d}'")
-endforeach()
 
-#SET TO A GLOBAL PROPERTY OF THIS SUBDIRECTORY
+#SET TO A GLOBAL PROPERTY
 set_property(GLOBAL PROPERTY GFX_LIBRARIES "${libraries}")
 set_property(GLOBAL PROPERTY GFX_INCLUDE_DIR "${inc_dirs}")
 set_property(GLOBAL PROPERTY GFX_LINK_DIR "${link_dirs}")
 
+#PRINT DIRECTORIES
+#message("GFX LINK DIRECTORES")
+#foreach(d ${link_dirs})
+#  message(STATUS "link dir='${d}'")
+#endforeach()
 
+#message("GFX INCLUDE DIRECTORES")
+#foreach(d ${inc_dirs})
+#  message(STATUS "include dir='${d}'")
+#endforeach()
 
 
