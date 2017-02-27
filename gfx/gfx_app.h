@@ -96,7 +96,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
    *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
   GFXApp(int w=800, int h=400, string name = "GFXApp", int argc = 0, char ** argv = NULL) :
-  mColor(.2,.2,.2)
+  mColor(.2,1.0,.2)
   {
        
       GFXSceneNode::mScenePtr = &scene;
@@ -195,7 +195,7 @@ public GFXSceneNode                //< has onRender() method called by mRenderer
   void clear(){
 
      mContext.setViewport();      
-     glClearColor( mColor[0],mColor[1],mColor[2], 1 );
+     glClearColor(mColor[0],mColor[1],mColor[2], 1 );
      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   

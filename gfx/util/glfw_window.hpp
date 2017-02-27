@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  lynda_window.h
+ *       Filename:  glfw_window.h
  *
  *    Description:  a window wrapper around glfwWindow
  *
@@ -75,9 +75,9 @@ struct GLFW {
 
   template<class APPLICATION>
   static void Start(APPLICATION * app){
-    printf("starting ...\n");
+    printf("starting GLFW ...\n");
     while( !app->context().shouldClose() ){//!win.shouldClose() ){
-      app->onFrame();
+      app->context().interface.OnDraw();
       app->context().pollEvents();
     }
   }
@@ -98,14 +98,17 @@ struct GLFW {
 struct GLFWContext {
 
     static GLFW * System;
+	//static GLFWWindow * CurrentWindow;
 
     GLFWwindow * mWindow;
     
     GLFWInterface interface;
     
-    static vector<WindowData*> mWindows;
+    static vector<WindowData*> mWindowData;
     static int currentWindow;
-    WindowData& windowData(){ if (!mWindows.empty()) return *mWindows[0]; }
+	static vector<GLFWwindow*> mWindows;
+
+    WindowData& windowData(){ if (!mWindowData.empty()) return *mWindowData[0]; }
 
     int mWidth, mHeight;
 
@@ -118,11 +121,11 @@ struct GLFWContext {
     GLFWContext() {}
 
     //Create a Window Context
-    void create(int w, int h, const char * name="demo"){
+    void create(int w, int h, std::string name="demo"){
         
         mWidth = w; mHeight = h;
 
-        mWindow = glfwCreateWindow(w,h,name,NULL ,NULL);
+        mWindow = glfwCreateWindow(w,h,name.c_str(),NULL ,NULL);
 
         if (!mWindow) {
           glfwTerminate();
@@ -137,8 +140,9 @@ struct GLFWContext {
         /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
         /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
 
-        mWindows.push_back( new WindowData(w,h,0) );
-        //currentWindow = id-1;
+		mWindowData.push_back( new WindowData(w,h,0) );
+		mWindows.push_back(mWindow);
+        currentWindow += 1;
 
     }
 
@@ -154,11 +158,6 @@ struct GLFWContext {
       return glfwWindowShouldClose(mWindow);
     }
 
-    //Swap front and back buffers
-    static void SwapBuffers(){
-      //glfwSwapBuffers(mWindow);
-    }
-
     //listen
     void pollEvents(){
       glfwPollEvents();
@@ -169,15 +168,21 @@ struct GLFWContext {
       glfwDestroyWindow(mWindow);
     }
 
+	//Swap front and back buffers
+	static void SwapBuffers() {
+		//printf("swapping buffs...\n");
+		glfwSwapBuffers(mWindows[currentWindow]);
+	}
+
     ~GLFWContext(){
       destroy();
     }
 };
 
 GLFW * GLFWContext::System;
-//GLFWwindow * GLFWContext::mWindow;
-vector<WindowData*> GLFWContext::mWindows;
-int GLFWContext::currentWindow;
+vector<GLFWwindow*> GLFWContext::mWindows;
+vector<WindowData*> GLFWContext::mWindowData;
+int GLFWContext::currentWindow = -1;
 
 
 } //gfx

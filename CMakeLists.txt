@@ -13,6 +13,19 @@ endif(COMMAND cmake_policy)
 #PROJECT
 project(GFX)
 
+MESSAGE ("\n\n******SYSTEM INFORMATION******")
+MESSAGE( "System Name: " ${CMAKE_SYSTEM_NAME} )
+MESSAGE( "System Processor: " ${CMAKE_SYSTEM_PROCESSOR} )
+MESSAGE( "*******************************\n\n")
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  SET( LINUX 1)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  SET( APPLE 1 ) 
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  SET( WINDOWS 1)
+endif()
+
 #PROJECT INCLUDE AND LINK
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/gfx/)
@@ -20,7 +33,13 @@ link_directories(${PROJECT_BINARY_DIR})
 
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
-message( ${CMAKE_MODULE_PATH} )
+message("\n****CMAKE Module Path ${CMAKE_MODULE_PATH}****\n" )
+
+#CUSTOM TARGETS FOR IDES
+FILE(GLOB HeaderFiles "${PROJECT_SOURCE_DIR}/gfx/*")
+add_custom_target(GFX_HEADERS SOURCES ${HeaderFiles})
+FILE(GLOB UtilFiles "${PROJECT_SOURCE_DIR}/gfx/util/*")
+add_custom_target(GFX_UTIL SOURCES ${UtilFiles})
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
@@ -49,7 +68,7 @@ if(${RASPBERRY})
 
 elseif(${APPLE})
 
-  message ("**********CONFIGURING GFX LIBRARY BUILD FOR OSX************")
+  message ("\n**********CONFIGURING GFX LIBRARY BUILD FOR OSX************\n")
 
   option(USE_CLANG "use clang" ON)
   
@@ -148,6 +167,36 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
+
+elseif(${WINDOWS})
+
+  message ("\n**********CONFIGURING GFX LIBRARY BUILD FOR WINDOWS MACHINE ************\n")
+
+  find_package(OpenGL REQUIRED)
+
+  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+  add_subdirectory(glfw)
+
+#  MESSAGE (${GLFW_INCLUDE_})
+
+  link_directories(${PROJECT_BINARY_DIR})
+  link_directories(${GLFW_BINARY_DIR})
+  link_directories(${PROJECT_SOURCE_DIR}/win/glew/lib/)
+
+  INCLUDE_DIRECTORIES(gl2ps)
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/win/glew/include/)
+  INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/glfw/include/)
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200") 
+
+  FILE(GLOB ExampleFiles "${PROJECT_SOURCE_DIR}/examples/GL/*")
+  foreach( srcfile ${ExampleFiles} )
+    get_filename_component(target ${srcfile} NAME_WE)
+    add_executable(${target} ${srcfile} )
+	target_link_libraries(${target} glfw glew32s ${GLFW_LIBRARIES} ) 
+  endforeach( srcfile ${ExampleFiles} )
 
 endif()
 

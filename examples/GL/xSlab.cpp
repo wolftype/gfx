@@ -17,11 +17,11 @@
  */
 
 #include "gfx_app.h"
-#include "util/glut_window.hpp"
+#include "util/glfw_window.hpp"
 
 using namespace gfx;
 
-struct MyApp : GFXApp<GlutContext> {
+struct MyApp : GFXApp<GLFWContext> {
 
  MBO mbo;
  Slab slab;

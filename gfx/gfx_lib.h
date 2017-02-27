@@ -54,7 +54,7 @@
 		  #include <GL/glut.h>
 		  #include <GL/glext.h>
         
-  #else //defined(__APPLE__) || defined(__OSX__)
+  #elif defined(__APPLE__) || defined(__OSX__)
 
       #define GFX_IMMEDIATE_MODE
 	    #define GFX_USE_GLEW
@@ -62,8 +62,16 @@
       #include <GL/glew.h>
       #include <OpenGL/OpenGL.h>
       #include "GLUT/glut.h"
-
-  #endif
+#elif defined (_WIN32)
+//  #include <window.h>
+//  #include <GL/gl.h>
+//  #include <GL/glext.h>
+//#define GFX_IMMEDIATE_MODE
+#include <stdlib.h>
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include "GLFW/glfw3.h"
+#endif
 
 #ifndef GFX_USE_GLES
   
