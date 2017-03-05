@@ -88,7 +88,7 @@ public WindowEventHandler
   Scene scene;                            ///< modelviewprojection matrix transforms
 
   GFXRenderNode mRenderer;                ///< root render node 
-  GFXShaderNode mSceneRenderer;           ///< shader pipeline
+  GFXShaderNode mShaderNode;              ///< shader pipeline
   GFXSceneNode  mSceneNode;
 
   GFXRenderGraph mRenderGraph;
@@ -163,12 +163,11 @@ public WindowEventHandler
        *  to pipe draw methods into a different shader, bind "this" to another
        *  subclassed GFXRenderNode and optionally overload the virtual update() method
        *-----------------------------------------------------------------------------*/
-       int smode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
-       int gmode = GFXRenderGraph::IMMEDIATE;
+       int glmode = GFXRenderGraph::IMMEDIATE;
+       int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
-       mRenderer << mSceneRenderer << mSceneNode << this; 
-       
-       mRenderGraph.root(&mRenderer).init(w,h,gmode,smode);
+       mRenderer << mSceneNode << this;
+       mRenderGraph.init(&mRenderer,w,h,glmode,stereomode);
 
        mContext.interface.addWindowEventHandler(&mRenderGraph);
 

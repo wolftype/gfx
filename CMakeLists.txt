@@ -1,4 +1,4 @@
-#CMAKE FOR GLUT WINDOWING OR EGL WINDOWING + GFX GL OR GLES RENDERING DEMOS
+#CMAKE FOR GLUT WINDOWING OR GLFW WINDOWING OR EGL WINDOWING + GFX GL OR GLES RENDERING DEMOS
 #for cross-compiling to raspberry pi or jetson etc use -DCMAKE_TOOLCHAIN_FILE=path/to/file (e.g. toolchains/rpi)
 
 #VERSION
@@ -9,18 +9,32 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
-#message(${CMAKE_SYSTEM_NAME})
 #PROJECT
 project(GFX)
+
+#DEPENDENCIES
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
+
+message( "cmake system name is: " ${CMAKE_SYSTEM} )
+message( "cmake system processor is: " ${CMAKE_SYSTEM_PROCESSOR} )
+message( "cmake module path is: " ${CMAKE_MODULE_PATH} )
 
 #PROJECT INCLUDE AND LINK
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/gfx/)
 link_directories(${PROJECT_BINARY_DIR})
 
-#DEPENDENCIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
-message( ${CMAKE_MODULE_PATH} )
+FILE(GLOB_RECURSE HeaderFiles "${PROJECT_SOURCE_DIR}/gfx/*")
+add_custom_target(headers SOURCES ${HeaderFiles})
+
+FILE(GLOB_RECURSE ScriptFiles "${PROJECT_SOURCE_DIR}/*.sh")
+add_custom_target(scripts SOURCES ${ScriptFiles})
+
+#SETTINGS
+set( GFX_USE_GLFW OFF CACHE BOOL "link against glfw examples")
+set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "build glfw examples")
+set( BUILD_EXAMPLES OFF CACHE BOOL "build gfx examples")
+
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
@@ -47,9 +61,11 @@ if(${RASPBERRY})
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
 
-elseif(${APPLE})
+#elseif(${APPLE})
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Darwin)
 
-  message ("**********CONFIGURING GFX LIBRARY BUILD FOR OSX************")
+
+  message ("**********CONFIGURING GFX LIBRARY BUILD FOR DARWIN************")
 
   option(USE_CLANG "use clang" ON)
   
@@ -72,44 +88,49 @@ elseif(${APPLE})
   include_directories(${GLEW_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIR})
 
-  #GLV should be optional
+  #GLV should be optional!
   find_package(GLV REQUIRED)
   message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
   message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
   
- # if(${GLV_FOUND})
+ # if(${GLV_FOUND})...
   include_directories(${GLV_INCLUDE_DIR})
   set(libraries ${libraries} ${GLV_LIBRARY} )
  # endif()
   include_directories(gl2ps)
 
-  #GLFW  
-#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
-#  add_subdirectory(glfw)
-#  link_directories(${PROJECT_BINARY_DIR})
-#  link_directories(${GLFW_BINARY_DIR})
-#  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-#  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
+  #Determine Libraries (e.g.GLFW or GLUT)
+  if(${GFX_USE_GLFW})
+   message("USING GLFW")
+   add_subdirectory(glfw)
+   message("GLFW_BINARY_DIR: " ${GLFW_BINARY_DIR} )
+   message("GLFW_INCLUDE_DIR: " ${GLFW_INCLUDE_DIR} )
+   link_directories(${GLFW_BINARY_DIR})
+   include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
+   #include_directories(${PROJECT_SOURCE_DIR}/glm/)
+   set(libraries ${libraries} ${GLUT_LIBRARY} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )  
+  else()
+   set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
+  endif()
 
   #small lib just compiles gl2ps 
   add_library(gfx gl2ps/gl2ps.c)
   
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
-
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
 
   #TARGETS
-  if(${BUILD_EXAMPLES})
   set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
   file(GLOB examples examples/GL/*.cpp)
   foreach(filename ${examples})
     get_filename_component(target ${filename} NAME_WE)
+    if(${BUILD_EXAMPLES})
     add_executable(${target} ${filename} )
+    else()
+    add_executable(${target} EXCLUDE_FROM_ALL ${filename} )
+    endif()
     target_link_libraries(${target} ${libraries} )
   endforeach()
-  endif()
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
@@ -121,7 +142,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
 
-  #GLV should be optional
+  #GLV should be optional!
   find_package(GLV REQUIRED)
   message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
   message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
@@ -132,22 +153,17 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
  # endif()
   include_directories(gl2ps)
 
-  #GLFW  
-#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
-#  add_subdirectory(glfw)
-#  link_directories(${PROJECT_BINARY_DIR})
-#  link_directories(${GLFW_BINARY_DIR})
-#  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-#  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
-
-  #small lib just compiles gl2ps 
-  add_library(gfx gl2ps/gl2ps.c)
-  
+  #Determine Libraries (e.g. GLUT or GLFW)
   set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
+
+  #this very small lib just compiles gl2ps 
+  add_library(gfx gl2ps/gl2ps.c)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
+
+elseif(${CMAKE_SYSTEM_NAME} MATCHES Windows)
+
 
 endif()
 

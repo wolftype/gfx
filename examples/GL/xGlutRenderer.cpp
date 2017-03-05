@@ -33,6 +33,7 @@ GFXSceneNode sceneNode;   //<-- A pointer to a scene
 GFXShaderNode shaderNode; //<-- A shader (has default settings)
 GFXViewNode viewNode;     //<-- A viewport (or many)
 GFXRenderNode renderNode; //<-- Root Node (pulls all upstream processes)
+GFXRenderGraph renderGraph;      //<-- Graph
 
 
 /*-----------------------------------------------------------------------------
@@ -67,10 +68,10 @@ void initGraphicsObjects(){
   /*-----------------------------------------------------------------------------
    *  initialize starting at root (this will call init() on all attached in pipeline)
    *-----------------------------------------------------------------------------*/
-  renderNode.init(width,height);
+  renderGraph.init(&renderNode,width,height);
 
   //choose whether to render in immediate mode or programmable pipeline
-  shaderNode.immediate(false);
+  renderGraph.immediate(false);
   GL::enablePreset();
   
   cout <<"GRAPHICS OBJECTS INITIALIZED"<<endl;
@@ -82,7 +83,7 @@ static void reshape(int w, int h){
   height = h;
 
   scene.fit(w,h);
-  renderNode.onResize(w,h);
+  renderGraph.onResize(w,h);
 }
 
 // animate is a loop that is called by glutTimerFunc
@@ -97,7 +98,7 @@ static void animate(int){
 
 
 static void draw(void){
-    renderNode.onRender();
+    renderGraph.onRender();
 }
 
 

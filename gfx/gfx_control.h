@@ -162,7 +162,7 @@ struct WindowData {
     }
 
   /*-----------------------------------------------------------------------------
-   * GFX IO DATA CONTAINER
+   * GFX IO DATA CONTAINER (add handlers?)
    *-----------------------------------------------------------------------------*/
   struct GFXio{
     Mouse mouse;
@@ -268,14 +268,18 @@ public:
 };
 
 /*-----------------------------------------------------------------------------
- *  Some Callbacks to be implemented later 
+ *  Some Context-Agnostic Callbacks to be implemented later by Context-Specific Subclasses
+ * @todo add pointer to window in static vector of handlers or add idx number to static methods
+ * and have a list of GFXios instead of just one
  *-----------------------------------------------------------------------------*/
 template <class CONTEXT>
 struct Interface {
 
-  static GFXio io;
+ // using Window = CONTEXT::
 
-  static vector<InputEventHandler*> mInputEventHandlers;
+  static GFXio io; //this should be a static map<CONTEXT::Window*, GFXio>
+
+  static vector<InputEventHandler*> mInputEventHandlers;  //maybe move to inside GFXio
   static vector<WindowEventHandler*> mWindowEventHandlers;
   
   Interface& addInputEventHandler( InputEventHandler * e ){ 
@@ -287,11 +291,12 @@ struct Interface {
      return *this; 
    }
 
+  /// @todo pass in a Context::Window* win, and call i.io[win].mWindowEventHandlers
   static void OnDraw(){
     for (auto& i : mWindowEventHandlers){
       i->onFrame();
     }
-    CONTEXT::SwapBuffers(); //<-- Swap Buffers only AFTER all window events enact onFrame() method 
+    CONTEXT::SwapBuffers(); //<-- Swap Buffers only AFTER all window events call their onFrame() method
   }
 
   static void OnResize(int w, int h){

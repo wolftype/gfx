@@ -199,12 +199,12 @@ struct GFXRenderGraph;
 
       /// set width and height, call onInit, and recurse on all upstream nodes
       void init(int w, int h, GFXRenderGraph * r){
-        mRenderGraph = r;
-        set(w,h);
-        onInit();
-        for (auto& i : mUpstream) {
-          i->init(w,h,r);
-        }
+          mRenderGraph = r;
+          set(w,h);
+          onInit();
+          for (auto& i : mUpstream) {
+            i->init(w,h,r);
+          }
       }
 
       /// Subclasses can implement their own onInit();
@@ -325,9 +325,10 @@ struct GFXRenderGraph : public WindowEventHandler  {
 
 
       /// initialize with width, height, GL MODE, and STEREO MODE
-      void init(int w, int h, int glmode, int smode){
+      void init(GFXRenderNode * r, int w, int h, int glmode = IMMEDIATE, int stereomode=MONO){
         mGLMode = glmode;
-        mStereoMode = smode;
+        mStereoMode = stereomode;
+        root(r);
         if (mRoot -> mUpstream.empty()) printf("warning: root render node is empty\n add nodes to root with << operator\n");
         mRoot -> init(w,h,this);
       }
@@ -340,7 +341,6 @@ struct GFXRenderGraph : public WindowEventHandler  {
       /// Window Event Callback
       virtual void onResize(int w, int h){
         mRoot -> resize(w,h);
-
       }
 
 
@@ -390,6 +390,7 @@ struct GFXRenderGraph : public WindowEventHandler  {
 
 GFXRenderGraph& GFXRenderNode :: graph() { return *mRenderGraph; }
 GFXRenderGraph GFXRenderNode :: graph() const { return *mRenderGraph; }
+
 
 
 /// Has VertexAttributes and Pointer to a Shader
