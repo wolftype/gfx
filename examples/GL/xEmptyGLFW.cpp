@@ -13,12 +13,12 @@ struct MyApp : GFXApp<GLFWContext> {
     printf("MYAPP SETUP\n");
     mbo = Mesh::Circle();
 
-    mRenderGraph.immediate(true);
+   // mRenderGraph.immediate(false);
  }
 
  virtual void onDraw(){
 
-    draw(mbo,1,0,0);
+    //draw(mbo,1,0,0);
     //render::begin(1,1,1,1);
     //mesh::drawElements( mbo.mesh );
 

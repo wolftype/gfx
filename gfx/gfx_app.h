@@ -111,12 +111,14 @@ public WindowEventHandler
        
       mSceneNode.mScenePtr = &scene;
 
+      printf ("app is creating window context\n");
      /*-----------------------------------------------------------------------------
       *  1. Initialize Window and Callbacks
       *-----------------------------------------------------------------------------*/
       WINDOWCONTEXT::System -> Initialize( bStereoBuf );
       mContext.create(w,h,name);
 
+      printf ("app is adding itself to context events\n");
       //add this to window context's list of listeners to events
       mContext.interface.addWindowEventHandler(this);
       mContext.interface.addInputEventHandler(this); 
@@ -166,10 +168,10 @@ public WindowEventHandler
        int glmode = GFXRenderGraph::IMMEDIATE;
        int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
-       mRenderer << mSceneNode << this;
-       mRenderGraph.init(&mRenderer,w,h,glmode,stereomode);
+       mRenderer << mShaderNode << mSceneNode << this;
 
-       mContext.interface.addWindowEventHandler(&mRenderGraph);
+       mRenderGraph.init(&mRenderer,w,h,glmode,stereomode);
+       // mContext.interface.addWindowEventHandler(&mRenderGraph);
 
 
       /*-----------------------------------------------------------------------------
@@ -241,6 +243,7 @@ public WindowEventHandler
      //below onRender() defaults to onDraw()
      //BUT we can rebind pipeline with overloaded << operator.  
      //see examples/xRendertoTexture.cpp
+     
      mRenderGraph.onRender();
 
          

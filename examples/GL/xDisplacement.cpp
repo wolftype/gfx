@@ -38,7 +38,7 @@ struct DisplacementSlab : public GFXShaderNode {
     float spacing=0.1;
     float amt=1.0;
 
-    virtual void init(int w, int h){
+    virtual void onInit(){
 
      string vert = ufloat("amt") + AVertex() + Varying() + VDisplaceCalcSimple() + MVert();
 

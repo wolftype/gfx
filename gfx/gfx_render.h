@@ -308,11 +308,11 @@ struct GFXRenderGraph : public WindowEventHandler  {
       bool stereo() const { return !(mStereoMode == MONO); }
       //bool active() { return mStereoMode & ACTIVE; }
 
-      bool immediate() const { return mGLMode == IMMEDIATE; }
-      bool useES() const { return mGLMode == ES; }
+      bool immediate() const { return (mGLMode & IMMEDIATE); }
+      bool useES() const { return (mGLMode & ES); }
 
       void immediate(bool b) {
-        if (b) mGLMode = IMMEDIATE; else mGLMode = ES;
+        b ? mGLMode |= IMMEDIATE : mGLMode &= !IMMEDIATE;
       }
 
       void left(bool b){
@@ -334,7 +334,8 @@ struct GFXRenderGraph : public WindowEventHandler  {
       }
 
       virtual void onRender(){
-        mRoot -> onRender();
+        if (mRoot)
+          mRoot -> onRender();
       }
 
 
@@ -409,6 +410,8 @@ struct GFXShaderNode : GFXRenderNode {
 
         string V = graph().useES() ? DefaultVertES() : DefaultVert();
         string F = graph().useES() ? DefaultFragES() : DefaultFrag();
+
+       // printf ("%s\n", V.c_str());
 
         program = new ShaderProgram(V,F);
         vatt.add<Vertex>(*program);

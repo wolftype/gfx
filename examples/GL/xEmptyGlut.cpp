@@ -13,7 +13,7 @@ struct MyApp : GFXApp<GlutContext> {
     printf("MYAPP SETUP\n");
     mbo = Mesh::Circle();
 
-    mRenderGraph.immediate(true);
+    mRenderGraph.immediate(false);
 
 
     Quat qa( PI*1.25 / 2.0, Vec3f(0.0,1.0,0.0) );
