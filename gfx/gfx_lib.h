@@ -1,5 +1,5 @@
 /*
- *  vsr_gxlib.h
+ *  vsr_gfx_lib.h
  *  include platform specific graphics headers
  *
  *  Created by Pablo Colapinto on 10/6/11.
