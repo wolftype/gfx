@@ -420,10 +420,12 @@ namespace gfx{
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-        gluLookAt( 
-        camera.pos().x, camera.pos().y, camera.pos().z, 
-        look.x, look.y, look.z, 
-        camera.up().x, camera.up().y, camera.up().z );   
+//        gluLookAt( 
+//        camera.pos().x, camera.pos().y, camera.pos().z, 
+//        look.x, look.y, look.z, 
+//        camera.up().x, camera.up().y, camera.up().z );   
+		//! replaced gluLookAt with glLoadMatrix(xf.modelView)
+		glLoadMatrixf(xf.modelView);// XMat::lookAt(camera.x(), camera.y(), camera.z(), camera.pos());
       
         Vec4<> tr = model.quat().axan(); 
       

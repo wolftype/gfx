@@ -13,7 +13,7 @@ struct MyApp : GFXApp<GLFWContext> {
 		printf("SETUP SCENE\n");
 		mbo = Mesh::Circle();
 
-		mRenderGraph.immediate(false); ///< set immediate mode fixed function or advanced programming pipeline
+		mRenderGraph.immediate(true); ///< set immediate mode fixed function or advanced programming pipeline
 	}
 
 	virtual void onDraw() {

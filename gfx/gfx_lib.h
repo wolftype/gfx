@@ -66,7 +66,7 @@
 //  #include <window.h>
 //  #include <GL/gl.h>
 //  #include <GL/glext.h>
-//#define GFX_IMMEDIATE_MODE
+#define GFX_IMMEDIATE_MODE
 #include <stdlib.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
