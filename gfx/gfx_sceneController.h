@@ -29,7 +29,7 @@
 
 namespace gfx{
 
-
+    /// Binding between Scene Matrix Transform Data and Context's IO (keyboard and mouse)
     class SceneController : public InputEventHandler {
 
       Scene * mScene; 

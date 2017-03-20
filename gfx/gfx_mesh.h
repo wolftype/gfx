@@ -1,6 +1,3 @@
-/// @file Vertex Mesh Data structures (geometry, normals, colors, uv textures)
-//    
-//
 //
 //  GFX
 //
@@ -9,6 +6,12 @@
 //  Created by Pablo Colapinto on 4/5/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
+
+
+/// @file Vertex Mesh Data structures (geometry, normals, colors, uv textures)
+///    
+///  Vertex Data Types are Interleaved
+
 
 #ifndef GFX_Mesh_h
 #define GFX_Mesh_h
@@ -20,29 +23,16 @@
 
 #include "gfx_matrix.h"  
 #include "gfx_gl.h"
+#include "gfx_data.h"
 
 using namespace std;  
  
 
 namespace gfx {
 
-  /// Attributes Classification
-  template<class T> // attribute types
-  struct GLVertexData {
-    struct Att { string type; string name; };
-    static map<string, GLvoid*> Attribute; // map of attribute names and offsets into memory
 
-    static GLVertexData& Init(){
-      static GLVertexData TheGLVertexData;
-      return TheGLVertexData;
-    }
-    private:
-      GLVertexData(){ Make(); }
-      static void Make();
-  };
-  template<class T>
-  map<string,GLvoid*> GLVertexData<T>::Attribute;
-
+  /// Just Position and Normal @todo rename to VertexPN, VertexCT, VertexPT, etc
+  /// @todo template Vec3f to use OtherLibrary::Vec types
   struct VertexPosition {
      Vec3f Pos;
      Vec3f Norm;
@@ -55,7 +45,14 @@ namespace gfx {
 
      float operator[] (int idx) { return Pos[idx]; }
   };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexPosition>::Make(){
+        Attribute["position"]=0;
+        Attribute["normal"]=VertexPosition::on();
+   }
 
+
+  /// Just Color Value and Texture Coordinate
   struct VertexColor {
      Vec4f Col;
      Vec2f Tex;
@@ -65,15 +62,18 @@ namespace gfx {
  
      static GLvoid * ot() { return (GLvoid*)sizeof(Vec4f); }
 
-     //float operator[] (int idx) { return Col[idx]; }
      float * begin() { return &Col[0]; }
 
   };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexColor>::Make(){
+        Attribute["color"]=0;
+        Attribute["texCoord"]=VertexColor::ot();
+   }
+
 
    
-  /*-----------------------------------------------------------------------------
-   *  Position and texture
-   *-----------------------------------------------------------------------------*/
+  /// Just Position and 2D Texture Coordinate
   struct VertexTexture {
       Vec3f Pos;
       Vec2f Tex;
@@ -85,37 +85,39 @@ namespace gfx {
       float * begin() { return &Pos[0]; }
   
   };
-     template<> inline void GLVertexData<VertexTexture>::Make(){
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexTexture>::Make(){
         Attribute["position"]=0;
         Attribute["texCoord"]=VertexTexture::ot();
-     }
+   }
 
-  /*-----------------------------------------------------------------------------
-   *  Position and 3D texture
-   *-----------------------------------------------------------------------------*/
+  /// Just Position and 3D Texture Coordinate
   struct VertexTexture3D {
-      Vec3f Pos;
-      Vec3f Tex;
+    
+      Vec3f Pos; ///< 3D Position
+      Vec3f Tex; ///< 3D Texture Coordinate
 
       VertexTexture3D( const Vec3f& p, const Vec3f& t) : Pos(p), Tex(t) {}
       VertexTexture3D( float x, float y, float z ) : Pos(x,y,z), Tex(0,0,0) {}
 
-      static GLvoid * on() { return 0; }
-      static GLvoid * oc() { return 0; }
       static GLvoid * ot() { return (GLvoid*)sizeof(Vec3f); }
- //     float operator[] (int idx) { return Pos[idx]; } 
       float * begin() { return &Pos[0]; }
   
   };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexTexture3D>::Make(){
+        Attribute["position"]=0;
+        Attribute["texCoord"]=VertexTexture3D::ot();
+   }
 
   /*!
    *  VERTEX DATA Interleaved With 3D textures
    */
     struct VertexTex3D {
-        Vec3<float> Pos;        ///< 3d Position
-        Vec3<float> Norm;       ///< 3d normal
-        Vec4<float> Col;        ///< RGBA Color (could be uchar)
-        Vec3<float> Tex;        ///< UV Coordinates
+        Vec3f Pos;        ///< 3D Position
+        Vec3f Norm;       ///< 3D normal
+        Vec4f Col;        ///< RGBA Color (could be uchar)
+        Vec3f Tex;        ///< 3D UV Coordinates
 
                 
         VertexTex3D(const Vec3f& pos = Vec3f(0,0,0), 
@@ -150,9 +152,19 @@ namespace gfx {
         }
      };
      
+
+  /// Set VertexTex3D Offset map
+  template<> inline void GLVertexData<VertexTex3D>::Make(){
+        Attribute["position"]=0;
+        Attribute["normal"]=VertexTex3D::on();
+        Attribute["sourceColor"]=VertexTex3D::oc();
+        Attribute["texCoord"]=VertexTex3D::ot();
+   }
+
     
   /*!
-   *  VERTEX DATA Interleaved
+   *  VERTEX DATA (Interleaved)
+      Position, Normal, Color, 2D Texture
    */
     struct Vertex {
         Vec3<float> Pos;        ///< 3d Position
@@ -371,6 +383,7 @@ namespace gfx {
 
   };
 
+/// Functions creating mesh objects, either templated or inlined
 namespace mesh{
 
   template<class T>
@@ -408,6 +421,7 @@ namespace mesh{
       return m;
   }
 
+  ///width, height, interspacing
   template<class T, class TexFunc>
   MeshData<T> uvtex(int w, int h, float spacing, TexFunc f){
      vector<T> tv;

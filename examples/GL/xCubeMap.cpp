@@ -18,6 +18,7 @@
 
 
 #include "gfx_app.h"
+#include "gfx_effects.h"
 
 #include "util/glut_window.hpp"
 #include "util/gfx_stat.h"
@@ -25,205 +26,21 @@
 using namespace gfx;
 
 
-/*-----------------------------------------------------------------------------
- *  OPENGL CUBEMAP TEXTURE 
- *-----------------------------------------------------------------------------*/
-struct CubeMap {
-  
-  CubeMap(int w, int h) : mWidth(w), mHeight(h) { init(); }
-
-  GLuint mID;
-  int mWidth, mHeight;
-
-  GLenum mType = GL_UNSIGNED_BYTE;
-  void type(GLenum t) { mType = t; }
-
-  GLuint id() const { return mID; }
-
-
-  void init(){
-    glEnable(GL_TEXTURE_CUBE_MAP);
-    generate();
-    alloc();
-    param();
-
-  }
-
-  void generate(){
-    glGenTextures(1, &mID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mID);
-  }
-
-  void alloc(){
-    for (int i = 0;i<6;++i){
-      glTexImage2D (GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, //< target
-                    0,                                //< lod
-                    GL_RGBA,                          //< internal format
-                    mWidth, mHeight, 0,               //< width, height, border
-                    GL_RGBA,                          //< format of data
-                    mType,                            //< data type (e.g. GL_FLOAT)
-                    NULL);                            //< no actual data yet
-    }
-  }
-
-  void param(){
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
-  }
-
-  void bind(){
-    glBindTexture(GL_TEXTURE_CUBE_MAP, mID);
-  }
-  void unbind() { glBindTexture(GL_TEXTURE_CUBE_MAP, 0); }
-};
-
-
-struct RenderToCubeMap : GFXShaderNode {
-
-  FBO fbo;
-
-  CubeMap * texture;
-  CubeMap * textureB;
-
-  void onInit(){
-    program = new ShaderProgram(makeVert(MakeCubemapVert()), DefaultFrag(), 0);
-
-    bindAttributes();
-    
-    //careful of max width and height here
-    texture = new CubeMap(width,height);
-    textureB = new CubeMap(width,height);
-    
-    fbo.set(width,height);
-    fbo.init();
-
-    texture->bind();
-    fbo.bind();   
-       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, texture->id(), 0 );
-    fbo.unbind();
-    texture->unbind();
-  }
-
-   void swap() { 
-      CubeMap * tmp = texture; texture = textureB; textureB = tmp;  
-   };
-
-  void onRender(){
-      fbo.bind();
-        program->bind();
-          program->uniform("uNear",0.1f);
-          program->uniform("uFar",10.f);
-          glViewport(0, 0, width, height ); 
-          glClearColor(0,0,0,0);
-          // glClearDepth(1.f);
-          for (int i=0;i<6;++i){
-            program->uniform("cmFace",i);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, texture->id(), 0 );
-            fbo.checkStatus();
-            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            for (auto& i : mUpstream) {
-              i->update(); //< updates currently bound shader's matrices
-              i->onRender();
-            }
-          }
-      program->unbind();
-    fbo.unbind();
-    swap();
-
-  }
-
-};
-
-struct TexMap {
-
-  TMBO<VertexTex3D> mbo;
-
-  void onInit(){
-                                      // w | h | spacing | lambda for assigning texture coordinates
-    auto m = mesh::uvtex<VertexTex3D>( 11, 11, .2, [](float a, float b){ 
-      
-      float phi = -PIOVERFOUR + b * PIOVERTWO;
-      float theta = a * PI;
-
-      Quat qa(theta, Vec3f(0,1,0));
-      Quat qb(phi, Quat::spin(Vec3f(0,0,1),qa)); 
-
-      Vec3f v = Quat::spin(Vec3f(1,0,0), qb*qa);
-      
-      return v.unit();
-    
-    } );
-    
-    mbo = m;
-  }
-
-};
-
-struct CubeSlab : GFXRenderNode {
-
-    ShaderProgram * program;
-    VertexAttributes vatt;
-
-    TexMap rect;
-    CubeMap * texture;
-
-    virtual void onInit(){
-      program = new ShaderProgram(CubeClipSpaceVert(), CubeFrag());
-      program->bind();
-          /* vatt.add(program->id(), "position", sizeof(VertexTex3D), 0); */ 
-          /* vatt.add(program->id(), "sourceColor", sizeof(VertexTex3D), VertexTex3D::oc() ); */ 
-          /* vatt.add(program->id(), "normal", sizeof(VertexTex3D), VertexTex3D::on()); */ 
-          /* vatt.add(program->id(), "texCoord", sizeof(VertexTex3D), VertexTex3D::ot()); */
-        for( auto& i : program->attributes() ){
-          cout << i.first << endl;
-          vatt.add(program->id(), i.first, sizeof(VertexTex3D), offset( i.first ) );
-      }
-      program->unbind();
-
-      rect.onInit();
-    }
-
-    virtual GLvoid * offset(string s){
-      if (s == "normal") return VertexTex3D::on();
-      if (s == "sourceColor") return VertexTex3D::oc();
-      if (s == "texCoord") return VertexTex3D::ot();
-      return 0;
-    }
-
-    virtual void onRender(){
-      
-      for (auto& i : mUpstream) i->onRender(); //call upstream render to framebuffer
-
-
-    if (mDownstream) glViewport(0,0,mDownstream->width, mDownstream->height);
-
-      program->bind();
-        texture->bind();
-          rect.mbo.render(vatt);
-        texture->unbind();
-      program->unbind();
-    }
-
-};
-
-
-
 struct MyApp : GFXApp<GlutContext> {
 
+ MyApp() : GFXApp<GlutContext>(800,400,"name",false) {}
+
  MBO mbo;
- RenderToCubeMap cubeSceneRenderer;
+ RenderToCubeMap cubeMapBuffer;
  CubeSlab cubeSlab;
+ 
+ GFXStereoNode stereo;
+ GFXSplitViewNode splitView;
 
- void setup(){
-        
-    cubeSceneRenderer.immediate(false); 
-
+  /// A Bunch of Triangles
+  void makeMesh(){
     Rand::Seed();
 
-    /// A bunch of triangles
     float span = 5.0;
     int num = 10;
     Mesh m;
@@ -238,6 +55,7 @@ struct MyApp : GFXApp<GlutContext> {
       m.add(pos).add().add(a).add().add(b);
 
     }}}
+
     /// Randomly colored
     for (auto& i : m.vertex() ){
       i.Col.set( Rand::Num(), Rand::Num(), Rand::Num(), 1.0 );
@@ -245,34 +63,32 @@ struct MyApp : GFXApp<GlutContext> {
     m.store();
     mbo = m;
 
-    
-    cubeSceneRenderer.set(500,500);
-    cubeSceneRenderer.onInit();
+  }
 
-    cubeSlab.set(width,height);
-    cubeSlab.onInit();
-    cubeSlab.texture = cubeSceneRenderer.texture; //bind textures
+  void setup(){
 
-    mRenderer.clear();
-    mRenderer << cubeSlab << cubeSceneRenderer << this;//bypass sceneRender mSceneRenderer;
+    makeMesh();
+        
+    mRenderer.reset();
+    mRenderer << stereo << cubeSlab << cubeMapBuffer << mSceneNode << this;
+   
+    mRenderGraph.init(800,400,0,GFXRenderGraph::ANAGLYPH );//IMMEDIATE);
 
-    ShaderProgram& s = *cubeSceneRenderer.program;
-    if ( s.uniformExists("projection") ) printf("YES\n");
-    
-    //mRenderer.init(500,500);
-
- }
+    cubeSlab.texture = cubeMapBuffer.texture; //bind textures
 
 
- void onDraw(){    
+  }
+
+
+  void onDraw(){    
     draw(mbo,1,0,0);
- }
+  }
 
 };
 
 
-int main(){
 
+int main(){
   MyApp app;
   app.start();
   return 0;

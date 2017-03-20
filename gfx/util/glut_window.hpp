@@ -30,59 +30,59 @@ using namespace std;
 
 namespace gfx{
 
+struct GlutContext;
 
-template<class CONTEXT> 
-struct GlutInterface : Interface<CONTEXT> {
+struct GlutInterface : Interface<GlutContext> {
   
   static void Draw(void){
-    Interface<CONTEXT>::OnDraw();
+    Interface<GlutContext>::OnDraw();
   }
   static void OnReshape(int w, int h){
-    Interface<CONTEXT>::OnResize(w,h);
+    Interface<GlutContext>::OnResize(w,h);
   }
 
   
   static void OnMouse(int button, int state, int x, int y){
     Mouse mouse(button,state,x,y);
-    Interface<CONTEXT>::io.keyboard.modifier = glutGetModifiers();
+    Interface<GlutContext>::io.keyboard.modifier = glutGetModifiers();
     if (state == GLUT_DOWN) {
       mouse.state |= Mouse::IsDown;
-      Interface<CONTEXT>::OnMouseDown(mouse);
+      Interface<GlutContext>::OnMouseDown(mouse);
     }
     if (state == GLUT_UP) {
       mouse.state = 0;//Mouse::IsDown;
-      Interface<CONTEXT>::OnMouseUp(mouse);
+      Interface<GlutContext>::OnMouseUp(mouse);
     }
   }
 
   static void OnMotion(int x, int y){
     Mouse mouse (0, Mouse::IsDown | Mouse::IsMoving, x, y);
-    Interface<CONTEXT>::OnMouseDrag(mouse);    
+    Interface<GlutContext>::OnMouseDrag(mouse);
   }
 
   static void OnPassiveMotion(int x, int y){
     Mouse mouse(0, Mouse::IsMoving, x, y);
-    Interface<CONTEXT>::OnMouseMove(mouse);
+    Interface<GlutContext>::OnMouseMove(mouse);
   }
 
   static void OnKeyboardDown(unsigned char key, int x, int y){
     Keyboard keyboard(key,glutGetModifiers(),x,y,true);
-    Interface<CONTEXT>::OnKeyDown(keyboard); 
+    Interface<GlutContext>::OnKeyDown(keyboard);
  }
 
   static void OnKeyboardUp(unsigned char key, int x, int y){
     Keyboard keyboard(key,glutGetModifiers(),x,y,false);
-    Interface<CONTEXT>::OnKeyUp(keyboard);
+    Interface<GlutContext>::OnKeyUp(keyboard);
   }
     
   static void OnSpecialDown(int key, int x, int y){
     Keyboard keyboard(key,glutGetModifiers(),x,y,true);
-    Interface<CONTEXT>::OnKeyDown(keyboard);   
+    Interface<GlutContext>::OnKeyDown(keyboard);
   }
 
   static void OnSpecialUp(int key, int x, int y){
     Keyboard keyboard(key,glutGetModifiers(),x,y,false);
-    Interface<CONTEXT>::OnKeyUp(keyboard);  
+    Interface<GlutContext>::OnKeyUp(keyboard);
   }     
 
 };
@@ -93,8 +93,8 @@ struct GlutInterface : Interface<CONTEXT> {
  */
 struct Glut {
 
-  static Glut& Initialize(){
-    static Glut TheGlutInstance;
+  static Glut& Initialize(bool bStereo){
+    static Glut TheGlutInstance(bStereo);
     return TheGlutInstance; 
   }
 
@@ -106,26 +106,27 @@ struct Glut {
   static void Terminate(){}
 
   private:
-    Glut(){
+    Glut( bool bStereo ){
       int argc = 1;
       char c[] = {'G','F','X'};
       char * argv[] = {c,NULL};
+
       glutInit(&argc,argv);
-      glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+      glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | ( bStereo ? GLUT_STEREO : 0) );
     }
 
 };
 
 
 /*!
- *  A GlutContext can have a bunch of windows, 
+ *  A Context can own a bunch of windows,
  *
  */
 struct GlutContext { 
   
   static Glut * System;
 
-  GlutInterface<GlutContext> interface;
+  GlutInterface interface;
   static vector<WindowData*> mWindows;
   static int currentWindow;
 
@@ -134,23 +135,22 @@ struct GlutContext {
     int id = glutCreateWindow(name.c_str());
            
     //WINDOW CALLBACKS
-    glutDisplayFunc(GlutInterface<GlutContext>::Draw);         
+    glutDisplayFunc(GlutInterface::Draw);
     glutTimerFunc(10, Animate, 1);
     glutReshapeFunc(Reshape);
     glutReshapeWindow(w,h);
     glutPositionWindow(offsetW, offsetH);
 
-
     //MOUSE INPUT CALLBACKS
-    glutMouseFunc( GlutInterface<GlutContext>::OnMouse);
-    glutMotionFunc( GlutInterface<GlutContext>::OnMotion);
-    glutPassiveMotionFunc( GlutInterface<GlutContext>::OnPassiveMotion);
+    glutMouseFunc( GlutInterface::OnMouse);
+    glutMotionFunc( GlutInterface::OnMotion);
+    glutPassiveMotionFunc( GlutInterface::OnPassiveMotion);
 
     //KEYBOARD INPUT CALLBACKS
-    glutKeyboardFunc( GlutInterface<GlutContext>::OnKeyboardDown );
-    glutKeyboardUpFunc(GlutInterface<GlutContext>::OnKeyboardUp );
-    glutSpecialFunc( GlutInterface<GlutContext>::OnSpecialDown );
-    glutSpecialUpFunc( GlutInterface<GlutContext>::OnSpecialUp );
+    glutKeyboardFunc( GlutInterface::OnKeyboardDown );
+    glutKeyboardUpFunc(GlutInterface::OnKeyboardUp );
+    glutSpecialFunc( GlutInterface::OnSpecialDown );
+    glutSpecialUpFunc( GlutInterface::OnSpecialUp );
 
     mWindows.push_back( new WindowData(w,h,id) );
     currentWindow = id-1;
@@ -175,7 +175,6 @@ struct GlutContext {
 
   static void Animate(int){
     glutPostRedisplay();
-    //glutSwapBuffers(); ///< do not call swap buffers here -- let interface Draw func call context's swapbuffers...
     glutTimerFunc(20, Animate, 0);
   }
 
@@ -186,7 +185,7 @@ struct GlutContext {
   static void Reshape(int width, int height){
     currentWindow = glutGetWindow()-1;
     reshape(width,height);
-    GlutInterface<GlutContext>::OnReshape(width,height);
+    GlutInterface::OnReshape(width,height);
   }
 
   static void reshape(int w, int h){ 

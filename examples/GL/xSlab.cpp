@@ -17,6 +17,7 @@
  */
 
 #include "gfx_app.h"
+#include "gfx_effects.h"
 #include "util/glfw_window.hpp"
 
 using namespace gfx;
@@ -29,9 +30,9 @@ struct MyApp : GFXApp<GLFWContext> {
  virtual void setup(){
 
     mbo = Mesh::Sphere();
-    mSceneRenderer.immediate(false); 
+    mRenderGraph.immediate(false); 
 
-    slab.init();
+    slab.init(10,10, &mRenderGraph);
     
     float * cval = new float [slab.width*slab.height*4];
         

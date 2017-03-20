@@ -243,8 +243,10 @@ namespace gfx{
   };
 
   
-/*-----------------------------------------------------------------------------
+/*! 
  *  CAMERA: A moving pose with a view and a lens
+
+  @todo fovy vs. frust (fix frust)
  *-----------------------------------------------------------------------------*/
   struct Camera : public MPose {     
     
@@ -253,8 +255,8 @@ namespace gfx{
     
     bool bUseFrust;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(true){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(true){} 
+    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }
@@ -418,10 +420,12 @@ namespace gfx{
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-        gluLookAt( 
-        camera.pos().x, camera.pos().y, camera.pos().z, 
-        look.x, look.y, look.z, 
-        camera.up().x, camera.up().y, camera.up().z );   
+//        gluLookAt( 
+//        camera.pos().x, camera.pos().y, camera.pos().z, 
+//        look.x, look.y, look.z, 
+//        camera.up().x, camera.up().y, camera.up().z );   
+		//! replaced gluLookAt with glLoadMatrix(xf.modelView)
+		glLoadMatrixf(xf.modelView);// XMat::lookAt(camera.x(), camera.y(), camera.z(), camera.pos());
       
         Vec4<> tr = model.quat().axan(); 
       

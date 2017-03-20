@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  gfx_mbo_temp.h
+ *       Filename:  gfx_mbo.h
  *
- *    Description:  temp 
+ *    Description:  mesh buffer objects (vertex data and indexing) 
  *
  *        Version:  1.0
  *        Created:  02/06/2015 18:56:46

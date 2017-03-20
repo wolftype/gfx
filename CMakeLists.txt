@@ -9,7 +9,6 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 OLD)
 endif(COMMAND cmake_policy)
 
-#message(${CMAKE_SYSTEM_NAME})
 #PROJECT
 project(GFX)
 
@@ -33,7 +32,6 @@ link_directories(${PROJECT_BINARY_DIR})
 
 #DEPENDENCIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules/")
-message("\n****CMAKE Module Path ${CMAKE_MODULE_PATH}****\n" )
 
 #CUSTOM TARGETS FOR IDES
 FILE(GLOB HeaderFiles "${PROJECT_SOURCE_DIR}/gfx/*")
@@ -177,8 +175,6 @@ elseif(${WINDOWS})
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
   add_subdirectory(glfw)
 
-#  MESSAGE (${GLFW_INCLUDE_})
-
   link_directories(${PROJECT_BINARY_DIR})
   link_directories(${GLFW_BINARY_DIR})
   link_directories(${PROJECT_SOURCE_DIR}/win/glew/lib/)
@@ -203,7 +199,7 @@ endif()
 get_property(link_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY LINK_DIRECTORIES)
 get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 
-#SET TO A GLOBAL PROPERTY
+#SET TO A GLOBAL PROPERTY FOR WHEN ADDING GFX AS A SUBDIRECTORY
 set_property(GLOBAL PROPERTY GFX_LIBRARIES "${libraries}")
 set_property(GLOBAL PROPERTY GFX_INCLUDE_DIR "${inc_dirs}")
 set_property(GLOBAL PROPERTY GFX_LINK_DIR "${link_dirs}")

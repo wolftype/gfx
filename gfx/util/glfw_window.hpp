@@ -3,7 +3,7 @@
  *
  *       Filename:  glfw_window.h
  *
- *    Description:  a window wrapper around glfwWindow
+ *    Description:  a context wrapper around GLFW windows
  *
  *        Version:  1.0
  *        Created:  02/07/2014 11:45:18
@@ -68,17 +68,20 @@ struct GLFWInterface : Interface<GLFWContext> {
  */
 struct GLFW {
 
-  static GLFW& Initialize(){////int argc, char ** argv){
-    static GLFW TheGLFW;
+  static GLFW& Initialize(int mode = 0){////int argc, char ** argv){
+    static GLFW TheGLFW(mode);
     return TheGLFW;
   }
 
+  /// Start Graphics Thread, passing application in
+  /// fetches the GLFWInterface member of Application's context
   template<class APPLICATION>
   static void Start(APPLICATION * app){
-    printf("starting GLFW ...\n");
+    printf("starting ...\n");
     while( !app->context().shouldClose() ){//!win.shouldClose() ){
+      //app->onFrame();
       app->context().interface.OnDraw();
-      app->context().pollEvents();
+      app->context().pollEvents(); //why not swap buffers here?
     }
   }
 
@@ -87,28 +90,35 @@ struct GLFW {
   }
 
   private:
-    GLFW() {
+    GLFW(int mode) {
       if( !glfwInit() ) exit(EXIT_FAILURE); 
     }
 };
 
-/*-----------------------------------------------------------------------------
- *  A GLFW Window Wrapper
- *-----------------------------------------------------------------------------*/
+/*!
+
+    A GLFW Context 
+    Has a ::System
+
+ */
+
 struct GLFWContext {
 
     static GLFW * System;
-	//static GLFWWindow * CurrentWindow;
 
-    GLFWwindow * mWindow;
-    
+    static GLFWwindow * mWindow;  //one window?  many . ..
+    //static vector<GLFWwindow*> mWindow; or map<GLFWwindow*, int> mWindow;
     GLFWInterface interface;
     
-    static vector<WindowData*> mWindowData;
+    static vector<WindowData*> mWindows;
     static int currentWindow;
-	static vector<GLFWwindow*> mWindows;
 
-    WindowData& windowData(){ if (!mWindowData.empty()) return *mWindowData[0]; }
+    /// Get Window Information, if one exists
+    /// @todo handle case of no windows created
+    WindowData& windowData(){ 
+      if (!mWindows.empty()) return *mWindows[0]; 
+      else return create(200,200); 
+    }
 
     int mWidth, mHeight;
 
@@ -121,8 +131,10 @@ struct GLFWContext {
     GLFWContext() {}
 
     //Create a Window Context
-    void create(int w, int h, std::string name="demo"){
-        
+    WindowData& create(int w, int h, string name="default"){
+
+        cout << "creating GLFW window" << endl;
+
         mWidth = w; mHeight = h;
 
         mWindow = glfwCreateWindow(w,h,name.c_str(),NULL ,NULL);
@@ -135,15 +147,21 @@ struct GLFWContext {
         glfwMakeContextCurrent(mWindow);
         glfwSwapInterval(1); //<-- force interval (not guaranteed to work with all graphics drivers)
 
+        //register callback when window is resized
+        glfwSetWindowSizeCallback(mWindow, Reshape );
+
         //register callbacks for keyboard and mouse
         /* glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown); */
         /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
         /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
 
-		mWindowData.push_back( new WindowData(w,h,0) );
-		mWindows.push_back(mWindow);
-        currentWindow += 1;
+        mWindows.push_back( new WindowData(w,h,0) );
+        return *mWindows.back();
 
+    }
+
+    static void Reshape(GLFWwindow * win, int w, int h){
+        GLFWInterface::OnResize(w,h);
     }
 
 
@@ -158,6 +176,11 @@ struct GLFWContext {
       return glfwWindowShouldClose(mWindow);
     }
 
+    //Swap front and back buffers
+    static void SwapBuffers(){
+      glfwSwapBuffers(mWindow);
+    }
+
     //listen
     void pollEvents(){
       glfwPollEvents();
@@ -168,21 +191,15 @@ struct GLFWContext {
       glfwDestroyWindow(mWindow);
     }
 
-	//Swap front and back buffers
-	static void SwapBuffers() {
-		//printf("swapping buffs...\n");
-		glfwSwapBuffers(mWindows[currentWindow]);
-	}
-
     ~GLFWContext(){
       destroy();
     }
 };
 
 GLFW * GLFWContext::System;
-vector<GLFWwindow*> GLFWContext::mWindows;
-vector<WindowData*> GLFWContext::mWindowData;
-int GLFWContext::currentWindow = -1;
+GLFWwindow * GLFWContext::mWindow;
+vector<WindowData*> GLFWContext::mWindows;
+int GLFWContext::currentWindow;
 
 
 } //gfx

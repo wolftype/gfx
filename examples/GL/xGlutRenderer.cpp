@@ -33,12 +33,14 @@ GFXSceneNode sceneNode;   //<-- A pointer to a scene
 GFXShaderNode shaderNode; //<-- A shader (has default settings)
 GFXViewNode viewNode;     //<-- A viewport (or many)
 GFXRenderNode renderNode; //<-- Root Node (pulls all upstream processes)
+GFXRenderGraph renderGraph;      //<-- Graph
 
 
 /*-----------------------------------------------------------------------------
  *  This Initialization function should be called AFTER an OpenGL context is created
  *-----------------------------------------------------------------------------*/
 void initGraphicsObjects(){
+ 
 
   /*-----------------------------------------------------------------------------
    *  mesh information
@@ -49,7 +51,6 @@ void initGraphicsObjects(){
    *  scene matrix information
    *-----------------------------------------------------------------------------*/
   scene.camera.pos(0,0,5);     //<-- set camera position
-  scene.resize(width,height);  //<-- set view width and height (pixels)
 
   sceneNode.scene( &scene );   //<-- attach pointer to scene to sceneNode
   meshNode.add( &circle );     //<-- attach pointer to mesh to meshnode
@@ -67,10 +68,11 @@ void initGraphicsObjects(){
   /*-----------------------------------------------------------------------------
    *  initialize starting at root (this will call init() on all attached in pipeline)
    *-----------------------------------------------------------------------------*/
-  renderNode.init(100,100);
+  renderGraph.init(&renderNode,width,height);
 
   //choose whether to render in immediate mode or programmable pipeline
-  shaderNode.immediate(false);
+  renderGraph.immediate(false);
+  GL::enablePreset();
   
   cout <<"GRAPHICS OBJECTS INITIALIZED"<<endl;
 
@@ -80,7 +82,8 @@ static void reshape(int w, int h){
   width  = w; 
   height = h;
 
-  renderNode.resize(w,h);
+  scene.fit(w,h);
+  renderGraph.onResize(w,h);
 }
 
 // animate is a loop that is called by glutTimerFunc
@@ -95,21 +98,7 @@ static void animate(int){
 
 
 static void draw(void){
-
-    //1. Set view port size and position
-    glViewport(0,0,width,height);
-    //2. Set the Clear Screen Background Color To Red
-    glClearColor(1,0,0,1);
-    //3. Clear the Screen
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    scene.push(shaderNode.immediate());
-
-       renderNode.onRender();
-
-    scene.pop(shaderNode.immediate());
-
+    renderGraph.onRender();
 }
 
 
@@ -132,6 +121,7 @@ int main(int argc, char * argv[] ){
     //4. Begin Animation Timer          
     glutTimerFunc(10,animate,1);
 
+    // Initialize glew
     glewExperimental = true;
     GLenum glewError = glewInit();
       if (glewError != GLEW_OK){

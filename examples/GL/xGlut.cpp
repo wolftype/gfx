@@ -85,12 +85,12 @@ int main(int argc, char * argv[] ){
     //4. Reshape the window (calls the reshape function)
     glutReshapeWindow(640, 480);
 
-    //3. Specify a Display Function (for whenever glutPostRedisplay is called)
+    //5. Specify a Display Function (for whenever glutPostRedisplay is called)
     glutDisplayFunc(draw); 
-    //4. Begin Animation Timer          
+    //6. Begin Animation Timer          
     glutTimerFunc(10,animate,1);
  
-    //4. Start The Main Loop
+    //7. Start The Main Loop
     glutMainLoop();  
 
     return 0;
