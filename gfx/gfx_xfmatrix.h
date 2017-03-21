@@ -140,14 +140,14 @@ namespace gfx{
     
         
         
-        static  Mat4f lookAt2(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
-            return Mat4f(
-                         ux[0], ux[1], ux[2], -(ux.dot(eye)),
-                         uy[0], uy[1], uy[2], -(uy.dot(eye)),
-                         uz[0], uz[1], uz[2], -(uz.dot(eye)),
-                         0, 0, 0, 1
-                         );
-        }
+        // static  Mat4f lookAt2(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
+        //     return Mat4f(
+        //                  ux[0], ux[1], ux[2], -(ux.dot(eye)),
+        //                  uy[0], uy[1], uy[2], -(uy.dot(eye)),
+        //                  uz[0], uz[1], uz[2], -(uz.dot(eye)),
+        //                  0, 0, 0, 1
+        //                  );
+        // }
         
         //transposed version
         static  Mat4f lookAt(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
@@ -204,15 +204,15 @@ namespace gfx{
 
         }
        
-        static  Mat4f fovy2 (float rad, float aspectRatio, float near, float far)
-        {
-            float top = near * tan(rad);
-            float bottom = -top;
-            float left = bottom * aspectRatio;
-            float right = top * aspectRatio;
+        // static  Mat4f fovy2 (float rad, float aspectRatio, float near, float far)
+        // {
+        //     float top = near * tan(rad);
+        //     float bottom = -top;
+        //     float left = bottom * aspectRatio;
+        //     float right = top * aspectRatio;
             
-            return frustum2(left, right, bottom, top, near, far);
-        }
+        //     return frustum2(left, right, bottom, top, near, far);
+        // }
 
         /*! Calculate Field of View (Perspective)
         http://unspecified.wordpress.com/2012/06/21/calculating-the-gluperspective-matrix-and-other-opengl-matrix-maths/
@@ -231,6 +231,27 @@ namespace gfx{
                 0, f, 0, 0,
                 0, 0, c, -1,
                 0, 0, d, 0        
+            );
+        }
+
+        static Mat4f fovyStereo (float rad, float ratio, float near,
+                                 float far, float offset, float focal)
+        {
+            float tn = tan (rad/2.0);
+            float top = near * tn; 
+            float f = 1.0 / tn;
+
+            float zratio = near / focal;
+            float shift = offset * zratio;
+
+            float left = -ratio * top - shift;
+            float right = ratio * top - shift;
+
+            return Mat4f(
+                2*near/(right-left), 0, 0, 0,
+                0, f, 0, 0,
+                -(right+left)/(right-left), 0, -(far+near)/(far-near), -1,
+                0, 0, -2*far*near/(far-near), 0
             );
         }
         

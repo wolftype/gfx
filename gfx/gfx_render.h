@@ -4,13 +4,15 @@
  *       @FILENAME:  gfx_render.h
  *
  *    Description:  rendering pipelines
- *                  a rendering graph that makes complicated effects like motion trace easier.
+ *                  a rendering graph that aims to make complicated multipass effects like motion trace easier.
  *                  provides boolean switchability between fixed function and programmable OpenGL
  *
- *    based on work with Graham Wakefield for the AlloSphere Research Group during our NanoMed project
+ *    loosely based on work with Graham Wakefield for the AlloSphere Research Group during our NanoMed project
  *
- *
- *    GFXRenderNode the root node, calls all upstream processes, overloads << operator.
+ *    GFXRenderGraph has a root render node, width and height, immediate/programmable, and mono/stereo.
+                     GFXApp calls its rendergraph . onRender () method
+ *  
+ *    GFXRenderNode the root node, calls all upstream processes, overloads << operator.  GFXAPP is a rendernode.
       GFXStereoNode pulls into back left and back right buffers (active) or resets and color masks in between (anaglyph)
       GFXFrameBufferNode
  *    GFXViewNode   sets the glViewport.  q: how to instantiate multiple with multiple mvp matrices.
@@ -24,9 +26,11 @@
  *    GFXTextureNode points to a texture which it wraps around upstream input (a meshnode). downstream is a SceneNode or ShaderNode.
  *    GFXEffectsNode points a texture to a framebuffer color buffer, binds an MBO rect (slab) and executes a fragment shader on it
  *                    Q: render to screen to to another framebuffer?
+ *    GFXMaterialNode Combines Shader, Textures to pass a Mesh through
  *
- *    fix initialization so that downstream node calls init(), only upstream nodes that need to be reinitialized are
- *    test destruction of shader programs
+ *    Fix initialization so that downstream node calls init()
+ *    Only upstream nodes that need to be reinitialized are
+ *    Test destruction of shader programs
  *
  *
  *
@@ -110,7 +114,7 @@ struct GFXRenderGraph;
       GFXRenderGraph& graph();
       GFXRenderGraph graph() const;
 
-      /// whether to pass onResize notifications upstream ...
+      /// whether to pass onResize notifications upstream ... (@todo rename)
       bool bResizeCascade = true;
 
       /// set downstream node
@@ -183,7 +187,7 @@ struct GFXRenderGraph;
      }
 
 
-      /// Pointer to one downstream process (for re-setting state)
+      /// Pointer to one downstream process (for preparing state)
       GFXRenderNode * mDownstream = NULL;
       // Pointers to upstream processes (to be pulled)
       vector<GFXRenderNode*> mUpstream;
@@ -250,7 +254,7 @@ struct GFXRenderGraph;
 
 
       /// Resize width and height and cascade upstream @todo add boolean to control cascading
-      /// @TODO consider not cascading, and having scenegraph manage this communication
+      /// @todo consider not cascading, and having scenegraph manage this communication
       virtual void resize(int w, int h){
         set(w,h);
 
@@ -628,7 +632,7 @@ struct GFXFrameBufferCubeMapNode : GFXFrameBufferNode {
 
 
 
-/// Passing Nodes into Stereo Node Pulls into to Left and Right Buffers
+/// Passing Nodes into Stereo Node Pulls them into to Left and Right Buffers
 struct GFXStereoNode : GFXRenderNode {
 
   virtual void onRender(){
@@ -776,7 +780,7 @@ struct GFXSplitViewNode : GFXRenderNode {
        Scene * mScenePtr;                                           ///< pointer to scene matrix transforms
        float mv[16];                                                ///< matrix float values
 
-       float eyeSep = 2; //move to lens)
+      // float eyeSep = .03; //move to lens)
 
        Scene& scene() { return *mScenePtr; }
 
@@ -825,24 +829,22 @@ struct GFXSplitViewNode : GFXRenderNode {
       /// Render, updating shader, pushing
       virtual void onRender(){
 
-          auto tmpPos = scene().camera.pos();
-
           // If 3D stereo effect is not encoded by shader, move camera pos position here
           // (otherwise, we will just render normally and let the shader do the 3D)
-          if ( graph().stereo() && !shader().b3D ){ //&& !(mStereoMode & ACTIVE)
+          //if ( graph().stereo() && !shader().b3D ){ //&& !(mStereoMode & ACTIVE)
 
-            auto eyeOffset = (scene().camera.x() * eyeSep * .5) * ( graph().left() ? -1 : 1);
-            scene().camera.pos() = tmpPos + eyeOffset ;
+            //auto eyeOffset = (scene().camera.x() * eyeSep * .5) * ( graph().left() ? -1 : 1);
+            //scene().camera.pos() = tmpPos + eyeOffset ;
+          scene().camera.stereo(graph().stereo());
+          scene().camera.left(graph().left());
+          //}
 
-          }
-
-          if (!graph().immediate()) update();
+          if (!graph().immediate())
+            update();
 
           mScenePtr->push( graph().immediate() );
               for (auto& i : mUpstream) i->onRender();
           mScenePtr->pop(  graph().immediate() );
-
-          scene().camera.pos() = tmpPos;
 
       }
 };

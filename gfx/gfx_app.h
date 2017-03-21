@@ -159,23 +159,26 @@ public WindowEventHandler
       }
 #endif
       /*-----------------------------------------------------------------------------
-       * 5. Set up Default Programmable Rendering Pipeline
+       * 4. Set up Default Programmable Rendering Pipeline
        *
        *  "this" is a GFXRenderNode bound to mRenderer, a GFXShaderNode (default)
        *  to pipe draw methods into a different shader, bind "this" to another
        *  subclassed GFXRenderNode and optionally overload the virtual update() method
+       *  call mRenderer.reset() first
        *-----------------------------------------------------------------------------*/
        int glmode = GFXRenderGraph::IMMEDIATE;
        int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
        mRenderer << mShaderNode << mSceneNode << this;
 
-       mRenderGraph.init(&mRenderer,w,h,glmode,stereomode);
+       mRenderGraph.init(&mRenderer,w,h,glmode,GFXRenderGraph::MONO);
+  
+       // todo who handles resize events?
        // mContext.interface.addWindowEventHandler(&mRenderGraph);
 
 
       /*-----------------------------------------------------------------------------
-       * 4. Enable Presets (depth func, blend func) see gfx_gl.h
+       * 5. Enable Presets (depth func, blend func) see gfx_gl.h
        *-----------------------------------------------------------------------------*/
        GL::enablePreset();
 
@@ -260,7 +263,7 @@ public WindowEventHandler
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){ 
-        onDraw();
+      onDraw();
   }
 
   /*-----------------------------------------------------------------------------

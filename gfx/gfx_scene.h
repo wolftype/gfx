@@ -29,7 +29,7 @@ namespace gfx{
 
       /* Lens Parameters */
       bool bOrtho;
-      float mFocal, mNear, mFar, mWidth, mHeight; 
+      float mFocal, mNear, mFar, mWidth, mHeight, mEyeSep; 
 
       Lens() :
       mFocal(60.0),                                         ///< in degrees
@@ -37,7 +37,8 @@ namespace gfx{
       mHeight(100), 
       mNear(0.1), 
       mFar (100.0),
-      bOrtho(0)
+      bOrtho(0),
+      mEyeSep(2)
       {}
 
       /* Implicit Getters and Setters */
@@ -66,12 +67,16 @@ namespace gfx{
       bool& ortho()  {return bOrtho; }
       bool  ortho() const {return bOrtho; }
 
+      float& eyeSep()      { return mEyeSep; }                ///< get Eye Separation
+      float  eyeSep() const  { return mEyeSep; }
+
       friend ostream& operator << (ostream& os, const Lens& l){
           os << "focal: " << l.focal() << "\n";
           os << "width: " << l.width();
           os << " height: " << l.height() << "\n";
           os << "near: " << l.near();
           os << " far: " << l.far() << "\n";
+          os << " eyeSep: " << l.eyeSep() << "\n";
 
           return os;
       }    
@@ -245,8 +250,7 @@ namespace gfx{
   
 /*! 
  *  CAMERA: A moving pose with a view and a lens
-
-  @todo fovy vs. frust (fix frust)
+)
  *-----------------------------------------------------------------------------*/
   struct Camera : public MPose {     
     
@@ -254,14 +258,25 @@ namespace gfx{
     View view;  
     
     bool bUseFrust;
+    bool bStereo;
+    bool bLeft;
     
-    Camera(float x, float y, float z) : MPose(x,y,z), bUseFrust(false){}
-    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) : MPose(v,q), bUseFrust(false){} 
+    Camera(float x, float y, float z) : 
+      MPose(x,y,z), bUseFrust(true), bStereo(false), bLeft(true) {}
+    Camera(const Vec3f& v, const Quat& q = Quat(1,0,0,0)) :
+      MPose(v,q), bUseFrust(true), bStereo (false), bLeft(true) {} 
     
     Vec3f eye(){ return mPos; }
     Vec3f up() { return y(); }
     Vec3f right() { return x(); }  
     Vec3f forward() { return -z(); }
+
+    void stereo (bool bs){
+      bStereo = bs;
+    }
+    void left (bool bs){
+      bLeft = bs;
+    }
     
     Mat4f fovy() {
       return XMat::fovy( lens.mFocal * PI/180.0, lens.mWidth/lens.mHeight, lens.mNear, lens.mFar );
@@ -274,10 +289,21 @@ namespace gfx{
         view.b * lens.mNear, 
         view.t * lens.mNear, 
         lens.mNear, lens.mFar ); 
-    } 
+    }
+
+    Mat4f fovyStereo ()
+    {
+      return XMat::fovyStereo(lens.mFocal * PI/180.0,
+                              lens.mWidth/lens.mHeight,
+                              lens.mNear,
+                              lens.mFar,
+                              lens.mEyeSep * (bLeft ? -1.0 : 1.0),
+                              lens.mFocal
+                              );
+    }
     
     Mat4f proj(){
-      return bUseFrust ? frust() : fovy();
+      return bStereo ? fovyStereo () : fovy ();//bUseFrust ? frust() : fovy();
     }
 
 
@@ -420,12 +446,8 @@ namespace gfx{
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-//        gluLookAt( 
-//        camera.pos().x, camera.pos().y, camera.pos().z, 
-//        look.x, look.y, look.z, 
-//        camera.up().x, camera.up().y, camera.up().z );   
-		//! replaced gluLookAt with glLoadMatrix(xf.modelView)
-		glLoadMatrixf(xf.modelView);// XMat::lookAt(camera.x(), camera.y(), camera.z(), camera.pos());
+		    //! replaced gluLookAt with glLoadMatrix(xf.modelView)
+		    glLoadMatrixf(xf.modelView);
       
         Vec4<> tr = model.quat().axan(); 
       

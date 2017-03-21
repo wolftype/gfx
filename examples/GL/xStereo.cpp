@@ -25,27 +25,20 @@ struct MyApp : GFXApp<GlutContext> {
 
   MBO circle =  Mesh::Circle();
 
- // StereoScene mStereoSceneNode;
   GFXStereoNode mStereo;
-  GFXSplitViewNode mSplitView;
-  GFXFrameBufferNode mBuffer;
 
   virtual void setup(){
 
       mRenderer.reset();
-    
-    //mStereoSceneNode.mScenePtr = &scene;
-      mRenderer << mStereo << mSplitView << mSceneRenderer << mSceneNode << this;
+
+      mRenderer << mStereo << mSceneNode << this;
      
-      mRenderGraph.init(800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::SPLIT );
-    
-     // mRenderer.immediate(true);
+      mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
+      mRenderGraph.immediate(true);
   }
 
   virtual void onDraw(){
-   // scenegraph.onRender(); 
-    render::draw(circle);
-
+    draw (circle, 1,1,1);
   }
 
 };
