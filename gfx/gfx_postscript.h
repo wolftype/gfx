@@ -32,7 +32,14 @@ struct PostScript {
   bool bSortOutput          = true;  ///< default 
   bool bOffsetOutput        = false; 
   bool bOccludeOutput       = false;
+  bool bTightBounds         = true;
  
+  // GL2PSrgba red = {1.0,0.0,0.0,1.0};
+  // GL2PSrgba blue = {0.0,0.0,1.0,1.0};
+
+  // GL2PSrgba table[2] = {red,blue};
+//  GL2PSrgba blue[] = {{0.0,0.0,1.0,1.0}};
+
   template<class APPLICATION> 
   void print( APPLICATION& app ){
       static int id = 0;
@@ -60,30 +67,40 @@ struct PostScript {
          gl2psLineWidth(1);
 
          if (bShadedOutput){
-         gl2psBeginPage("test", "gl2psTestSimple", tv , GL2PS_EPS, bSortOutput ? GL2PS_SIMPLE_SORT : GL2PS_NO_SORT, //NO_SORT
-                         GL2PS_BEST_ROOT | GL2PS_TIGHT_BOUNDING_BOX | GL2PS_SIMPLE_LINE_OFFSET | GL2PS_OCCLUSION_CULL, //
-                         GL_RGBA, 0, NULL, 0, 0, 0, buffsize, fp, "out.eps");
-         } 
-//         else {
-//         gl2psBeginPage("test", "gl2psTestSimple", tv , GL2PS_PDF, GL2PS_NO_SORT,
-//                         GL2PS_NO_PS3_SHADING | GL2PS_BEST_ROOT | GL2PS_TIGHT_BOUNDING_BOX | GL2PS_OCCLUSION_CULL, 
-//                         GL_RGBA, 0, NULL, 0, 0, 0, buffsize, fp, "out.eps");
-//         } 
-        else {
-        gl2psBeginPage("test", "gl2psTestSimple", tv , GL2PS_PDF, bSortOutput ? GL2PS_SIMPLE_SORT : GL2PS_NO_SORT,
-                        GL2PS_NO_PS3_SHADING | GL2PS_BEST_ROOT | (bOffsetOutput ? GL2PS_SIMPLE_LINE_OFFSET : 0) | GL2PS_TIGHT_BOUNDING_BOX | (bOccludeOutput ? GL2PS_OCCLUSION_CULL : 0), //
-                        GL_RGBA, 0, NULL, 0, 0, 0, buffsize, fp, "out.eps");
+          gl2psBeginPage("test", "gl2psTestSimple", tv, 
+                         GL2PS_EPS,
+                         bSortOutput ? GL2PS_SIMPLE_SORT : GL2PS_NO_SORT,
+                         GL2PS_BEST_ROOT
+                         | (bTightBounds ? GL2PS_TIGHT_BOUNDING_BOX : 0)
+                         | GL2PS_SIMPLE_LINE_OFFSET
+                         | GL2PS_OCCLUSION_CULL,
+                         GL_RGBA, 0, NULL,
+                         0, 0, 0,
+                         buffsize, fp, "out.eps");
+         } else {
+          gl2psBeginPage("test", "gl2psTestSimple", tv,
+                        GL2PS_PDF,
+                        bSortOutput ? GL2PS_SIMPLE_SORT : GL2PS_NO_SORT,
+                        GL2PS_NO_PS3_SHADING
+                        | GL2PS_BEST_ROOT
+                        | (bOffsetOutput ? GL2PS_SIMPLE_LINE_OFFSET : 0)
+                        | (bTightBounds ? GL2PS_TIGHT_BOUNDING_BOX : 0)
+                        | (bOccludeOutput ? GL2PS_OCCLUSION_CULL : 0),
+                        //GL_COLOR_INDEX, 2, table,
+                        GL_RGBA, 0, NULL,
+                        0, 0, 0,
+                        buffsize, fp, "out.eps");
         }
           
-          //DRAW 
-          app.onDraw();
-          
-          state = gl2psEndPage();
+
+        app.onDraw();
+        state = gl2psEndPage();
       }
       
       fclose(fp);
       printf("Done!\n");
   }
+
 };
 
 } //gfx::

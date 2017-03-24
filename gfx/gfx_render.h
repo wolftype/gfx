@@ -139,13 +139,15 @@ struct GFXRenderGraph;
         return *mDownstream;
       }
 
-      /// redirect argument to this instance's downstream process
+      /// DivertFrom: redirect argument to this instance's downstream process
+      /// See GFXSplitViewNode for example use
       GFXRenderNode& divert(GFXRenderNode& r){
         r.downstream(mDownstream);
         return *this;
       }
 
-      /// add all of this instance's upstream nodes to argument
+      /// ChannelTo: redirect all of this instance's upstream nodes to argument
+      /// See GFXSplitViewNode for example use
       GFXRenderNode& channel(GFXRenderNode& r){
         for(auto& i : mUpstream) r << i;
         return *this;
@@ -213,7 +215,6 @@ struct GFXRenderGraph;
 
       /// Subclasses can implement their own onInit();
       virtual void onInit(){}
-
       /// on enter
       virtual void onEnter(){}
       /// on exit
@@ -222,7 +223,6 @@ struct GFXRenderGraph;
       virtual void update(){}
 
       virtual void onRender(){
-
         if (!bVisited){ // avoid circular dependencies
           bVisited = true;
             onEnter();
@@ -569,7 +569,6 @@ struct GFXFrameBufferNode : GFXRenderNode {
    virtual void onExit(){
       fbo.unbind();
       swap();
-
    }
 
    virtual void onRender(){
@@ -578,13 +577,11 @@ struct GFXFrameBufferNode : GFXRenderNode {
       onExit();
    }
 
-
    virtual void capture(){
       for (auto& i : mUpstream) {
         i->onRender();
       }
    }
-
 };
 
 
@@ -737,7 +734,7 @@ struct GFXViewNode : GFXRenderNode {
 };
 
 
-/// Split View into left and right eyes (similar to &&&)
+/// Split View into left and right eyes (similar to &&& from arrows)
 struct GFXSplitViewNode : GFXRenderNode {
     GFXViewNode left, right;
 
@@ -765,6 +762,15 @@ struct GFXSplitViewNode : GFXRenderNode {
 
 
 };
+
+/// Print output to postscript
+// struct GFXPrintNode : GFXRenderNode {
+//   gfx::PostScript ps;
+
+//   virtual void onRender (){
+    
+//   }
+// };
 
 
 
@@ -829,22 +835,21 @@ struct GFXSplitViewNode : GFXRenderNode {
       /// Render, updating shader, pushing
       virtual void onRender(){
 
-          // If 3D stereo effect is not encoded by shader, move camera pos position here
+          // If 3D stereo effect is not encoded by shader, adjust stereo here
           // (otherwise, we will just render normally and let the shader do the 3D)
-          //if ( graph().stereo() && !shader().b3D ){ //&& !(mStereoMode & ACTIVE)
+          //if ( graph().stereo() && !shader().b3D ){
 
-            //auto eyeOffset = (scene().camera.x() * eyeSep * .5) * ( graph().left() ? -1 : 1);
-            //scene().camera.pos() = tmpPos + eyeOffset ;
+          // Set camera's stereo properties to that of RenderGraph
           scene().camera.stereo(graph().stereo());
+          // Set which eye to render
           scene().camera.left(graph().left());
-          //}
 
           if (!graph().immediate())
             update();
 
           mScenePtr->push( graph().immediate() );
               for (auto& i : mUpstream) i->onRender();
-          mScenePtr->pop(  graph().immediate() );
+          mScenePtr->pop( graph().immediate() );
 
       }
 };

@@ -89,7 +89,7 @@ public WindowEventHandler
 
   GFXRenderNode mRenderer;                ///< root render node 
   GFXShaderNode mShaderNode;              ///< shader pipeline
-  GFXSceneNode  mSceneNode;
+  GFXSceneNode  mSceneNode;               ///< scene ptr
 
   GFXRenderGraph mRenderGraph;
 
@@ -167,7 +167,7 @@ public WindowEventHandler
        *  call mRenderer.reset() first
        *-----------------------------------------------------------------------------*/
        int glmode = GFXRenderGraph::IMMEDIATE;
-       int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
+       //int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
        mRenderer << mShaderNode << mSceneNode << this;
 
@@ -199,7 +199,10 @@ public WindowEventHandler
   template<class T>
   void draw(const T& t, float r=1,float g=1,float b=1,float a=1){
 
-    if ( mRenderGraph.immediate() ) Renderable<T>::DrawImmediate(t);
+    if ( mRenderGraph.immediate() ){
+      render::begin(r,g,b,a);
+      Renderable<T>::DrawImmediate(t);
+    }
     else Renderable<T>::Draw(t, &mSceneNode);
   }
 
@@ -240,7 +243,6 @@ public WindowEventHandler
      clear(); 
      onAnimate();
 
-
      //mRenderer calls one upstream render (namely, this)
      //which is this app's onRender method
      //below onRender() defaults to onDraw()
@@ -248,7 +250,6 @@ public WindowEventHandler
      //see examples/xRendertoTexture.cpp
      
      mRenderGraph.onRender();
-
          
      scene.step();                            ///< update camera physics
      

@@ -16,12 +16,13 @@
  * =====================================================================================
  */
 
-#include "gfx_app.h"
+//#include "gfx_app.h"
+#include "util/gfx_print_app.h"
 #include "util/glut_window.hpp"
 
- using namespace gfx;
+using namespace gfx;
 
-struct MyApp : GFXApp<GlutContext> {
+struct MyApp : GFXPrintApp<GlutContext> {
 
   MBO circle =  Mesh::Circle();
 
@@ -30,15 +31,14 @@ struct MyApp : GFXApp<GlutContext> {
   virtual void setup(){
 
       mRenderer.reset();
-
       mRenderer << mStereo << mSceneNode << this;
      
       mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
       mRenderGraph.immediate(true);
-  }
+  } 
 
   virtual void onDraw(){
-    draw (circle, 1,1,1);
+    draw (circle, 1,0,1);
   }
 
 };
