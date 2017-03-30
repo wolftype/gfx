@@ -175,7 +175,7 @@ struct GFXRenderGraph;
         glClear(GL_DEPTH_BUFFER_BIT);
       }
 
-      /// Find First Downstream Shader
+      /// Find First Downstream Shader ooph fix this
       GFXShaderNode& shader() {
 
        auto * tmp = mDownstream;
@@ -418,11 +418,14 @@ struct GFXShaderNode : GFXRenderNode {
        // printf ("%s\n", V.c_str());
 
         program = new ShaderProgram(V,F);
-        vatt.add<Vertex>(*program);
+        //vatt.add<Vertex>(*program);
+        bindAttributes();
     }
 
    ///  Default Attributes include position, sourceColor, normal, and texCoord (AUTOMATE THIS with GLVertexData?)
    virtual void bindAttributes(){
+     vatt.add<Vertex>(*program);
+    }
         //shader id | name | size of vertex data container | offset into container of each parameter
 //        program->bind();
 //          vatt.add(program->id(), "position", sizeof(Vertex), 0);
@@ -430,7 +433,7 @@ struct GFXShaderNode : GFXRenderNode {
 //          vatt.add(program->id(), "normal", sizeof(Vertex), Vertex::on());
 //          vatt.add(program->id(), "texCoord", sizeof(Vertex), Vertex::ot());
 //        program->unbind();
-   }
+ //  }
 
    virtual void onEnter(){
      if (!graph().immediate()) program->bind();

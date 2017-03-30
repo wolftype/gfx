@@ -18,11 +18,11 @@
 
 #include "gfx_app.h"
 #include "gfx_effects.h"
-#include "util/glfw_window.hpp"
+#include "util/glut_window.hpp"
 
 using namespace gfx;
 
-struct MyApp : GFXApp<GLFWContext> {
+struct MyApp : GFXApp<GlutContext> {
 
  MBO mbo;
  Slab slab;
@@ -32,8 +32,11 @@ struct MyApp : GFXApp<GLFWContext> {
     mbo = Mesh::Sphere();
     mRenderGraph.immediate(false); 
 
+    //mRenderer.clear();
+
     slab.init(10,10, &mRenderGraph);
-    
+//    mRenderer.divert(slab);
+
     float * cval = new float [slab.width*slab.height*4];
         
     for (int i =0;i<slab.width;++i){

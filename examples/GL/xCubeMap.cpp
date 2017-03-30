@@ -25,7 +25,6 @@
 
 using namespace gfx;
 
-
 struct MyApp : GFXApp<GlutContext> {
 
  MyApp() : GFXApp<GlutContext>(800,400,"name",false) {}
@@ -72,7 +71,7 @@ struct MyApp : GFXApp<GlutContext> {
     mRenderer.reset();
     mRenderer << stereo << cubeSlab << cubeMapBuffer << mSceneNode << this;
    
-    mRenderGraph.init(800,400,0,GFXRenderGraph::ANAGLYPH );//IMMEDIATE);
+    mRenderGraph.init(&mRenderer, 800,400,0,GFXRenderGraph::ANAGLYPH );//IMMEDIATE);
 
     cubeSlab.texture = cubeMapBuffer.texture; //bind textures
 

@@ -164,13 +164,14 @@ public WindowEventHandler
        *  "this" is a GFXRenderNode bound to mRenderer, a GFXShaderNode (default)
        *  to pipe draw methods into a different shader, bind "this" to another
        *  subclassed GFXRenderNode and optionally overload the virtual update() method
-       *  call mRenderer.reset() first
+       *  call mRenderer.reset() first and re-init the rendergraph
        *-----------------------------------------------------------------------------*/
        int glmode = GFXRenderGraph::IMMEDIATE;
        //int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
+       //todo fix bug that crashes without shader node (see notes)
        mRenderer << mShaderNode << mSceneNode << this;
-
+       //todo fix glmode (immediate vs programmable vs es, etc)
        mRenderGraph.init(&mRenderer,w,h,glmode,GFXRenderGraph::MONO);
   
        // todo who handles resize events?

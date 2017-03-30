@@ -26,7 +26,8 @@ namespace gfx {
   
   /*!
    *  A SLAB billboards a texture to the screen (with optional alpha)
-   *
+   *  
+   *  Can be used as a component in R2T
    */
   struct Slab : public GFXShaderNode {
   
@@ -53,7 +54,7 @@ namespace gfx {
         for (auto& i : mUpstream){ i->onRender(); }
       }
 
-      /// Set to downstream width and height
+      /// reset to downstream width and height (if it exists)
       if (mDownstream) glViewport(0,0,mDownstream->width, mDownstream->height);
 
       program->bind();
@@ -84,7 +85,7 @@ namespace gfx {
       float uy=.1;
       float amt=1;
     
-      virtual void onInit(){
+      virtual void onInit(){ 
         
         program = new ShaderProgram( graph().useES() ? ClipSpaceVertES() : ClipSpaceVert(), 
                                      graph().useES() ? TFragBlurES() : TFragBlur(), 0);
@@ -203,20 +204,19 @@ struct MotionBlur : GFXRenderNode {
 
       ra.init(width,height, mRenderGraph);
       rb.init(width,height, mRenderGraph);
-      
 
       lastFrame.init(width,height,mRenderGraph);
       outputMix.init(width,height,mRenderGraph); 
       
       rb.fbo.depth(false);
-      outputMix.amt=.995;
+      outputMix.amt=0.995;
 
       //confusing for now because of difference between
       //binding into a node process and binding a texture result
       //could overload so that slabs "know" they are being bown to
       //a framebuffer capture and automatically point to their texture
     
-      //bind capture call to upstream render calls
+      //channel this upstream render calls into capture call
       channel(ra);
 
       //bind lastFrame to texture output result of capture call

@@ -21,6 +21,7 @@
 #include "gfx_app.h"
 #include "gfx_mbo.h"
 #include "gfx_render.h"
+#include "gfx_effects.h"
 
 using namespace std;
 using namespace gfx;
@@ -37,7 +38,7 @@ struct DisplacementSlab : public GFXShaderNode {
     float spacing=0.1;
     float amt=1.0;
 
-    virtual void init(){
+    virtual void onInit(){
 
      string vert = ufloat("amt") + AVertex() + Varying() + VDisplaceCalcSimple() + MVert();
 
@@ -51,7 +52,7 @@ struct DisplacementSlab : public GFXShaderNode {
      bindAttributes(); //default
 
      grid = new MBO( Mesh::HexaGrid(40,40,spacing) );//new MBO( Mesh::Rect( 2.0, 2.0 ).color(0,0,0,1.0) ); //
-     grid -> mesh.mode = GL::L;
+     grid -> mesh.mode( GL::L );
    }
 
 
@@ -77,12 +78,12 @@ struct Displace : public GFXRenderNode {
   DisplacementSlab dispmap;
   bool bDrawDispMap=false;
 
-  virtual void init(){
-
+  virtual void init(int w, int h){
+    
     r2t.set(width,height);
-    r2t.init();
+    r2t.init(w,h);
     dispmap.set(width,height);
-    dispmap.init();
+    dispmap.init(w,h);
     dispmap.texture = r2t.texture;
 
     dispmap << r2t;
@@ -113,7 +114,7 @@ struct MyApp : public GFXApp<GlutContext> {
     mRenderer << process <<  mSceneRenderer;
 
     process.set(width,height);
-    process.init();
+    process.init(width,height);
   }
 
   virtual void onAnimate(){
@@ -122,7 +123,7 @@ struct MyApp : public GFXApp<GlutContext> {
     /* process.blur.uy = cos(time) * .2; */
     /* process.blur.amt = .1;// fabs(sin(time)); */
     process.dispmap.amt = 1 + sin(time)*10;
-    mbo->mesh.moveTo(sin(time)*5,0,0);
+    mesh::move(mbo->mesh,sin(time)*5,0,0);
     mbo->update();
   }
   

@@ -28,17 +28,17 @@ struct R2T : GFXRenderNode {
 
  void onInit(){
     
-    r2t.init(width,height);
-    blur.init(width,height);
+    r2t.init(width,height,mRenderGraph);
+    blur.init(width,height,mRenderGraph);
     
     blur.texture = r2t.texture;
 
     blur << r2t;
     
-    //bind downstream and upstream
-    bindDownstream(blur); // blur points to this instance's downstream process
-    bindUpstream(r2t);    // r2t calls this instance's upstream processes
-
+    //bind downstream
+    divert(blur);     // blur points to this instance's downstream process
+    //bind upstream
+    channel(r2t);     // r2t calls this instance's upstream processes
  }
 
  void onRender(){
@@ -56,21 +56,20 @@ struct MyApp : GFXApp<GlutContext> {
  virtual void setup(){
 
     mbo = Mesh::Sphere();
-    mSceneRenderer.immediate(false); 
 
     mRenderer.clear();
-    mRenderer << r2t << mSceneRenderer;
+    mRenderer << r2t << mShaderNode << mSceneNode << this;
  
-    r2t.set(width,height);
-    r2t.onInit();
-
+    mRenderGraph.init(&mRenderer, 800,400);//
+    mRenderGraph.immediate(false); 
+   
  }
 
  virtual void onDraw(){
 
      draw(mbo,1,0,0);
 
-     static float time = 0; time+=.1;
+     static float time = 0; time+=.01;
      r2t.blur.ux = sin(time);
      r2t.blur.uy = cos(time/2);
 

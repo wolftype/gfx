@@ -100,8 +100,9 @@ elseif(${APPLE})
  # endif()
   include_directories(gl2ps)
 
-  #GLFW  
-#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+  #GLFW
+#  if (${USE_GLFW}) 
+#    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
 #  add_subdirectory(glfw)
 #  link_directories(${PROJECT_BINARY_DIR})
 #  link_directories(${GLFW_BINARY_DIR})

@@ -35,20 +35,18 @@ struct MyApp : GFXApp<CONTEXT> {
 
    MotionBlur motionblur;
 
-
   void setup(){
     glLineWidth(10);
     mbo = MBO( Mesh::Sphere() );
 
-    mSceneRenderer.immediate(false);  
-
     mRenderer.clear();
-    mRenderer << motionblur << mSceneRenderer;
+    mRenderer << motionblur << mShaderNode << mSceneNode << this;
 
+    mRenderGraph.init(&mRenderer,400,400);//,GFXRenderGraph::,GFXRenderGraph::MONO);
+    mRenderGraph.immediate(false);
     //initialize after stream has been set
-    motionblur.set( width, height);
-    motionblur.onInit();
-
+//    motionblur.set( width, height);
+//    motionblur.onInit();
   }
   
    void onAnimate(){

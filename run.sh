@@ -16,6 +16,7 @@ rm bin/$TARGET
 
 RUN_CMAKE=1
 MAKE_VERBOSE=1
+USE_GLFW=0
 
 for i
   do
@@ -25,6 +26,9 @@ for i
     ;;
     -c | --cmake)
       RUN_CMAKE=0
+    ;;
+    -g | --glfw)
+      USE_GLFW=1
     ;;
     esac
 done
