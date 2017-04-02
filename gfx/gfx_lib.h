@@ -63,14 +63,14 @@
       #include <OpenGL/OpenGL.h>
       #include "GLUT/glut.h"
 #elif defined (_WIN32)
-//  #include <window.h>
-//  #include <GL/gl.h>
-//  #include <GL/glext.h>
-#define GFX_IMMEDIATE_MODE
-#include <stdlib.h>
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include "GLFW/glfw3.h"
+      //  #include <window.h>
+      //  #include <GL/gl.h>
+      //  #include <GL/glext.h>
+      #define GFX_IMMEDIATE_MODE
+      #include <stdlib.h>
+      #define GLEW_STATIC
+      #include <GL/glew.h>
+      #include "GLFW/glfw3.h"
 #endif
 
 #ifndef GFX_USE_GLES

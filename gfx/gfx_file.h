@@ -16,6 +16,8 @@
  * =====================================================================================
  */
 
+#ifndef GFX_FILE_INCLUDED
+#define GFX_FILE_INCLUDED
 
 #include <fstream>
 
@@ -169,3 +171,5 @@ struct File {
 
 
 } // gfx::
+
+#endif

@@ -15,6 +15,8 @@
  *
  * =====================================================================================
  */
+#ifndef GFX_PRINT_INCLUDED
+#define GFX_PRINT_INCLUDED
 
 #include <sstream>
 
@@ -65,3 +67,4 @@ namespace gfx {
 
 }//gfx::
 
+#endif

@@ -15,8 +15,8 @@
  * =====================================================================================
  */
 
-#ifndef  gfx_glv_app_INC
-#define  gfx_glv_app_INC
+#ifndef  gfx_print_app_INC
+#define  gfx_print_app_INC
 
 //#include "gfx/util/glut_window.hpp"
 #include "gfx/gfx_app.h"
