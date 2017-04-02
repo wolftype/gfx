@@ -111,8 +111,8 @@ struct GFXRenderGraph;
 
       /// a pointer to common settings and (eventually) organizational management
       GFXRenderGraph * mRenderGraph;
-      GFXRenderGraph& graph();
-      GFXRenderGraph graph() const;
+      inline GFXRenderGraph& graph();
+      inline GFXRenderGraph graph() const;
 
       /// whether to pass onResize notifications upstream ... (@todo rename)
       bool bResizeCascade = true;
