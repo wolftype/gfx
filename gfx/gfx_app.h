@@ -58,6 +58,8 @@
  *
  * =====================================================================================
  */
+#ifndef GFX_APP_INCLUDED
+#define GFX_APP_INCLUDED
 
 #include <stdio.h>
 
@@ -302,3 +304,6 @@ public WindowEventHandler
 
 
 }//gfx::
+
+
+#endif
