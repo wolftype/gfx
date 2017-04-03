@@ -173,7 +173,7 @@ public WindowEventHandler
        //int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
        //todo fix bug that crashes without shader node (see notes)
-       mRenderer << mShaderNode << mSceneNode << this;
+       mRenderer << mStereo << mShaderNode << mSceneNode << this;
        //todo fix glmode (immediate vs programmable vs es, etc)
        mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
   

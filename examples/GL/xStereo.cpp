@@ -30,15 +30,27 @@ struct MyApp : GFXPrintApp<GlutContext> {
 
   virtual void setup(){
 
-      mRenderer.reset();
-      mRenderer << mStereo << mSceneNode << this;
+      mColor.set(0,0,0);
+      //mRenderer.reset();
+      //mRenderer << mStereo << mSceneNode << this;
      
-      mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
-      mRenderGraph.immediate(true);
+      //mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
+      //mRenderGraph.immediate(true);
   } 
 
   virtual void onDraw(){
-    draw (circle, 1,0,1);
+    draw (circle, 1,1,1);
+  }
+
+  virtual void onKeyDown(const gfx::Keyboard& k){
+    switch (k.code){
+      case 'm':
+        printf("m: mono / stereo toggle\n");
+        mRenderGraph.mStereoMode =
+          mRenderGraph.mStereoMode == GFXRenderGraph::MONO ?
+            GFXRenderGraph::ANAGLYPH : GFXRenderGraph::MONO;
+        break;
+      }
   }
 
 };
