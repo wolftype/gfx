@@ -434,7 +434,6 @@ namespace gfx{
 
         glLoadIdentity();
 
-        //! replaced gluPerspective with glLoadMatrix( xf.proj)
         if ( camera.lens.bOrtho ){
             float oz =  camera.pos()[2];
             float aspect = camera.lens.mWidth/camera.lens.mHeight;
@@ -446,7 +445,6 @@ namespace gfx{
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glLoadIdentity();
-		    //! replaced gluLookAt with glLoadMatrix(xf.modelView)
 		    glLoadMatrixf(xf.modelView);
 
     #endif

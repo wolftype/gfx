@@ -90,6 +90,7 @@ public WindowEventHandler
   Scene scene;                            ///< modelviewprojection matrix transforms
 
   GFXRenderNode mRenderer;                ///< root render node 
+  GFXStereoNode mStereo;                  ///< stereo rendering
   GFXShaderNode mShaderNode;              ///< shader pipeline
   GFXSceneNode  mSceneNode;               ///< scene ptr
 
@@ -188,6 +189,11 @@ public WindowEventHandler
 
   }
 
+  void anaglyphic () {
+    mRenderer.reset();
+    mRenderer << mStereo << mShaderNode << mSceneNode << this;
+    mRenderGraph.init(&mRenderer,width, height, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH);
+  }
 
   /*-----------------------------------------------------------------------------
    *  User must define setup() in a subclass. setup() is called by App::start() method
