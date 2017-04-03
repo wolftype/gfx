@@ -435,12 +435,12 @@ struct GFXShaderNode : GFXRenderNode {
 //        program->unbind();
  //  }
 
-   virtual void onEnter(){
-     if (!graph().immediate()) program->bind();
-   }
-   virtual void onExit(){
-     if (!graph().immediate()) program->unbind();
-   }
+   // virtual void onEnter(){
+   //   if (!graph().immediate()) program->bind();
+   // }
+   // virtual void onExit(){
+   //   if (!graph().immediate()) program->unbind();
+   // }
 
    virtual void onRender(){
         if ( graph().immediate() ) {

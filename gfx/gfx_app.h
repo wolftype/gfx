@@ -168,13 +168,13 @@ public WindowEventHandler
        *  subclassed GFXRenderNode and optionally overload the virtual update() method
        *  call mRenderer.reset() first and re-init the rendergraph
        *-----------------------------------------------------------------------------*/
-       int glmode = GFXRenderGraph::IMMEDIATE;
+       //int glmode = GFXRenderGraph::IMMEDIATE;
        //int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
 
        //todo fix bug that crashes without shader node (see notes)
        mRenderer << mShaderNode << mSceneNode << this;
        //todo fix glmode (immediate vs programmable vs es, etc)
-       mRenderGraph.init(&mRenderer,w,h,glmode,GFXRenderGraph::MONO);
+       mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
   
        // todo who handles resize events?
        // mContext.interface.addWindowEventHandler(&mRenderGraph);
@@ -204,7 +204,7 @@ public WindowEventHandler
 
     if ( mRenderGraph.immediate() ){
       render::begin(r,g,b,a);
-      Renderable<T>::DrawImmediate(t);
+      render::draw(t);
     }
     else Renderable<T>::Draw(t, &mSceneNode);
   }

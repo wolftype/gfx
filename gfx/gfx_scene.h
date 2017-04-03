@@ -448,10 +448,7 @@ namespace gfx{
         glLoadIdentity();
 		    //! replaced gluLookAt with glLoadMatrix(xf.modelView)
 		    glLoadMatrixf(xf.modelView);
-      
-        Vec4<> tr = model.quat().axan(); 
-      
-        glRotatef ( tr[3], tr[0], tr[1], tr[2]  );
+
     #endif
     }
 
