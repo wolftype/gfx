@@ -17,21 +17,21 @@
  *                    void onDraw(){
  *                      ...
  *                    }
- *                  
- *                  };
- *                 
  *
- *                 Notes: 
+ *                  };
+ *
+ *
+ *                 Notes:
  *
  *                    immediate mode is set in the ROOT rendernode mMode
                       which is passed to subsequent onRender calls
- *                     
+ *
  *
  *                  for fancier rendering (i.e. rendering to texture or blur etc)
  *                  overwrite the onFrame() and onRender() methods.
  *
  *                  GFXApp will handle mouse and window event callbacks defined in gfx_control.h
- * 
+ *
  *                    onMouseDown(const Mouse& m)
  *                    onMouseDrag(const Mouse& m)
  *
@@ -54,7 +54,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  pretty awesome 
+ *   Organization:  pretty awesome
  *
  * =====================================================================================
  */
@@ -89,7 +89,7 @@ public WindowEventHandler
 
   Scene scene;                            ///< modelviewprojection matrix transforms
 
-  GFXRenderNode mRenderer;                ///< root render node 
+  GFXRenderNode mRenderer;                ///< root render node
   GFXStereoNode mStereo;                  ///< stereo rendering
   GFXShaderNode mShaderNode;              ///< shader pipeline
   GFXSceneNode  mSceneNode;               ///< scene ptr
@@ -98,7 +98,7 @@ public WindowEventHandler
 
   int mMode;                              ///< render mode
 
-  SceneController sceneController;        ///< interface to matrix transforms 
+  SceneController sceneController;        ///< interface to matrix transforms
   ObjectController objectController;      ///< interface to objects on screen
 
   Vec3f mColor;                           ///< Background Color
@@ -111,7 +111,7 @@ public WindowEventHandler
   GFXApp(int w=800, int h=400, string name = "GFXApp", bool bStereoBuf = false) :// int argc = 0, char ** argv = NULL) :
   mColor(.2,.2,.2)
   {
-       
+
       mSceneNode.mScenePtr = &scene;
 
       printf ("app is creating window context\n");
@@ -124,27 +124,27 @@ public WindowEventHandler
       printf ("app is adding itself to context events\n");
       //add this to window context's list of listeners to events
       mContext.interface.addWindowEventHandler(this);
-      mContext.interface.addInputEventHandler(this); 
+      mContext.interface.addInputEventHandler(this);
 
 
       /*-----------------------------------------------------------------------------
        * 2. Add SceneController and ObjectController Callbacks
        *-----------------------------------------------------------------------------*/
-      //bind sceneController to scene and add as listener to input events 
+      //bind sceneController to scene and add as listener to input events
       sceneController.scene(&scene);
       sceneController.io(&mContext.interface.io);
       mContext.interface.addInputEventHandler(&sceneController);
 
-      //attach this application (io and scene) to objectController 
-      objectController.io( &mContext.interface.io );  
+      //attach this application (io and scene) to objectController
+      objectController.io( &mContext.interface.io );
       objectController.scene( &scene );
-    
+
       //add object controller as listener to input and window events
       mContext.interface.addInputEventHandler(&objectController);
       mContext.interface.addWindowEventHandler(&objectController);
 
       mContext.interface.OnResize(w,h);
-      
+
       /*-----------------------------------------------------------------------------
        * 3.  Initialize GLEW and check for features (if not using GLES @todo otherwise what?)
        *-----------------------------------------------------------------------------*/
@@ -176,7 +176,7 @@ public WindowEventHandler
        mRenderer << mStereo << mShaderNode << mSceneNode << this;
        //todo fix glmode (immediate vs programmable vs es, etc)
        mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
-  
+
        // todo who handles resize events?
        // mContext.interface.addWindowEventHandler(&mRenderGraph);
 
@@ -204,7 +204,7 @@ public WindowEventHandler
    *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
-  
+
   template<class T>
   void draw(const T& t, float r=1,float g=1,float b=1,float a=1){
 
@@ -223,7 +223,7 @@ public WindowEventHandler
     setup();
     WINDOWCONTEXT::System -> Start(this);
   }
-  
+
   /*-----------------------------------------------------------------------------
    *  Optional method for updating physics etc -- called onFrame();
    *-----------------------------------------------------------------------------*/
@@ -235,7 +235,7 @@ public WindowEventHandler
    *-----------------------------------------------------------------------------*/
   void clear(){
 
-     mContext.setViewport();      
+     mContext.setViewport();
      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
      glClearColor( mColor[0],mColor[1],mColor[2], 1 );
      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -249,30 +249,30 @@ public WindowEventHandler
 
      GL::enablePreset();
 
-     clear(); 
+     clear();
      onAnimate();
 
      //mRenderer calls one upstream render (namely, this)
      //which is this app's onRender method
      //below onRender() defaults to onDraw()
-     //BUT we can rebind pipeline with overloaded << operator.  
+     //BUT we can rebind pipeline with overloaded << operator.
      //see examples/xRendertoTexture.cpp
-     
+
      mRenderGraph.onRender();
-         
+
      scene.step();                            ///< update camera physics
-     
+
      /* NOTE: swapbuffers is NOT called here because
       * we are in just one of many potential windowEventHandler callbacks (which add optional side effects)
       * swapbuffers is called by Interface::onDraw() only after ALL eventhandlers have been called
       * see gfx_control.h for the Interface class */
   }
 
-  
+
   /*-----------------------------------------------------------------------------
-   *  onRender() is inherited from GFXRenderNode (see gfx_render.h) 
+   *  onRender() is inherited from GFXRenderNode (see gfx_render.h)
    *-----------------------------------------------------------------------------*/
-  virtual void onRender(){ 
+  virtual void onRender(){
       onDraw();
   }
 
@@ -281,8 +281,8 @@ public WindowEventHandler
    *-----------------------------------------------------------------------------*/
    ~GFXApp(){
      WINDOWCONTEXT::System -> Terminate();
-   } 
-  
+   }
+
   /*-----------------------------------------------------------------------------
    *  INPUT EVENT HANDLER METHODS, CALLED BY mContext.interface
    *-----------------------------------------------------------------------------*/
@@ -298,13 +298,13 @@ public WindowEventHandler
    *-----------------------------------------------------------------------------*/
   virtual void onCreate(){ }
   virtual void onDestroy(){ }
-  
-  virtual void onResize(int w, int h){ 
-     scene.resize(w,h); 
-     set(w,h); 
+
+  virtual void onResize(int w, int h){
+     scene.resize(w,h);
+     set(w,h);
     // cout << "onResize" << endl;
     // mRenderer.onResize(w,h);  //or resize
-   } 
+   }
 
 };
 

@@ -20,7 +20,7 @@ MESSAGE( "*******************************\n\n")
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   SET( LINUX 1)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  SET( APPLE 1 ) 
+  SET( APPLE 1 )
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   SET( WINDOWS 1)
 endif()
@@ -41,19 +41,19 @@ add_custom_target(GFX_UTIL SOURCES ${UtilFiles})
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
 if(${RASPBERRY})
-  
+
   message ("**********CONFIGURING GFX LIBRARY BUILD FOR RASPBERRY PI************")
   message ("**********root set to " ${CMAKE_FIND_ROOT_PATH} "************")
 
   find_package(GLES REQUIRED)
   find_package(EGL REQUIRED)
- 
-  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/include) 
+
+  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/include)
   include_directories(${CMAKE_FIND_ROOT_PATH}/usr/local/include)
   include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include)
   include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos/pthreads)
   include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vmcs_host/linux)
-  
+
   link_directories(/opt/vc/lib)
   link_directories(/usr/lib)
   link_directories(/usr/local/lib)
@@ -69,7 +69,7 @@ elseif(${APPLE})
   message ("\n**********CONFIGURING GFX LIBRARY BUILD FOR OSX************\n")
 
   option(USE_CLANG "use clang" ON)
-  
+
   find_package(OpenGL REQUIRED)
   find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
@@ -89,11 +89,11 @@ elseif(${APPLE})
   include_directories(${GLEW_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIR})
 
-  #GLV should be optional
+  #todo GLV should be optional
   find_package(GLV REQUIRED)
   message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
   message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
-  
+
  # if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
   set(libraries ${libraries} ${GLV_LIBRARY} )
@@ -101,22 +101,22 @@ elseif(${APPLE})
   include_directories(gl2ps)
 
   #GLFW
-#  if (${USE_GLFW}) 
-#    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+#  if (${USE_GLFW})
+#    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
 #  add_subdirectory(glfw)
 #  link_directories(${PROJECT_BINARY_DIR})
 #  link_directories(${GLFW_BINARY_DIR})
 #  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
 #  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
+#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
 
-  #small lib just compiles gl2ps 
+  #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
-  
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
+
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
 
   #TARGETS
   if(${BUILD_EXAMPLES})
@@ -134,7 +134,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   message ("**********CONFIGURING GFX LIBRARY BUILD FOR LOCAL BUILD MACHINE************")
 
   option(USE_CLANG "use clang" ON)
-  
+
   find_package(OpenGL REQUIRED)
   find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
@@ -143,29 +143,29 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   find_package(GLV REQUIRED)
   message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
   message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
-  
+
  # if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
   set(libraries ${libraries} ${GLV_LIBRARY} )
  # endif()
   include_directories(gl2ps)
 
-  #GLFW  
-#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+  #GLFW
+#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
 #  add_subdirectory(glfw)
 #  link_directories(${PROJECT_BINARY_DIR})
 #  link_directories(${GLFW_BINARY_DIR})
 #  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
 #  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} ) 
+#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
 
-  #small lib just compiles gl2ps 
+  #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
-  
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx) 
+
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast") 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
 
 elseif(${WINDOWS})
 
@@ -173,7 +173,7 @@ elseif(${WINDOWS})
 
   find_package(OpenGL REQUIRED)
 
-  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples") 
+  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
   add_subdirectory(glfw)
 
   link_directories(${PROJECT_BINARY_DIR})
@@ -186,13 +186,13 @@ elseif(${WINDOWS})
   INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/glfw/include/)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200") 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200")
 
   FILE(GLOB ExampleFiles "${PROJECT_SOURCE_DIR}/examples/GL/*")
   foreach( srcfile ${ExampleFiles} )
     get_filename_component(target ${srcfile} NAME_WE)
     add_executable(${target} EXCLUDE_FROM_ALL ${srcfile} )
-	target_link_libraries(${target} glfw glew32s ${GLFW_LIBRARIES} ) 
+	target_link_libraries(${target} glfw glew32s ${GLFW_LIBRARIES} )
   endforeach( srcfile ${ExampleFiles} )
 
 endif()
