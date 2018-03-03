@@ -1,5 +1,5 @@
 /*
- *  vsr_gxlib.h
+ *  vsr_gfx_lib.h
  *  include platform specific graphics headers
  *
  *  Created by Pablo Colapinto on 10/6/11.
@@ -10,16 +10,15 @@
 #ifndef GFX_LIB_INCLUDED
 #define GFX_LIB_INCLUDED
 
-   // #define IOS_PROJECT
-    #ifdef IOS_PROJECT
+    #ifdef __ios__
+
+        #define GFX_USE_GLES
 
         #include <OpenGLES/ES1/gl.h>
         #include <OpenGLES/ES1/glext.h>
 
         #include <OpenGLES/ES2/gl.h>
         #include <OpenGLES/ES2/glext.h>
-
-        #define GFX_USE_GLES
 
 //        #define glGenFramebuffers glGenFramebuffersOES
 //        #define glBindFramebuffer glBindFramebufferOES
@@ -36,35 +35,57 @@
 
   #elif defined(__raspberry__)
 
+      #define GFX_USE_GLES
+
       #include "bcm_host.h"
       #include "GLES2/gl2.h"
       #include "GLES2/gl2ext.h"
       #include "EGL/egl.h"
       #include "EGL/eglext.h"
 
-      #define GFX_USE_GLES
+      #include "gfx_macros.h"
 
 	#elif defined(__linux__)
-		
-		#include <GL/glew.h>
-		#include <GL/gl.h>
-    #include <GL/glu.h>
-		#include <GL/glut.h>
-		#include <GL/glext.h>
+      #define GFX_IMMEDIATE_MODE
+	    #define GFX_USE_GLEW
+      	
+		  #include <GL/glew.h>
+		  #include <GL/gl.h>
+		  #include <GL/glut.h>
+		  #include <GL/glext.h>
         
-    #define GL_IMMEDIATE_MODE
-        
+  #elif defined(__APPLE__) || defined(__OSX__)
 
-        
-  #else //defined(__APPLE__) || defined(__OSX__)
+      #define GFX_IMMEDIATE_MODE
+	    #define GFX_USE_GLEW
 
-      //printf("APPLE SYSTEM\n");
+      #include <GL/glew.h>
       #include <OpenGL/OpenGL.h>
-      #include <GLUT/GLUT.h>
+      #include "GLUT/glut.h"
+#elif defined (_WIN32)
+      //  #include <window.h>
+      //  #include <GL/gl.h>
+      //  #include <GL/glext.h>
+      #define GFX_IMMEDIATE_MODE
+      #include <stdlib.h>
+      #define GLEW_STATIC
+      #include <GL/glew.h>
+      #include "GLFW/glfw3.h"
+#endif
 
-      #define GL_IMMEDIATE_MODE
-
+#ifndef GFX_USE_GLES
+  
+  #ifndef GENVERTEXARRAYS
+    #define GENVERTEXARRAYS(n,id) if(GLEW_APPLE_vertex_array_object)glGenVertexArraysAPPLE(1,id);\
+	  else if (GLEW_ARB_vertex_array_object) glGenVertexArrays(n,id)
   #endif
+
+  #ifndef BINDVERTEXARRAY
+    #define BINDVERTEXARRAY(id) if(GLEW_APPLE_vertex_array_object)glBindVertexArrayAPPLE(id);\
+	  else if (GLEW_ARB_vertex_array_object) glBindVertexArray(id)
+  #endif
+
+#endif
 
 #endif
 

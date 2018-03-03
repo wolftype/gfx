@@ -1,15 +1,17 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test.cpp
+ *       Filename:  xCube.cpp
  *
- *    Description:  
+ *    Description:  Draw a Cube!
  *
  *        Version:  1.0
- *        Created:  01/28/2014 16:36:59
- *         Author:  Pablo Colapinto (), wolftype (gmail)
- *         Adapted from GLFW quick start tutorial
- *   Organization: lynda
+ *        Created:  06/09/2014 14:04:08
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Pablo Colapinto (), gmail -> wolftype
+ *   Organization:  
  *
  * =====================================================================================
  */
@@ -18,263 +20,172 @@
 #include <stdlib.h>
 #include <vector>
 
-#define GLFW_INCLUDE_GLU
-#include "GLFW/glfw3.h"
+#include "util/GlutWindow.h"
 
 using namespace std;
 
-float lr,ud;
-
-struct Mouse {
-    float x, y;
-    bool isDown;
-    float lx, ly;
+// CREATE A PLAIN-OLD-DATA ("POD") Container for 3D Coordinates
+struct Vec3 {
+  float x,y,z;
 };
 
-struct Interface {
+//CREATE AN APPLICATION USING GLUT
+struct App {
 
-  static Mouse mouse;
+  Vec3 a,b,c,d,e,f,g,h;
+  float time;
 
-  static void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods)
-  {
-      if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-          glfwSetWindowShouldClose(window, GL_TRUE);
+  App() : time(0) { init(); }
 
-       if (key == GLFW_KEY_RIGHT && (action == GLFW_REPEAT || GLFW_PRESS) )
-          lr += 10;
-       if (key == GLFW_KEY_LEFT && (action == GLFW_REPEAT || GLFW_PRESS) )
-          lr -= 10;
-       if (key == GLFW_KEY_UP && (action == GLFW_REPEAT || GLFW_PRESS ))
-          ud += 10;
-       if (key == GLFW_KEY_DOWN && (action == GLFW_REPEAT || GLFW_PRESS) )
-          ud -= 10;
+  void init(){
 
+    //GLUTTY THINGS 
+    Glut::Initialize();   
+    Window::Create(this,640,480);
 
+    //Specify the 8 VERTICES of CUBE
+    a = { 1, -1,  1};               
+    b = { 1,  1,  1}; 
+    c = {-1,  1,  1}; 
+    d = {-1, -1,  1}; 
+    
+    e = { 1, -1, -1}; 
+    f = { 1,  1, -1}; 
+    g = {-1,  1, -1}; 
+    h = {-1, -1, -1}; 
+
+   glEnable(GL_DEPTH_TEST);
+   glDepthFunc(GL_LESS);
+        
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   glPolygonMode( GL_BACK, GL_LINE );
+        
+   glLineWidth(5);
   }
 
-  static void OnMouseMove(GLFWwindow* window, double x, double y){
-    
-      mouse.x = x ; mouse.y = y;
+  void start(){
+    Glut::Start(*this);
+  }
 
-      cout << mouse.x << " " << mouse.y << endl; 
+  virtual void onResize(int w, int h){}
   
-  }
-
-  static void OnMouseDown(GLFWwindow* window, int button, int action, int mods){
-
-      mouse.lx = mouse.x; mouse.ly = mouse.y;
-      if (action == GLFW_PRESS) { cout << "button pressed" << endl; mouse.isDown = true; }
-      if (action ==GLFW_RELEASE) { cout << "button released" << endl; mouse.isDown = false; }
-  }
-
-
- static void PollEvents(){
-    glfwPollEvents();
-  }
-};
-
- struct Mouse Interface::mouse = {0,0};
-
-
-struct Window {
-
-    GLFWwindow * window;
-    int width, height;
-    float ratio;
-
-    static void OnResize(GLFWwindow * window, int w, int h){
-      glfwSetWindowSize(window, w,h);
-    }
-
-    Window(int w, int h) {
-
-        window = glfwCreateWindow(w,h,"lynda",NULL,NULL);
-        if (!window) {
-          glfwTerminate();
-          exit(EXIT_FAILURE);
-        }        
-        glfwMakeContextCurrent(window);
-        glViewport(0,0,w,h);
-
-        //callbacks
-        glfwSetKeyCallback(window, Interface::OnKeyDown);
-        glfwSetWindowSizeCallback(window, Window::OnResize);
-        glfwSetCursorPosCallback(window, Interface::OnMouseMove );
-        glfwSetMouseButtonCallback(window, Interface::OnMouseDown );
-    }
-
-//glfwGetFramebufferSize(window, &width, &height);
+  virtual void drawFunc(){
     
-    void getSize(){
-        glfwGetFramebufferSize(window, &width, &height);
-        ratio = (float) width / height;      
-    }
+    time += .05;                      //<-- INCREMENT COUNTER
 
-    void setViewport(){ 
-        getSize(); 
-        //printf("%d, %d, %f\n", width, height, ratio);    
-        glViewport(0,0,width,height);  
-    }
-
-    bool shouldClose(){
-      return glfwWindowShouldClose(window);
-    }
-    void swap(){
-      glfwSwapBuffers(window);
-    }
-    void destroy(){
-      glfwDestroyWindow(window);
-    }
-    void clear(float r = 0.0, float g =0.0, float b=0.0,float a= 1.0){
-      glClearColor(r,g,b,a);
-      glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    ~Window(){
-      destroy();
-    }
-};
-
-
-struct Vec3{ 
-  float x, y, z; 
-  void print(){ printf("%f, %f, %f\n", x,y,z); }
-};
-struct Vec4{ 
-  float r, g, b, a; 
-   void print(){ printf("%f, %f, %f, %f\n", r,g,b,a); }
-
-};
-
-struct Vertex{
-  Vec3 position;
-  Vec4 color;
-
-  void print(){
-    position.print();
-    color.print();
-  }
-};
-
-struct Mesh{
-  vector<Vertex> vertex;
-  vector<int> index;
-
-  GLenum mode;
-
-  Mesh& add( const Vertex& v){
-    vertex.push_back(v);
-    return *this;
-  }
-
-  Mesh& add( int idx ){
-    index.push_back(idx);
-    return *this;
-  }
-
-  void draw(){
-    glBegin(GL_TRIANGLE_STRIP);
-      for (int i = 0; i < vertex.size(); ++i){
-        glColor4f( vertex[i].color.r, vertex[i].color.g, vertex[i].color.b, vertex[i].color.a );
-        glVertex3f( vertex[i].position.x, vertex[i].position.y, vertex[i].position.z );
-      }
-    glEnd();
-  }
-
-  void drawElements(){
-    glBegin( mode );
-      for (int i = 0; i < index.size(); ++i){
-        Vertex& v = vertex[index[i]];
-        glColor4f( v.color.r, v.color.g, v.color.b, v.color.a );
-        glVertex3f( v.position.x, v.position.y, v.position.z );
-      }
-    glEnd();
-  }
-
-  void print(){
-    for (int i = 0; i < vertex.size(); ++i){
-      vertex[i].print();
-    }
-  }
-};
-
-
-int main(){
-
-
-  if (!glfwInit()) return(0);
-
-  Window window(640,480) ;
-
-  float time = 0.0;
-  while( !window.shouldClose() ){  
-    time += .01;
-
-    window.setViewport();
-    window.clear();
+    glViewport(0, 0, Window::window().width(), Window::window().height());
+    glClearColor(1,0,0,1);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
 
    // glOrtho(-window.ratio, window.ratio, -1.f, 1.f, 1.f, -1.f);
-    gluPerspective( 60, window.ratio,.1, 100);
+    gluPerspective( 60, Window::window().ratio(),.1, 100);
 
 
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity(); 
     
     gluLookAt( 
-        0,0,5,    //Eye position (positive is TOWARDS you)
-        0, 0, -1, //Direction we are looking in (negative is into the screen)
-        0, 1, 0); //Which way is Up?      
+        0,0,5,                      //<-- Eye position (positive is TOWARDS you)
+        0, 0, -1,                   //<-- Direction we are looking in (negative is into the screen)
+        0, 1, 0);                   //<-- Which way is Up?      
     
-    //glScalef(.2,.2,.2);
-    glRotatef( Interface::mouse.x,0,1,0);
-   // glRotatef( lr, 0, 1, 0);
-    glRotatef( Interface::mouse.y, 1, 0, 0);
+    glRotatef( time, 0, 1, 0);      //<-- Rotate ModelView
 
-    Mesh m;
-    m.mode = GL_QUADS;
-    
-    Vertex a = { {-1,-1,-1}, {1,0,0,1} }; 
-    Vertex b = { {-1,1,-1},  {1,1,0,1} };
-    Vertex c = { {1,1,-1},   {1,0,0,1} };
-    Vertex d = { {1,-1,-1},  {1,0,1,1} };
-    
-    Vertex e = { {-1,-1,1}, {0,0,1,1} };
-    Vertex f = { {-1,1,1},  {1,0,1,1} };
-    Vertex g = { {1,1,1},   {0,.3,1,1} };
-    Vertex h = { {1,-1,1},  {.2,0,1,1} };
 
-    m.add( a );
-    m.add( b );
-    m.add( c );
-    m.add( d );
-    m.add( e );
-    m.add( f );
-    m.add( g );
-    m.add( h );
+       glBegin(GL_QUADS);              //<-- Start Rendering Rectangles
 
-    m.add(0).add(1).add(2).add(3);
-    m.add(3).add(2).add(6).add(7);
-    m.add(7).add(6).add(5).add(4);
-    m.add(4).add(5).add(1).add(0);
-    m.add(1).add(5).add(6).add(2);
-    m.add(4).add(0).add(3).add(7);
-    
+        /*-----------------------------------------------------------------------------
+         *  FRONT FACE
+         *-----------------------------------------------------------------------------*/
+        
+        glColor3f(1,0,0 );              //<-- Specify a COLOR in Red, Green, Blue (values in the range [0,1] )
+       
+        glVertex3f( a.x, a.y, a.z );    //<-- RENDER the Front Face
+        glVertex3f( b.x, b.y, b.z );
+        glVertex3f( c.x, c.y, c.z );
+        glVertex3f( d.x, d.y, d.z );
 
-    glPolygonMode( GL_BACK, GL_LINE );
-    m.drawElements();  
 
-    window.swap(); 
-    Interface::PollEvents();
-  
-  
+
+        /*-----------------------------------------------------------------------------
+         *  RIGHT SIDE FACE
+         *-----------------------------------------------------------------------------*/
+
+        glColor3f(0,1,0 );              //<-- Specify another COLOR (GREEN)
+
+        glVertex3f( e.x, e.y, e.z );    //<-- Render the RIGHT SIDE Face
+        glVertex3f( f.x, f.y, f.z );
+        glVertex3f( b.x, b.y, b.z );
+        glVertex3f( a.x, a.y, a.z );
+
+        /*-----------------------------------------------------------------------------
+         *  LEFT SIDE FACE
+         *-----------------------------------------------------------------------------*/
+
+        glColor3f(0,0,1 );              //<-- Specify another COLOR (BLUE)
+
+        glVertex3f( d.x, d.y, d.z );    //<-- Render the LEFT SIDE Face
+        glVertex3f( c.x, c.y, c.z );
+        glVertex3f( g.x, g.y, g.z );
+        glVertex3f( h.x, h.y, h.z );
+
+
+        /*-----------------------------------------------------------------------------
+         *  TOP FACE
+         *-----------------------------------------------------------------------------*/
+
+        glColor3f(1,1,0 );              //<-- Specify another COLOR (YELLOW)
+
+        glVertex3f( b.x, b.y, b.z );    //<-- Render the TOP Face
+        glVertex3f( f.x, f.y, f.z );
+        glVertex3f( g.x, g.y, g.z );
+        glVertex3f( c.x, c.y, c.z );
+
+        /*-----------------------------------------------------------------------------
+         *  BOTTOM FACE
+         *-----------------------------------------------------------------------------*/
+
+        glColor3f(0,1,1 );              //<-- Specify another COLOR (CYAN)
+
+        glVertex3f( e.x, e.y, e.z );    //<-- Render the BOTTOM Face
+        glVertex3f( a.x, a.y, a.z );
+        glVertex3f( d.x, d.y, d.z );
+        glVertex3f( h.x, h.y, h.z );
+
+
+        /*-----------------------------------------------------------------------------
+         *  BACK FACE
+         *-----------------------------------------------------------------------------*/
+
+        glColor3f(1,0,1 );              //<-- Specify another COLOR (PURPLE)
+
+        glVertex3f( h.x, h.y, h.z );    //<-- Render the LEFT SIDE Face
+        glVertex3f( g.x, g.y, g.z );
+        glVertex3f( f.x, f.y, f.z );
+        glVertex3f( e.x, e.y, e.z );
+
+
+        glEnd();
+
+        Window::SwapBuffers();              //<-- SWAP BUFFERS
+ 
   }
 
-  printf("hello world\n");
+};
 
-  glfwTerminate();
+
+int main(int argc, const char ** argv){
+ 
+ 
+  App app;
+
+  app.start();
+       
   return 0;
-}
 
+}

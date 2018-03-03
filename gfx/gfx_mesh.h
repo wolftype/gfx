@@ -1,6 +1,3 @@
-/// @file Vertex Mesh Data structures (geometry, normals, colors, uv textures)
-//    
-//
 //
 //  GFX
 //
@@ -9,6 +6,12 @@
 //  Created by Pablo Colapinto on 4/5/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
+
+
+/// @file Vertex Mesh Data structures (geometry, normals, colors, uv textures)
+///    
+///  Vertex Data Types are Interleaved
+
 
 #ifndef GFX_Mesh_h
 #define GFX_Mesh_h
@@ -20,14 +23,148 @@
 
 #include "gfx_matrix.h"  
 #include "gfx_gl.h"
+#include "gfx_data.h"
 
 using namespace std;  
  
 
 namespace gfx {
+
+
+  /// Just Position and Normal @todo rename to VertexPN, VertexCT, VertexPT, etc
+  /// @todo template Vec3f to use OtherLibrary::Vec types
+  struct VertexPosition {
+     Vec3f Pos;
+     Vec3f Norm;
+
+     VertexPosition(){}
+     VertexPosition( const Vec3f& pos, const Vec3f& norm=Vec3f(0,0,1)) : Pos(pos), Norm(norm) {}
+     VertexPosition( float x, float y, float z ) : Pos(x,y,z), Norm(0,0,1) {}
+ 
+     static GLvoid * on() { return (GLvoid*)sizeof(Vec3f); }
+
+     float operator[] (int idx) { return Pos[idx]; }
+  };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexPosition>::Make(){
+        Attribute["position"]=0;
+        Attribute["normal"]=VertexPosition::on();
+   }
+
+
+  /// Just Color Value and Texture Coordinate
+  struct VertexColor {
+     Vec4f Col;
+     Vec2f Tex;
+
+     VertexColor( const Vec4f& col = Vec4f(1,1,1,1), const Vec2f& tex=Vec2f(0,0)) : Col(col), Tex(tex) {}
+     VertexColor( float r, float g, float b, float a=1.0 ) : Col(r,g,b,a), Tex(0,0) {}
+ 
+     static GLvoid * ot() { return (GLvoid*)sizeof(Vec4f); }
+
+     float * begin() { return &Col[0]; }
+
+  };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexColor>::Make(){
+        Attribute["color"]=0;
+        Attribute["texCoord"]=VertexColor::ot();
+   }
+
+
+   
+  /// Just Position and 2D Texture Coordinate
+  struct VertexTexture {
+      Vec3f Pos;
+      Vec2f Tex;
+
+      VertexTexture( const Vec3f& p, const Vec2f& t) : Pos(p), Tex(t) {}
+      VertexTexture( float x, float y, float z ) : Pos(x,y,z), Tex(0,0) {}
+
+      static GLvoid * ot() { return (GLvoid*)sizeof(Vec3f); }
+      float * begin() { return &Pos[0]; }
+  
+  };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexTexture>::Make(){
+        Attribute["position"]=0;
+        Attribute["texCoord"]=VertexTexture::ot();
+   }
+
+  /// Just Position and 3D Texture Coordinate
+  struct VertexTexture3D {
+    
+      Vec3f Pos; ///< 3D Position
+      Vec3f Tex; ///< 3D Texture Coordinate
+
+      VertexTexture3D( const Vec3f& p, const Vec3f& t) : Pos(p), Tex(t) {}
+      VertexTexture3D( float x, float y, float z ) : Pos(x,y,z), Tex(0,0,0) {}
+
+      static GLvoid * ot() { return (GLvoid*)sizeof(Vec3f); }
+      float * begin() { return &Pos[0]; }
+  
+  };
+  /// Set Data Offset map
+  template<> inline void GLVertexData<VertexTexture3D>::Make(){
+        Attribute["position"]=0;
+        Attribute["texCoord"]=VertexTexture3D::ot();
+   }
+
+  /*!
+   *  VERTEX DATA Interleaved With 3D textures
+   */
+    struct VertexTex3D {
+        Vec3f Pos;        ///< 3D Position
+        Vec3f Norm;       ///< 3D normal
+        Vec4f Col;        ///< RGBA Color (could be uchar)
+        Vec3f Tex;        ///< 3D UV Coordinates
+
+                
+        VertexTex3D(const Vec3f& pos = Vec3f(0,0,0), 
+               const Vec3f& norm = Vec3f(0,0,1), 
+               const Vec4f& col = Vec4f(1,1,1,1), 
+               const Vec3f& tex = Vec3f(0,0,0) )  
+        
+        : Pos(pos), Norm(norm),  Col(col), Tex(tex) 
+        {}
+        
+        VertexTex3D(float x, float y, float z) : Pos(x,y,z), Norm(0,0,1), Col(1,1,1,1), Tex(0.0,0.0,0.0) {}
+        
+        float * pos() { return &Pos[0]; }
+        float * norm() { return &Norm[0]; } 
+        float * col() { return &Col[0]; }   
+        float * tex() { return &Tex[0]; }
+        
+        static GLvoid * on() { return (GLvoid*)sizeof(Vec3f); }
+        static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
+        static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
+
+        static size_t offsetColor(){ return 2*sizeof(Vec3f); }        
+        static size_t offsetNormal(){ return sizeof(Vec3f); }        
+        static size_t offsetTextureCoordinate(){ return 2*sizeof(Vec3f) + sizeof(Vec4f); }        
+
+        float * begin() { return &Pos[0]; }
+       // float operator[] (int idx) const { return ((float*)(&Pos[0]))[idx]; }
+       // float& operator[] (int idx) { return ((float*)(&Pos[0]))[idx]; }//((float*)&(Pos[0]))[idx]; }
+
+        void print() {
+          cout << Pos << Norm << Col << Tex << endl;  
+        }
+     };
+     
+
+  /// Set VertexTex3D Offset map
+  template<> inline void GLVertexData<VertexTex3D>::Make(){
+        Attribute["position"]=0;
+        Attribute["normal"]=VertexTex3D::on();
+        Attribute["sourceColor"]=VertexTex3D::oc();
+        Attribute["texCoord"]=VertexTex3D::ot();
+   }
+
     
   /*!
-   *  VERTEX DATA Interleaved
+   *  VERTEX DATA (Interleaved)
+      Position, Normal, Color, 2D Texture
    */
     struct Vertex {
         Vec3<float> Pos;        ///< 3d Position
@@ -55,10 +192,25 @@ namespace gfx {
         static GLvoid * oc() { return (GLvoid*)( 2 * sizeof(Vec3f) ) ; }
         static GLvoid * ot() { return (GLvoid*)( 2 * sizeof(Vec3f) + sizeof(Vec4f) ); }
 
-        float operator[] (int idx) { return ((float*)&(Pos[0]))[idx]; }
+        static size_t offsetColor(){ return 2*sizeof(Vec3f); }        
+        static size_t offsetNormal(){ return sizeof(Vec3f); }        
+        static size_t offsetTextureCoordinate(){ return 2*sizeof(Vec3f) + sizeof(Vec4f); }        
 
-        void print() { }
+        float * begin() { return &Pos[0]; }
+       // float operator[] (int idx) const { return ((float*)(&Pos[0]))[idx]; }
+       // float& operator[] (int idx) { return ((float*)(&Pos[0]))[idx]; }//((float*)&(Pos[0]))[idx]; }
+
+        void print() {
+          cout << Pos << Norm << Col << Tex << endl;  
+        }
      };
+
+     template<> inline void GLVertexData<Vertex>::Make(){
+        Attribute["position"]=0;
+        Attribute["normal"]=Vertex::on();
+        Attribute["sourceColor"]=Vertex::oc();
+        Attribute["texCoord"]=Vertex::ot();
+     }
 
 
   /*!
@@ -68,40 +220,318 @@ namespace gfx {
       Vertex a,b,c; //counterclockwise
    };
    
-   
+
+  /*!
+   *  Mesh Data Container Templated on Data Type
+   */
+  template<class T>
+  class MeshData {
+
+    protected:
+
+    GL::MODE mMode;         ///< Draw Mode
+    vector<T> mVertex;      ///< Vertex Data
+    vector<T> mStore;       ///< Original Stored Copy (for transforming by absolute coordinates)
+
+
+  //  typedef unsigned short INDEXTYPE;   ///< Type of Index Data (max number of vertices . . .)
+    vector<unsigned short> mIndex;           ///< Indices of Element Array Buffer
+
+    public:
+      typedef unsigned short INDEXTYPE;
+
+      /// Default Draw Mode is Line Loop
+      MeshData(GL::MODE m = GL::LL) : mMode(m) {}
+
+      //Pass in vector<T>
+      MeshData(const vector<T>& v) {
+        mVertex=v;
+        store();
+      }
+
+      ///Copy Constructor
+      MeshData(const MeshData& m){
+        mMode = m.mMode;
+        for (int i = 0; i < m.num(); ++i){
+            mVertex.push_back( m[i] ); 
+            mStore.push_back( m[i] );
+        }
+        for (int i = 0; i < m.mIndex.size(); ++i){
+            mIndex.push_back(m.mIndex[i]);
+        } 
+      }  
+
+      ///Assignment Operator
+       MeshData operator = (const MeshData& m){
+          
+          if (this != &m ){
+                mMode = m.mMode;   
+                  for (int i = 0; i < m.num(); ++i){
+                      mVertex.push_back( m[i] ); 
+                      mStore.push_back( m[i] );      
+                  }
+                  for (int i = 0; i < m.mIndex.size(); ++i){
+                      mIndex.push_back(m.mIndex[i]);
+                  }      
+              }     
+          return *this;
+        }
+
+     /// Store a Copy for absolute transformations
+     void store() {
+       mStore = mVertex;
+     }  
+
+     void reset(){
+       mVertex = mStore;
+     }
+
+     /// GETTER AND SETTER of VERTEX DATA
+     T& operator[] (int idx) { return mVertex[idx]; }
+     T operator[] (int idx) const { return mVertex[idx]; }
+     
+     INDEXTYPE & idx(int ix) { return mIndex[ix]; }
+     INDEXTYPE  idx(int ix) const { return mIndex[ix]; }
+
+     T& at(int ix) { return mVertex[ mIndex[ix] ]; }
+
+     T& store(int ix) { return mStore[ix]; }
+     T store(int ix) const { return mStore[ix]; }
+     
+     int num() const { return mVertex.size(); }
+     int numIdx() const { return mIndex.size(); }
+    
+     vector<INDEXTYPE>::iterator indices() { return mIndex.begin(); }        
+     typename vector<T>::iterator vertices() { return mVertex.begin(); }
+
+     vector<T>& vertex() { return mVertex; }
+     vector<T>& original() { return mStore; }
+     vector<INDEXTYPE>& index() { return mIndex; }
       
+     T& last() { return mVertex[ mVertex.size() - 1 ]; }
+      
+     void clear() {
+          mVertex.clear();
+          mIndex.clear();
+     }
+
+     /// Set Draw Mode
+     MeshData& mode( GL::MODE m) { mMode = m; return *this; }  
+     /// Get Draw Mode
+     GL::MODE mode() const { return mMode; }
+
+     /// Add Indices List
+     MeshData& add(int idx) {
+         mIndex.push_back(idx); return *this;
+     }
+     /// Add N Indices
+     MeshData& add(int * idx, int n) {
+         for (int i = 0; i < n; ++i) { mIndex.push_back( idx[i] ); } 
+         return *this;
+     }
+     /// Add Last Index 
+     MeshData& add(){ add( num() - 1 ); return *this; }
+        
+     //Add additional vertices from another Mesh
+     MeshData& add(const MeshData& m){
+         for (int i = 0; i < m.num(); ++i) { add(m[i]); mStore.push_back( m.store(i) ); }
+         for (int i = 0; i < m.numIdx(); ++i) { add( m.idx(i) ); }
+         return *this;
+     }
+
+     /// Add a vertex
+     MeshData& add(const T& v) { mVertex.push_back(v); return *this;}   
+     MeshData& add(const Vec3f& v) { mVertex.push_back( T(v) ); return *this; }
+     MeshData& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( T(v,n) ); return *this; }
+     MeshData& add(float x, float y, float z) { mVertex.push_back( T( Vec3f(x,y,z) ) ); return *this; }
+
+     /// ADD N VERTICES
+     template<typename S>
+     MeshData& add(typename vector<S>::iterator v, int n){
+         for (int i = 0; i < n; ++i) { mVertex.push_back( Vertex( Vec3f( v[i][0], v[i][1], v[i][2] ) ) ); }
+     }
+     
+     MeshData& add(Vec3f * v, int n) { 
+         for (int i = 0; i < n; ++i) { mVertex.push_back( Vertex(v[i]) ); } 
+         return *this;
+     }
+
+
+     /*-----------------------------------------------------------------------------
+      *  VIRTUAL (can be overloaded)
+      *-----------------------------------------------------------------------------*/
+      virtual MeshData& color(float r, float g, float b, float a = 1.0) { 
+         // mColor.set(r,g,b,a);   
+        
+          /* for (int i = 0; i < mVertex.size(); ++i ){ */
+          /*   mVertex[i].Col = Vec4f(r,g,b,a);//mColor; */
+          /* } */   
+        
+          return *this;
+        }
+      
+
+        virtual void drawElements() const {
+              cout << "drawElements undefined use mesh::draw(c)" << endl;
+              /* GL::Begin( mMode); */
+              /* for (int i = 0; i < mIndex.size(); ++i){ */  
+              /*     GL::normal( mVertex[ mIndex[i] ].Norm ); */
+              /*     GL::vertex( mVertex[ mIndex[i] ].Pos ); */
+              /* } */
+              /* glEnd(); */
+         }
+
+  };
+
+/// Functions creating mesh objects, either templated or inlined
+namespace mesh{
+
+  template<class T>
+  MeshData<T> grid2d(int w, int h, float spacing){
+     MeshData<T> m; 
+     int offsetU = -(w*spacing)/2.0;
+     int offsetV = -(h*spacing)/2.0;
+      for (int u=0; u<w; ++u){
+          for (int v=0; v<h; ++v){
+            T nv( offsetU + u * spacing, offsetV + v*spacing, 0 );
+            nv.Tex[0] = (float)u/w;
+            nv.Tex[1] = (float)v/h;
+            m.add(nv).add();
+        }
+      }
+      m.mode(GL::P);
+      m.store();
+      return m;
+  }
+
+  template<class T, class Func>
+  MeshData<T> gridtex(int w, int h, float spacing, Func f){
+     MeshData<T> m; 
+     int offsetU = -(w*spacing)/2.0;
+     int offsetV = -(h*spacing)/2.0;
+      for (int u=0; u<w; ++u){
+          for (int v=0; v<h; ++v){
+            T nv( offsetU + u * spacing, offsetV + v*spacing, 0 );
+            nv.Tex = f((float)u/w,(float)v/h);
+            m.add(nv).add();
+        }
+      }
+      m.mode(GL::P);
+      m.store();
+      return m;
+  }
+
+  ///width, height, interspacing
+  template<class T, class TexFunc>
+  MeshData<T> uvtex(int w, int h, float spacing, TexFunc f){
+     vector<T> tv;
+     int offsetU = -(w*spacing)/2.0;
+     int offsetV = -(h*spacing)/2.0;
+      for (int u=0; u<w; ++u){
+          for (int v=0; v<h; ++v){
+            T nv( offsetU + u * spacing, offsetV + v*spacing, 0 );
+            nv.Tex = f((float)u/w,(float)v/h);
+            tv.push_back(nv);
+        }
+      }
+
+      MeshData<T> m; 
+      bool bFlip = false;
+      for (int i = 0; i < w-1; ++i){
+        for (int j = 0; j < h; ++j){
+         
+          int a = bFlip ? (i+1) * (h) - j - 1: i * h + j;
+          int b = a + h;
+
+          T va = tv[a];
+          T vb = tv[b];
+
+          m.add( va ).add();
+          m.add( vb ).add(); 
+        }
+        bFlip = !bFlip; //FLIP EACH COLUMN
+      }
+
+      m.mode(GL::TS);
+      m.store();
+      return m;
+  }
+
+  //absolute
+  inline MeshData<Vertex>& move( MeshData<Vertex>& m, float x, float y, float z){
+      for (int i = 0; i < m.vertex().size(); ++i ){
+          m[i].Pos = m.store(i).Pos + Vec3f(x,y,z);
+      }
+      return m;   
+  }
+
+  //set color
+  inline MeshData<Vertex>& color( MeshData<Vertex>& m, float r, float g, float b, float a){
+      for (int i=0; i<m.vertex().size(); ++i){
+        m[i].Col = Vec4f(r,g,b,a);
+      } 
+      return m;
+  }
+
+
+  #ifdef GFX_IMMEDIATE_MODE
+  
+    //immediate mode!
+    /* void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) { */
+    /*     //glColor4f(r,g,b,a); */
+    /*     GL::Begin( mMode); */
+    /*     for (int i = 0; i < mVertex.size(); ++i){ */
+    /*         GL::vertex( mVertex[i].Pos ); */
+    /*     } */
+    /*     glEnd(); */
+    /* } */
+
+
+     inline void drawElementsColor(const MeshData<Vertex>& m) {
+        GL::Begin( m.mode());
+        for (int i = 0; i < m.numIdx(); ++i){  
+            GL::color( m[ m.idx(i) ].Col );
+            GL::normal( m[ m.idx(i) ].Norm );
+            GL::vertex( m[ m.idx(i) ].Pos );
+        }
+        glEnd();
+    }
+
+
+     inline void drawElements(const MeshData<Vertex>& m) {
+        GL::Begin( m.mode());
+        for (int i = 0; i < m.numIdx(); ++i){  
+            GL::normal( m[ m.idx(i) ].Norm );
+            GL::vertex( m[ m.idx(i) ].Pos );
+        }
+        glEnd();
+    }
+  
+  #endif
+
+
+} // mesh::
+
+     
+
   /*!
    *  MESH DATA CONTAINER FOR VERTEX AND INDEX INFORMATION
    */
-    struct Mesh { 
+    class Mesh : public MeshData<Vertex> { 
         
-    typedef unsigned short INDEXTYPE;
-
-    private:
-        
-        /// Draw Mode
-        GL::MODE mMode;
-        
+                
         /// Base Color
         Vec4f mColor;
-        
-        /// Vertices for VertexArray
-        vector< Vertex > mVertex;
-        vector< Vertex > mStore;     //Original Stored copy
-   
-        ///Indices for ElementArray
-        vector< INDEXTYPE > mIndex;
-        
+          
     public:
-        
-        /// Set Draw Mode
-        Mesh& mode( GL::MODE m) { mMode = m; return *this; }  
-        
-        /// Store a Copy for absolute transformations
-        void store() {
-          mStore = mVertex;
-        }     
-        
+        typedef unsigned short INDEXTYPE;
+          
+        /// Default Draw Mode is Line Loop
+        Mesh(GL::MODE m = GL::LL) : MeshData(m) {}
+ 
+       // template<class T>
+        Mesh(const MeshData<Vertex>& m ) : MeshData<Vertex>(m) {}
+
         ///Move To absolute x,y,z
         Mesh& moveTo( double x, double y, double z ){
           
@@ -121,54 +551,10 @@ namespace gfx {
           
           return *this;
         }    
-        
-        /// Default Draw Mode is Line Loop
-        Mesh(GL::MODE m = GL::LL) : mMode(m) {}
-        
-        ///Copy Constructor
-        Mesh(const Mesh& m){
-          mMode = m.mMode;
-          for (int i = 0; i < m.num(); ++i){
-              mVertex.push_back( m[i] ); 
-              mStore.push_back( m[i] );
-          }
-          for (int i = 0; i < m.mIndex.size(); ++i){
-              mIndex.push_back(m.mIndex[i]);
-          } 
-        }  
-
-      ///Assignment Operator
-       Mesh operator = (const Mesh& m){
-          
-          if (this != &m ){
-                mMode = m.mMode;   
-
-                  for (int i = 0; i < m.num(); ++i){
-                      mVertex.push_back( m[i] ); 
-                      mStore.push_back( m[i] );      
-                  }
                 
-                  for (int i = 0; i < m.mIndex.size(); ++i){
-                      mIndex.push_back(m.mIndex[i]);
-                  }      
-              // store();  
-              }     
-          return *this;
-        }
-        
         /// Create Mesh from an OBJ file
         Mesh( string s) { load(s); }
-                
-        /// GETTER AND SETTER of VERTEX DATA
-        Vertex& operator[] (int idx) { return mVertex[idx]; }
-        Vertex operator[] (int idx) const { return mVertex[idx]; }
-        
-        INDEXTYPE & idx(int ix) { return mIndex[ix]; }
-        INDEXTYPE  idx(int ix) const { return mIndex[ix]; }
-        
-        int num() const { return mVertex.size(); }
-        int numIdx() const { return mIndex.size(); }
-        
+                    
         Mesh& color(float r, float g, float b, float a = 1.0) { 
           mColor.set(r,g,b,a);   
         
@@ -178,63 +564,14 @@ namespace gfx {
         
           return *this;
         }
+                  
         
-        //Add vertices from another Mesh
-        Mesh& add(const Mesh& m){
-            for (int i = 0; i < m.num(); ++i) { add(m[i]); }
-            for (int i = 0; i < m.numIdx(); ++i) { add( m.idx(i) ); }
-            return *this;
-        }
-        
-        Mesh& add(const Vertex& v) { mVertex.push_back(v); return *this;}      
-        Mesh& add(const Vec3f& v) { mVertex.push_back( Vertex(v) ); return *this; }
-        Mesh& add(const Vec3f& v, const Vec3f& n) { mVertex.push_back( Vertex(v,n) ); return *this; }
-        Mesh& add(float x, float y, float z) { mVertex.push_back( Vertex( Vec3f(x,y,z) ) ); return *this; }
-        
-        /// ADD N VERTICES
-        template<typename T>
-        Mesh& add(typename vector<T>::iterator v, int n){
-            for (int i = 0; i < n; ++i) { mVertex.push_back( Vertex( Vec3f( v[i][0], v[i][1], v[i][2] ) ) ); }
-        }
-        
-        Mesh& add(Vec3f * v, int n) { 
-            for (int i = 0; i < n; ++i) { mVertex.push_back( Vertex(v[i]) ); } 
-            return *this;
-        }
-        
-        /// Add Indices List
-        Mesh& add(int idx) {
-            mIndex.push_back(idx); return *this;
-        }
-        /// Add N Indices
-        Mesh& add(int * idx, int n) {
-            for (int i = 0; i < n; ++i) { mIndex.push_back( idx[i] ); } 
-            return *this;
-        }
-        /// Add Last 
-        Mesh& add(){ add( num() - 1 ); return *this; }
-        
-        GL::MODE mode() { return mMode; }
-        
-        vector<INDEXTYPE>::iterator indices() { return mIndex.begin(); }        
-        vector<Vertex>::iterator vertices() { return mVertex.begin(); }
-
-        vector<Vertex>& vertex() { return mVertex; }
-        vector<Vertex>& original() { return mStore; }
-        
-        Vertex& last() { return mVertex[ mVertex.size() - 1 ]; }
-        
-        void clear() {
-            mVertex.clear();
-            mIndex.clear();
-        }
-
         //GL_IMMEDIATE_MODE DEFAULT = 1
-        #ifdef GL_IMMEDIATE_MODE
+        #ifdef GFX_IMMEDIATE_MODE
         
           //immediate mode!
-          void drawVertices(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-              glColor4f(r,g,b,a);
+          void drawVertices() const {//(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
+              //glColor4f(r,g,b,a);
               GL::Begin( mMode);
               for (int i = 0; i < mVertex.size(); ++i){
                   GL::vertex( mVertex[i].Pos );
@@ -242,7 +579,7 @@ namespace gfx {
               glEnd();
           }
 
-          void drawElementsColor() {
+          void drawElementsColor() const {
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::color( mVertex[ mIndex[i] ].Col );
@@ -252,8 +589,8 @@ namespace gfx {
               glEnd();
           }
 
-           void drawElements(float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) {
-              glColor4f(r,g,b,a);  
+           void drawElements() const {//float r = 1.0, float g = 1.0, float b = 1.0, float a = 1.0) const {
+            //  glColor4f(1,1,1,1);  
               GL::Begin( mMode);
               for (int i = 0; i < mIndex.size(); ++i){  
                   GL::normal( mVertex[ mIndex[i] ].Norm );
@@ -286,7 +623,7 @@ namespace gfx {
             return *this;
         }
         
-        Mesh&  scale(float s){
+        Mesh& scale(float s){
             
             for (int i = 0; i < num(); ++i){
                mVertex[i].Pos *= s;
@@ -296,7 +633,7 @@ namespace gfx {
         }
 
 
-        Mesh&  scaleA(float s){
+        Mesh& scaleA(float s){
             
           for (int i = 0; i < num(); ++i){
               mStore[i].Pos *= s;
@@ -361,8 +698,45 @@ namespace gfx {
                     }
                     
                     if (a=="f"){
+ 
+                        string s = line.substr(2);
+                        string ts = s;
+                        vector<string> tmp;
+                        auto beg=0;
+                        int pl =s.find(" ");
+                        int n=1;
+                        while( pl != string::npos ){
+                           tmp.push_back( s.substr(0,s.find("/")) );
+                           s = s.substr(pl+1);
+                           pl = s.find(" ");
+                           n++;
+                        }
+                        tmp.push_back(s.substr(0,s.find("/")));
+                        stringstream ss;
+                        for (auto& i : tmp){
+                          ss << string(i) << " ";
+                        }
                         
-                        
+                        int a,b,c,d;
+
+                     //   cout << n << endl;
+                        switch(n){
+                            case 3:
+                            {
+                              ss >> a; ss >> b; ss >> c;
+                              add(a-1).add(b-1).add(c-1);
+                              break;
+                            }
+                            case 4:
+                            {
+                              ss >> a; ss >> b; ss >> c; ss >> d;
+                              add(a-1).add(b-1).add(c-1);
+                              add(a-1).add(c-1).add(d-1);
+                              break;
+                            }
+                        }
+
+
                     }
                     
                 }
@@ -375,6 +749,8 @@ namespace gfx {
     
         template<class T>
         static Mesh UV( T* p, int w, int h, float tw =1, float th =1);
+
+   //     static Mesh 2D(int w, int h);
 
         static Mesh Point(float x, float y, float z);
 
@@ -397,8 +773,6 @@ namespace gfx {
         template<class T, class S>
         static Mesh Points2D(T* p, S*q, int num);  
 
-
-
         static Mesh Grid(int w = 10, int h = 10, float spacing = .2);
 
         static Mesh Sphere(double rad = 1.0, int slices = 20, int stacks = 20);
@@ -413,7 +787,7 @@ namespace gfx {
 
         static Mesh Cone( double rad = 1.0 , double h = 1.0, int slices = 10, int stacks = 4);
         static Mesh Dir();
-        static Mesh Circle(double radius = 1, double res = 10);
+        static Mesh Circle(double radius = 1, double res=50);//double res = 10);
         static Mesh Disc(double scale = 1);        
         static Mesh Rect(float w, float h);
         static Mesh IRect(float w, float h);  
@@ -478,7 +852,6 @@ namespace gfx {
 
           Vertex va(p[a][0], p[a][1], p[a][2]);
           va.Tex = Vec2f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th );
-         // cout << va.Tex << endl; 
           va.Col = Vec4f(( p[a][0] + tw/2.0) / tw, (p[a][1] +th/2.0) / th, 1- ( p[a][0] + tw/2.0) /tw, 1 );
           Vertex vb(p[b][0], p[b][1], p[b][2]);
           va.Tex = Vec2f(( p[b][0] + tw/2.0) / tw, (p[b][1] +th/2.0) / th );
@@ -512,7 +885,26 @@ namespace gfx {
       m.store();
       return m;
     }
-    
+
+//  template<class T>    
+//  inline Mesh Mesh::2D(int w, int h){
+//
+//    Mesh m;
+//    for (int i =0;i < w-1; ++i){
+//      for (int j =0;j<h-1;++j){
+//        int a = i*h + j;
+//        int b = a + h:
+//        int c = a + 1;
+//        int d = b + 1;
+//        Vertex va(p[a][0], p[a][1], p[a][2]);
+//        m.add(va);
+//      }
+//    }
+//
+//    m.mode(GL::T);
+//    m.store();
+//    return m;
+//  }
 
    inline Mesh Mesh::HexaGrid(int w, int h, float spacing){
 
@@ -688,18 +1080,21 @@ namespace gfx {
                   
           for (int i = 0; i <= stacks; ++i){
           
-              float v = -1.0 + 2.0* i/stacks;
+              float v = -1.0 + 2.0 * i/stacks;
               
               for (int j = 0; j < slices; ++j){
                   
                   float u = 1.0* j/slices;
 
+                   //angle around y axis
                    Quat qu = Quat( PI*u, Vec3f(0,1,0));
+                   //angle around z axis
                    Quat qv = Quat( PIOVERFOUR * v, Vec3f(0,0,1) ) ;
         
                    Vec3f tv = Quat::spin( Vec3f(1,0,0),  qu * qv ) ;
-                   m.add( tv * rad, tv );
-      
+                   m.add( tv * rad, tv.unit() );
+
+                  //only one point at each pole: 
                   if (i == 0 || i == stacks) {
                       break;
                   }
@@ -708,31 +1103,37 @@ namespace gfx {
           }
           
           //BOTTOM 
-          for (int j = 0; j < slices; ++j){
-              m.add(j+1).add(0);
+        //  m.add(0).add(1).add(2);
+          for (int j = 1; j <= slices; j+=1){
+              m.add(0).add(j).add(j+1).add(0);
           }
+         // m.add(0).add(1);
           
           //m.add(1);
           
           for (int i = 0; i < stacks -1; ++i){
               static bool color = 0;
               color = !color;
+              int a, b;
               for (int j = 0; j < slices; ++j){
                   static bool xcolor = 0;
-                  xcolor = !xcolor;                
-                  int a = 1 + i * slices + j;
-                  if (a == 0) continue;
+                  xcolor = !xcolor;   
+                               
+                  a = 1 + i * slices + j;
+                  //if (a == 0) continue;
                   
-                  int b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Next Higher Latitude or North Pole
+                  b =  ( i < stacks - 2) ? a + slices : m.num() - 1;  // Next Higher Latitude or North Pole
                   
                  // int c = ( j < slices - 1 ) ? a + 1 : 1 + i * slices;
                   
-                  int idx[2] = {a,b};
-                  m.add(idx,2);
+                  m.add(a).add(b); 
+                
                   m[a].Col.set(color,xcolor,1,1);
-                  m[b].Col.set(color,xcolor,1,1);
               }
-              m.add( 1 + i * slices ); //repeat south pole every strip
+              a= 1 + i * slices ;
+              b =  ( i < stacks - 2) ? a + slices : m.num() - 1;
+              m.add(a).add(b); 
+
           }
           
           m.last().Col.set(0,1,0,1);
@@ -755,7 +1156,8 @@ namespace gfx {
     
     inline Mesh Mesh::Circle (double radius, double _res){
         
-        int res = floor( _res * 100);
+        //int res = floor( _res * 100);
+        int res = _res;
         Mesh m;
         
         for (int i = 0; i <= res; ++i){
@@ -782,16 +1184,21 @@ namespace gfx {
             float z = h * i / stacks;
             for (int j = 0; j < slices; ++j){
                 float rad = 2.0 * PI * j / slices;
-                float x = cos(rad) * (1.0-z) * r;
-                float y = sin(rad)  * (1.0-z) * r;
+                float x = cos(rad) * (h-z) * r;
+                float y = sin(rad)  * (h-z) * r;
                 m.add( Vertex( Vec3f(x,y,z), Vec3f(x,y,z),Vec4f(1,1,1,1), Vec2f(z, 1.0* j/slices) ) );
                 m.add(i * slices + j);
             }
             m.add(i*slices);
         }
+        int peak = m.index().back();
+
+        for (int j=0; j<slices; ++j){
+            m.add(j).add(peak);      
+        }
         
         m.mode(GL::LL); 
-    m.store(); 
+        m.store(); 
         return m;
     
     }

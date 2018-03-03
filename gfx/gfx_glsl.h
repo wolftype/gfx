@@ -13,24 +13,51 @@
 #ifndef gfx_glsl_h
 #define gfx_glsl_h
 
-#ifndef STRINGIFY
-#define STRINGIFY(A) #A
-#endif
+#include "gfx_lib.h"
 
 namespace gfx{
 
     namespace GLSL{
 
-
       /*-----------------------------------------------------------------------------
        *  uniform variable
        *-----------------------------------------------------------------------------*/
-       string UVar = "uniform float amt;";
+       inline string UVar(){ return "uniform float amt;"; }
+
+        
+       /*-----------------------------------------------------------------------------
+        *  function to return uniform float variable
+        *-----------------------------------------------------------------------------*/
+        inline string ufloat(string name){
+          return "uniform float " + name + ";\n";
+        }
+       /*-----------------------------------------------------------------------------
+        *  function to return uniform sampler2D variable
+        *-----------------------------------------------------------------------------*/
+        inline string usampler2D(string name){
+          return "uniform sampler2D " + name + ";\n";
+        }
+        
+        /*-----------------------------------------------------------------------------
+         *  function to return uniform vec variable
+         *-----------------------------------------------------------------------------*/
+
+       /*-----------------------------------------------------------------------------
+        *  Make a list of attributes based on names from type T
+        *-----------------------------------------------------------------------------*/
+       template<class T>
+       string attributes(){
+         string s;
+         for (auto& i : T::Init().Attribute){
+            s += "attribute " + i.first + ";\n";
+         }
+         return s;
+       }
 
       /*-----------------------------------------------------------------------------
        *  TEST VERTEX SHADER
        *-----------------------------------------------------------------------------*/
-      string SimpleVertex = STRINGIFY(
+      inline string SimpleVertex (){ return R"(
     
         attribute vec3 position;
     
@@ -38,144 +65,187 @@ namespace gfx{
           vec4 tmp = vec4(position,1.0);
           gl_Position = tmp;
        }
-      );
+      )";}
 
 
       /*-----------------------------------------------------------------------------
        *  TEST FRAGMENT SHADER
        *-----------------------------------------------------------------------------*/
 
-      string SimpleFragment = STRINGIFY(
+      inline string SimpleFragment (){ return R"(
     
         void main(void){
           gl_FragColor = vec4(1.0,1.0,1.0,1.0);
         }
-      );
+      )";}
 
       
       /*-----------------------------------------------------------------------------
        *  TYPICAL VERTEX ATTRIBUTES
        *-----------------------------------------------------------------------------*/
-        string AVertex = STRINGIFY(
+        inline string AVertex() { return R"(
             attribute vec3 position;
             attribute vec3 normal;
             attribute vec4 sourceColor;
             attribute vec2 texCoord;
-        );
+        )";
+        }
         
 
         /*-----------------------------------------------------------------------------
          *  TYPICAL MATRIX TRANSFORM UNIFORMS
          *-----------------------------------------------------------------------------*/
-        string UMatrix = STRINGIFY(
+        inline string UMatrix() { return R"(
             uniform mat4 modelView;           // Model * View
             uniform mat4 projection;          // Projection Matrix (ortho or frustum)
             uniform mat4 normalMatrix;        // Normal Matrix (inverse transpose of mvm)
-        );
+        )";
+        }
         
         /*-----------------------------------------------------------------------------
          *  TYPICAL VARYING VALUES TO PASS FROM VERTEX TO SHADER
          *-----------------------------------------------------------------------------*/
-        string VaryingES = STRINGIFY(
+        inline string VaryingES() { return R"(
             varying vec4 colorDst;
             varying lowp vec2 texco;
-        ); 
+        )"; 
+        }
 
-        string Varying = STRINGIFY(
+        inline string Varying(){ return R"(
             varying vec4 colorDst;
             varying vec2 texco;
-        );
+        )";
+        }
 
 
         /*-----------------------------------------------------------------------------
          *  LIGHT POSITION UNIFORM
          *-----------------------------------------------------------------------------*/
-        string ULight = STRINGIFY(
+        inline string ULight(){ return R"(
             uniform vec3 lightPosition;
-        );
+        )";
+        }
         
 
         /*-----------------------------------------------------------------------------
          *  LIGHT PROPERTIES
          *-----------------------------------------------------------------------------*/
-        string ULightProperty = STRINGIFY(
+        inline string ULightProperty (){ return  R"(
             uniform vec3 ambientColor;
             uniform vec3 diffuseMaterial;
             uniform vec3 specularColor;
-        );
-        
+        )";
+       } 
 
         /*-----------------------------------------------------------------------------
          *  TEXTURE SAMPLER2D UNIFORM
          *-----------------------------------------------------------------------------*/
-        string USampler = STRINGIFY(
+       inline string USampler () { return R"(
             uniform sampler2D sampleTexture;
-        );
+        )";}
         
         /*-----------------------------------------------------------------------------
          *  TEXTURE SAMPLER CUBE UNIFORM
          *-----------------------------------------------------------------------------*/
-        string USamplerCube = STRINGIFY(
+        inline string USamplerCube () {return R"(
             uniform samplerCube sampleTexture;
-        );
+        )";}
 
         
         /*-----------------------------------------------------------------------------
          *  VARYING COLOR 
          *-----------------------------------------------------------------------------*/
-        string VColor = STRINGIFY(
+        inline string VColor (){return R"(
             varying vec4 colorDst;
-        );
+        )";}
 
         /*-----------------------------------------------------------------------------
          *  VARYING TEXTURE 
          *-----------------------------------------------------------------------------*/
-        string VTexES = STRINGIFY(
+        inline string VTexES (){return R"(
             varying lowp vec2 texco;
-        );
+        )";}
 
-        string VTex = STRINGIFY(
+        inline string VTex(){return  R"(
             varying vec2 texco;
-        );
+        )";}
+
+        /*-----------------------------------------------------------------------------
+         *  Utility function to create a string for a varying vector
+         *-----------------------------------------------------------------------------*/
+         template<int N>
+         string vec(string name, bool bES=false){
+           stringstream s; s << N;
+           string res = bES? "lowp ":"";
+           return "varying " + res + "vec"+s.str()+ " " + name;
+         }
 
         /*-----------------------------------------------------------------------------
          *  FUNCTION TO CALCULATE NORMAL
          *-----------------------------------------------------------------------------*/
-        string NTransform = STRINGIFY(
+        inline string NTransform(){ return R"(
            vec3 doNormal(vec4 n) {
                 return normalize( ( normalMatrix * n ).xyz );
             }
-        );
+        )";
+        }
 
         
         /*-----------------------------------------------------------------------------
-         *  FUNCTION TO TRANSFORM VERTEX
+         *  FUNCTION TO TRANSFORM VERTEX (see also cubemap version below)
          *-----------------------------------------------------------------------------*/
-        string VCalc = STRINGIFY(
+        inline string VCalc(){ return R"(
             vec4 doVertex (vec4 v) {
               mat4 m = projection * modelView;
               return m * v;
             }
-        );
+        )";
+        }
 
          /*-----------------------------------------------------------------------------
-         *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON SAMPLER 
+         *  FUNCTION TO TRANSFORM VERTEX AND DISPLACE BASED ON Bound SAMPLER 
          *-----------------------------------------------------------------------------*/
-        string VDisplaceCalc = STRINGIFY(
+        inline string VDisplaceCalc() { return R"(
             vec4 doVertex (vec4 v) {
               float z = texture2D(sampleTexture, texco).r * amt;
               vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
               mat4 m = projection * modelView;
-              return m * nv;
+              return m*nv;
             }
-        );
+        )";
+        }
 
+
+        /*-----------------------------------------------------------------------------
+         *  No Projection Matrix
+         *-----------------------------------------------------------------------------*/
+        inline string VDisplaceCalcSimple(){ return R"(
+            
+            uniform sampler2D sampleTexture;
+
+            vec3 doNormal(){
+              return normal;
+            }
+            vec4 doColor(){
+              texco = texCoord;
+              return sourceColor;
+            }
+            
+            vec4 doVertex (vec4 v) {
+              vec3 tn = doNormal();
+              vec4 sc = doColor();
+              float z = texture2D(sampleTexture, texco).r * amt;
+              vec4 nv = vec4(v.x, v.y, v.z + z, v.w);
+              return nv;
+            }
+        )";
+        }
 
         
         /*-----------------------------------------------------------------------------
          *  FUNCTION TO CALCULATE LIGHTING
          *-----------------------------------------------------------------------------*/
-         string VLighting = STRINGIFY(
+         inline string VLighting(){ return R"(
             
             uniform vec3 lightPosition;
             
@@ -193,60 +263,41 @@ namespace gfx{
                 //Specular Coefficient (not used here)
                 float sf = max(0.0, dot(L,H) );
                     
-                return vec4((sourceColor * df).xyz , 1 );
+                return vec4((sourceColor * df).rgb , sourceColor.a );
             }
 
-        );
+        )";
+         }
 
         
         /*-----------------------------------------------------------------------------
          *  MAIN VERTEX FUNCTION
          *-----------------------------------------------------------------------------*/
-        string MVert = STRINGIFY(
+        inline string MVert() { return R"(
             
             void main(void){
             
                 colorDst = doColor();  
-                colorDst = sourceColor;
                 
                 texco = texCoord;
                                 
                 vec4 pos =  vec4(position,1.0);
                 vec4 nor = vec4(normal,1.0);
                 
-                //xm = submodel;
-                
-                gl_PointSize = 1.0;
+                gl_PointSize = 5.0;
                 gl_Position = doVertex(pos);
             }
-        );
- 
-        /* string MVertN = STRINGIFY( */
-            
-        /*     void main(void){ */
-            
-        /*        //colorDst = doColor(); */  
-        /*         colorDst = sourceColor; */
-                
-        /*         texco = texCoord; */
-                                
-        /*         vec4 pos =  vec4(position,1.0); */
-        /*         vec4 nor = vec4(normal,1.0); */
-                
-        /*         //xm = submodel; */
-        /*         vec4 np = doVertex(pos); */
-        /*         gl_PointSize = 10.0; */
-        /*         gl_Position = np; */
-        /*     } */
-        /* ); */       
-        
-
+        )";
+        }
 
         /*-----------------------------------------------------------------------------
          *  MAIN FRAGMENT FUNCTION
          *-----------------------------------------------------------------------------*/
-         string DefaultFragES = STRINGIFY(
+         inline string DefaultFragES(){ return R"(
 
+         /*-----------------------------------------------------------------------------
+          *  DEFAULT FRAGMENT SHADER ES
+          *-----------------------------------------------------------------------------*/
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying lowp vec2 texco;
@@ -259,10 +310,14 @@ namespace gfx{
                 
                 gl_FragColor = litColor;     //mix(litColor, texColor, .5);
             }
-        ); 
+        )"; 
+         }
 
-         string DefaultFrag = STRINGIFY(
+         inline string DefaultFrag() { return R"(
 
+         /*-----------------------------------------------------------------------------
+          *  DEFAULT FRAGMENT SHADER
+          *-----------------------------------------------------------------------------*/
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying vec2 texco;
@@ -275,14 +330,14 @@ namespace gfx{
                 
                 gl_FragColor = litColor;      //mix(litColor, texColor, .5);
             }
-        );   
-
+        )";   
+         }
 
         
+         inline string TFragMix() { return R"(
          /*-----------------------------------------------------------------------------
           *  FRAGMENT .5 MIXED WITH TEXTURE
           *-----------------------------------------------------------------------------*/
-         string TFragMix = STRINGIFY(
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -296,14 +351,14 @@ namespace gfx{
                 
                 gl_FragColor = mix(litColor, texColor, 0.5);           
             }
-        ); 
-
+        )"; 
+        }
         
+
+         inline string TFragAlphaES() { return R"(
          /*-----------------------------------------------------------------------------
           *  ALPHA WEIGHTED FRAGMENT SHADER (FOR MOTION BLUR AND TRAILS) 
           *-----------------------------------------------------------------------------*/
-
-         string TFragAlphaES = STRINGIFY(
 
             uniform sampler2D sampleTexture;
             uniform float alpha;
@@ -320,9 +375,10 @@ namespace gfx{
                 gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha *  litColor.a) );           
 
             }
-        );
+        )";
+         }
 
-         string TFragAlpha = STRINGIFY(
+         inline string TFragAlpha() { return R"(
 
             uniform sampler2D sampleTexture;
             uniform float alpha;
@@ -337,13 +393,14 @@ namespace gfx{
                 
                 gl_FragColor = vec4(texColor.rgb, texColor.a * ( alpha * litColor.a) );           
             }
-        );
- 
+        )";
+        }
+
          /*-----------------------------------------------------------------------------
           *  BLUR FRAGMENT SHADER (FOR FAKE ANTI-ALIASING)
           *-----------------------------------------------------------------------------*/
 
-         string TFragBlur = STRINGIFY(
+         inline string TFragBlur(){ return R"(
 
             uniform sampler2D sampleTexture;  
             uniform float ux;
@@ -391,13 +448,14 @@ namespace gfx{
 
             }
 
-        );
+        )";
+        }
       
          /*-----------------------------------------------------------------------------
           *  BLUR FRAGMENT SHADER (FOR FAKE ANTI-ALIASING)
           *-----------------------------------------------------------------------------*/
 
-         string TFragBlurES = STRINGIFY(
+         inline string TFragBlurES() { return R"(
 
             uniform sampler2D sampleTexture;  
             uniform float ux;
@@ -445,16 +503,17 @@ namespace gfx{
 
             }
 
-        );
+        )";
+         }
              
       
                      
+
+
+        inline string TFrag() { return R"(   
         /*-----------------------------------------------------------------------------
          *  PURE TEXTURE SHADER (FOR SLABS)
          *-----------------------------------------------------------------------------*/
-
-          string TFrag = STRINGIFY(   
-
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
             varying vec2 texco;
@@ -466,10 +525,11 @@ namespace gfx{
                 
                 gl_FragColor = texColor;                //mix(litColor, texColor, 0.0);
             }
-        );
+        )";
+        }
 
 
-         string TFragES = STRINGIFY(   
+      inline string TFragES(){ return R"(   
 
             uniform sampler2D sampleTexture;  
             varying vec4 colorDst;
@@ -482,13 +542,14 @@ namespace gfx{
                 
               gl_FragColor = texColor; //mix(litColor, texColor, 0.0);
             }
-        );   
+        )";   
+      }
 
 
    /*-----------------------------------------------------------------------------
     *  CLIP SPACE VERTEX SHADER (FOR SLABS)
     *-----------------------------------------------------------------------------*/
-    string ClipSpaceVertES = STRINGIFY( 
+    inline string ClipSpaceVertES() { return R"( 
 
       attribute vec3 position; 
       attribute vec3 normal;
@@ -504,10 +565,11 @@ namespace gfx{
         vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
         gl_Position = vec4(position,1.0);
         }
-    ); 
+    )"; 
+    }
     
     
-    string ClipSpaceVert = STRINGIFY( 
+    inline string ClipSpaceVert(){ return R"( 
 
         attribute vec3 position; 
         attribute vec3 normal;
@@ -523,74 +585,194 @@ namespace gfx{
         vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
         gl_Position = vec4(position,1.0);
         }
-    );
+    )";
+    }
          
+ 
+    /*-----------------------------------------------------------------------------
+    *  CLIP SPACE VERTEX SHADER (FOR CUBE SLABS) use with FUseCubeMap
+    *-----------------------------------------------------------------------------*/
+    inline string CubeClipSpaceVertES(){ return R"( 
+
+      attribute vec3 position; 
+      attribute vec3 normal;
+      attribute vec4 sourceColor;
+      attribute vec3 texCoord;
+
+      varying lowp vec3 vTexDir;
+      varying vec4 colorDst;   
+
+      void main(void){  
+        vTexDir = texCoord;
+        colorDst = sourceColor; 
+        vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
+        gl_Position = vec4(position,1.0);
+        }
+    )"; 
+    }
     
     
+    inline string CubeClipSpaceVert() { return R"( 
+
+        attribute vec3 position; 
+        attribute vec3 normal;
+        attribute vec4 sourceColor;
+        attribute vec3 texCoord;
+
+        varying vec3 vTexDir;
+        varying vec4 colorDst;   
+
+      void main(void){  
+        vTexDir = texCoord;
+        colorDst = sourceColor; 
+        vec3 tn = normal + position;   //FORCE COMPILATION OF THESE TERMS!!
+        gl_Position = vec4(position,1.0);
+        }
+    )";
+    }
+    
+    inline string CubeFrag() { return R"(
+        uniform samplerCube cubeMap;            
+        varying vec3 vTexDir;
+        
+        void main(void){
+            gl_FragColor = textureCube(cubeMap, vTexDir).rgba; 
+        }
+    )"; 
+    }
+           
     /*-----------------------------------------------------------------------------
      *  DEFAULT MESH BUFFER OBJECT SHADER (FOR VERTICES)
      *-----------------------------------------------------------------------------*/
-    string DefaultVertES =  AVertex + VaryingES + UMatrix + NTransform + VLighting + VCalc + MVert;
-    string DefaultVert =  AVertex + Varying + UMatrix + NTransform + VLighting + VCalc + MVert;
+    inline string DefaultVertES(){ return AVertex() + VaryingES() + UMatrix() + NTransform() + VLighting() + VCalc() + MVert(); }
+    inline string DefaultVert(){ return  AVertex() + Varying() + UMatrix() + NTransform() + VLighting() + VCalc() + MVert(); }
 
-    string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
-    string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
     
-    // string TFragBasic = STRINGIFY(     
-    // 
-    //   uniform sampler2D tex; 
-    //   varying lowp vec2 texco; 
-    // 
-    //   void main(void){
-    //       //  vec4 nc = colorDst
-    //         vec4 texColor = texture2D(tex, texco);   
-    //     gl_FragColor = texColor;
-    //     }
-    // ); 
-        
-    /// Cubemapping function [in progress]
-    string VMakeCubemap = STRINGIFY(
+    //Make a vertex shader, passing in a string for doVertex() calculations . . . 
+    inline string makeVert(string tCalc, bool bES=false){
+      return AVertex() + (bES ? VaryingES() : Varying()) + UMatrix() + NTransform() + VLighting() + tCalc + MVert();
+    }
+    
+    inline string makeDisplacementVert(bool bES=false){
+      return UVar() + USampler() + makeVert(VDisplaceCalc(),bES);
+    }
+
+    inline string makeDefaultVert(bool bES=false){
+      return makeVert(VCalc(), bES);
+    }
+    
+   // string DisplacementVert = UVar + USampler + AVertex + Varying + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert;    
+   // string DisplacementVertES = UVar + USampler + AVertex + VaryingES + UMatrix + NTransform + VLighting + VDisplaceCalc + MVert; 
+     
+   
+    /*-----------------------------------------------------------------------------
+     *  RENDER TO A CUBEMAP (position function) -- change uniform cmFace every pass
+     *-----------------------------------------------------------------------------*/
+    inline string MakeCubemapVert() { return R"(
             
-          uniform cmFace;
-          varying vec3 vTexDir;
+          uniform int cmFace;
+          uniform float uFar;
+          uniform float uNear;
+          //varying vec3 vTexDir;
              
-          vec4 cubemap(vec4 vertex){
-          vec3 n = normalize(vertex.xyz); //NORMAL
-                
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
-                if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
-        else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
-        else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
-        else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
-        // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
-        else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
-        // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
-        else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
-                
-                // convert into screen-space:  
-        // simplified perspective projection since fovy = 90 and aspect = 1  
-        vertex.zw = vec2(  
-          (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
-          -vertex.z  
-        );  
-        return vertex;  
-            }
-        );
+             
+          vec4 doVertex(vec4 v){
         
-        string FUseCubemap = STRINGIFY(
-            uniform samplerCube cubeMap;            
-            varying vec3 vTexDir;
+           vec4 vertex = modelView * v;
+           
+           vec3 n = normalize(vertex.xyz); 
+                
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
+                    if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
+            else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
+            else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
+            else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
+            else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
+            else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
+                
+            // convert into screen-space:  
+            // simplified perspective projection since fovy = 90 and aspect = 1  
+            vertex.zw = vec2(  
+              (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
+              -vertex.z  
+            );  
+          
+            return vertex;  
             
-            void main(void){
-                textureCube(cubeMap, vTexDir).rgb 
-            }
-        );   
+          }
+
+        )";
+    }
+        
+
+    
+    /*-----------------------------------------------------------------------------
+     *  RENDER OMNI STEREO TO A CUBE MAP (ripped from wakefield's code in AlloSystem al_OmniStereo.hpp)
+     *-----------------------------------------------------------------------------*/
+    inline string MakeOmniStereoCubeMapVert() { return R"(
+            
+          uniform int cmFace;
+          uniform float uFar;
+          uniform float uNear;
+          
+          uniform float omni_eye;       //0, 1, -1
+          uniform float omni_radius;    //in GL units
+             
+          vec4 doVertex(vec4 v){
+        
+           vec4 vertex = modelView * v;
+                    
+           float l = length(vertex.xz);
+           vec3 n = normalize(vertex.xyz); 
+
+           float displacement = omni_eye *
+            (omni_radius * omni_radius -
+               sqrt(l * l * omni_radius * omni_radius +
+                    omni_eye * omni_eye * (omni_radius * omni_radius - l * l))) /
+            (omni_radius * omni_radius - omni_eye * omni_eye);
+
+             vertex.xz += vec2(displacement * vn.z, displacement * -vn.x);
+           
+                
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_X    
+                    if (cmFace == 0) { vertex.xyz = vec3(-vertex.z, -vertex.y, -vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_X  
+            else if (cmFace == 1) { vertex.xyz = vec3( vertex.z, -vertex.y,  vertex.x); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Y    
+            else if (cmFace == 2) { vertex.xyz = vec3( vertex.x,  vertex.z, -vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y   
+            else if (cmFace == 3) { vertex.xyz = vec3( vertex.x, -vertex.z,  vertex.y); }  
+            // GL_TEXTURE_CUBE_MAP_POSITIVE_Z    
+            else if (cmFace == 4) { vertex.xyz = vec3( vertex.x, -vertex.y, -vertex.z); }  
+            // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z   
+            else          { vertex.xyz = vec3(-vertex.x, -vertex.y,  vertex.z); }  
+                
+            // convert into screen-space:  
+            // simplified perspective projection since fovy = 90 and aspect = 1  
+            vertex.zw = vec2(  
+              (vertex.z*(uFar+uNear) + vertex.w*uFar*uNear*2.)/(uNear-uFar),  
+              -vertex.z  
+            );  
+          
+            return vertex;  
+            
+          }
+
+        )";
+    }
+
+  
            
 
-    string FXDB = STRINGIFY(
+   /*-----------------------------------------------------------------------------
+    *  UNUSED ANTI-ALIASING
+    *-----------------------------------------------------------------------------*/
+    inline string FXDB() { return R"(
       uniform sampler2D sampleTexture; 
       uniform vec2 frameBufSize;
        // uniform vec2 frameBufSize;
@@ -616,25 +798,28 @@ namespace gfx{
         gl_FragColor= vec4(rgbM,1.0);//max(texColor, average + average2);
       }
       
-    );    
+    )";  
+    }
     
-    string FOGL = STRINGIFY(
+    inline string FOGL(){ return R"(
        uniform sampler2D sampleTexture;
         uniform vec2 frameBufSize;
 
       varying vec4 colorDst; 
       varying vec2 texco;     
-     );   
+     )";   
+    }
     
-    string FOGLES = STRINGIFY(
+    inline string FOGLES() { return R"(
        uniform sampler2D sampleTexture;
        uniform vec2 frameBufSize;
 
       varying vec4 colorDst; 
       varying lowp vec2 texco;     
-     );     
+     )";     
+    }
                             
-    string FXAA = STRINGIFY(
+    inline string FXAA() { return R"(
   
       void main(void) {
         //gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
@@ -692,12 +877,13 @@ namespace gfx{
           gl_FragColor =  vec4(rgbB,1.0);
         }
       }
-      );
+      )";
+    }
            
 /*-----------------------------------------------------------------------------
  *  FIXED FUNCTION SHADER CODE
  *-----------------------------------------------------------------------------*/
-string FFLightingVert = STRINGIFY(
+inline string FFLightingVert() { return R"(
     varying vec4 color;
     varying vec3 normal;
     varying vec3 lightDir;
@@ -711,10 +897,11 @@ string FFLightingVert = STRINGIFY(
       lightDir = normalize(vec3(gl_LightSource[0].position.xyz - V));
       gl_Position = vertex; 
     }
-  );
+  )";
+}
 
 
-string FFLightingFrag = STRINGIFY(
+inline string FFLightingFrag() { return R"(
     uniform float lighting;
     varying vec4 color;
     varying vec3 normal;
@@ -732,10 +919,11 @@ string FFLightingFrag = STRINGIFY(
       final_color += gl_LightSource[0].specular * spec;
       gl_FragColor = mix(color, final_color, .8); //color;//
     }
-  );
+  )"; 
+  }
 
 
-        // static string SVert = STRINGIFY(
+        // static string SVert = R"(
         //     
         //                   attribute vec3 position;
         //                   // attribute vec3 normal;
@@ -759,7 +947,7 @@ string FFLightingFrag = STRINGIFY(
         //   }
         // );
         // 
-        // static string SFrag = STRINGIFY(
+        // static string SFrag = R"(
         //           
         //       
         //    void main(void){

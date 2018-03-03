@@ -1,6 +1,5 @@
 //
-//  GraphicsMatrix.h
-//  opengles_00
+//  gfx_xfmatrix.h
 //
 //  Created by Pablo Colapinto on 10/28/11.
 //  Copyright 2011 x. All rights reserved.
@@ -17,10 +16,20 @@ using namespace std;
 
 namespace gfx{
     
+    /*! View Port */
+    struct SimpleView{
+       Vec4f view = Vec4f(0,0,1,1);
+       Vec4f color = Vec4f(.05,.05,.05,1);
+       SimpleView(){}
+       SimpleView(const Vec4f& v) : view(v) {}
+       SimpleView(float l, float b, float r, float t, float red=.05,float green=.05,float blue=.05) : 
+       view(l,b,r,t),color(red,green,blue,1) {}
+    };        
+
+
     /*! Transformation Matrices Container */
     struct XformMat {
 
-       // static float Identity[16];
         float model[16];
         float view[16];
         float modelView[16];
@@ -39,12 +48,7 @@ namespace gfx{
         Mat4f projMatrixf()const { return proj; }
         Mat4f normalMatrixf() const { return normal; }
 
-        // Mat4f& modelMatrixf()  { return model; }
-        // Mat4f& viewMatrixf() { return view; }
-        // Mat4f& modelViewMatrixf() { return modelView; }
-        // Mat4f& projMatrixf() { return proj; }
-        // Mat4f& normalMatrixf()  { return normal; }
-
+        /// @todo remember why this is necessary
         void toDoubles() {
             for (int i = 0; i < 16; ++i){
                 modeld[i] = model[i];
@@ -136,14 +140,14 @@ namespace gfx{
     
         
         
-        static  Mat4f lookAt2(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
-            return Mat4f(
-                         ux[0], ux[1], ux[2], -(ux.dot(eye)),
-                         uy[0], uy[1], uy[2], -(uy.dot(eye)),
-                         uz[0], uz[1], uz[2], -(uz.dot(eye)),
-                         0, 0, 0, 1
-                         );
-        }
+        // static  Mat4f lookAt2(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
+        //     return Mat4f(
+        //                  ux[0], ux[1], ux[2], -(ux.dot(eye)),
+        //                  uy[0], uy[1], uy[2], -(uy.dot(eye)),
+        //                  uz[0], uz[1], uz[2], -(uz.dot(eye)),
+        //                  0, 0, 0, 1
+        //                  );
+        // }
         
         //transposed version
         static  Mat4f lookAt(const Vec3f& ux, const Vec3f& uy, const Vec3f& uz, const Vec3f& eye) {
@@ -157,7 +161,7 @@ namespace gfx{
         }
      
 
-        static  Mat4f lookAt(const Vec3f eye, const Vec3f target, const Vec3f up ){
+        static  Mat4f lookAt(const Vec3f eye=Vec3f(0,0,5), const Vec3f target=Vec3f(0,0,0), const Vec3f up=Vec3f(0,1,0) ){
             Vec3f z = (target - eye).unit();	
             Vec3f x = z.cross(up).unit();
             Vec3f y = x.cross(z).unit();
@@ -200,15 +204,15 @@ namespace gfx{
 
         }
        
-        static  Mat4f fovy2 (float rad, float aspectRatio, float near, float far)
-        {
-            float top = near * tan(rad);
-            float bottom = -top;
-            float left = bottom * aspectRatio;
-            float right = top * aspectRatio;
+        // static  Mat4f fovy2 (float rad, float aspectRatio, float near, float far)
+        // {
+        //     float top = near * tan(rad);
+        //     float bottom = -top;
+        //     float left = bottom * aspectRatio;
+        //     float right = top * aspectRatio;
             
-            return frustum2(left, right, bottom, top, near, far);
-        }
+        //     return frustum2(left, right, bottom, top, near, far);
+        // }
 
         /*! Calculate Field of View (Perspective)
         http://unspecified.wordpress.com/2012/06/21/calculating-the-gluperspective-matrix-and-other-opengl-matrix-maths/
@@ -229,22 +233,45 @@ namespace gfx{
                 0, 0, d, 0        
             );
         }
+
+        static Mat4f fovyStereo (float rad, float ratio, float near,
+                                 float far, float offset, float focal)
+        {
+            float tn = tan (rad/2.0);
+            float top = near * tn; 
+            float f = 1.0 / tn;
+
+            float zratio = near / focal;
+            float shift = offset * zratio;
+
+            float left = -ratio * top - shift;
+            float right = ratio * top - shift;
+
+            return Mat4f(
+                2*near/(right-left), 0, 0, 0,
+                0, f, 0, 0,
+                -(right+left)/(right-left), 0, -(far+near)/(far-near), -1,
+                0, 0, -2*far*near/(far-near), 0
+            );
+        }
         
-
-
         static  Mat4f identity();
-		static Mat4f rot( const Quat& r );
+	    	static Mat4f rot( const Quat& r );
 
         // static Mat4f aa( const Rot& r);
         
-        /* Projection of World onto Screen Coordinates */
+        /* /1* Projection of World onto Screen Coordinates *1/ */
         static  Vec3f Project(const Vec3f& v, const XformMat& xf){
             Mat4f tmp = xf.projMatrixf() * xf.modelViewMatrixf();
             Vec4f vp = tmp * Vec4f(v[0],v[1],v[2],1.0);
-            
+          
+            vp[0] /= vp[3]; 
+            vp[1] /= vp[3]; 
+            vp[2] /= vp[3]; 
+
             return Vec3f(
-                xf.viewport[0] + xf.viewport[2] * (vp[0] + 1)/2.0,
-                xf.viewport[1] + xf.viewport[3] * (vp[1] + 1)/2.0,
+                (xf.viewport[0] + xf.viewport[2] * (vp[0] + 1)/2.0) / xf.viewport[2],
+                (xf.viewport[1] + xf.viewport[3] * (vp[1] + 1)/2.0) / xf.viewport[3],
                 (vp[2] + 1) / 2.0
             );
         }
