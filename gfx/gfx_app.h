@@ -198,6 +198,10 @@ SceneController sceneController;        ///< interface to matrix transforms
    *-----------------------------------------------------------------------------*/
   virtual void setup() = 0;
 
+  virtual void _setup () {
+    setup();
+  }
+
   /*-----------------------------------------------------------------------------
    *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
    *-----------------------------------------------------------------------------*/
@@ -218,7 +222,7 @@ SceneController sceneController;        ///< interface to matrix transforms
    *  Starts Graphics Thread.  To be called from main()  @TODO change to startGFX()
    *-----------------------------------------------------------------------------*/
   void start(){
-    setup();
+    _setup();
     WINDOWCONTEXT::System -> Start(this);
   }
 

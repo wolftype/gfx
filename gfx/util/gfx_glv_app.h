@@ -27,11 +27,12 @@ namespace gfx {
 
 using namespace glv;
 
-struct GFXAppGui : public GFXApp<GlutContext>
+template <class CONTEXT>
+struct GFXAppGui : public GFXApp<CONTEXT>
 {
 
   GFXAppGui (int w = 400, int h = 400, string name = "gfx with glv")
-      : GFXApp<GlutContext> (w, h, name)
+      : GFXApp<CONTEXT> (w, h, name)
   {
   }
 
@@ -40,8 +41,14 @@ struct GFXAppGui : public GFXApp<GlutContext>
 
   void bindGLV ()
   {
-    glv.listenTo (mContext);
+    glv.listenTo (this->mContext);
     glv << gui;
+  }
+
+  virtual void _setup ()
+  {
+    bindGLV ();
+    this->setup ();
   }
 
   /* void text(string s, int ow = 50, int oh = 100){ */

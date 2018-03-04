@@ -108,10 +108,14 @@ elseif(${APPLE})
   include_directories(${GLUT_INCLUDE_DIR})
 
  add_subdirectory(GLV)
+ link_directories(${GLV_BINARY_DIR})
+ include_directories(${PROJECT_SOURCE_DIR}/GLV)
  include_directories(gl2ps)
 
+ message ("GLV LIB: " ${GLV_LIBRARY})
+
   #GLFW
-  #  if (${GFX_USE_GLFW})
+#  if (${GFX_USE_GLFW})
 #    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
 #  add_subdirectory(glfw)
 #  link_directories(${PROJECT_BINARY_DIR})
@@ -124,7 +128,7 @@ elseif(${APPLE})
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library})
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} ${GLV_LIBRARY})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
