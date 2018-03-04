@@ -107,16 +107,7 @@ elseif(${APPLE})
   include_directories(${GLEW_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIR})
 
-  #GLV is OPTIONAL
-  find_package(GLV)
-  message ("GLV LIBRARY :" ${GLV_LIBRARY})
-  message ("GLV HEADERS :" ${GLV_INCLUDE_DIR})
-
- if(${GLV_FOUND})
-  include_directories(${GLV_INCLUDE_DIR})
-  set(libraries ${libraries} ${GLV_LIBRARY} )
- endif()
-
+ add_subdirectory(GLV)
  include_directories(gl2ps)
 
   #GLFW
@@ -165,15 +156,16 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   find_package(GLEW REQUIRED)
 
   #GLV should be optional
-  find_package(GLV OPTIONAL)
-  message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
-  message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
-
- if(${GLV_FOUND})
-  include_directories(${GLV_INCLUDE_DIR})
-  set(libraries ${libraries} ${GLV_LIBRARY} )
- endif()
-  include_directories(gl2ps)
+  add_subdirectory(GLV)
+  #  find_package(GLV OPTIONAL)
+  #  message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
+  #  message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
+  #
+  # if(${GLV_FOUND})
+  #  include_directories(${GLV_INCLUDE_DIR})
+  #  set(libraries ${libraries} ${GLV_LIBRARY} )
+  # endif()
+  #  include_directories(gl2ps)
 
   #GLFW
 #  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
@@ -243,6 +235,15 @@ install(TARGETS ${gfx_library}
 #INSTALL HEADERS
 install(DIRECTORY gfx DESTINATION include)
 
+#if(${GLV_FOUND})
+#message ("GLV ADDED TO INSTALL")
+##GLV does not come with its own install mechanism
+#install(DIRECTORY GLV DESTINATION include)
+#install(TARGETS ${GLV_LIBRARY}
+#  RUNTIME DESTINATION bin
+#  LIBRARY DESTINATION lib
+#  ARCHIVE DESTINATION lib)
+#endif()
 
 #PRINT DIRECTORIES
 #message("GFX LINK DIRECTORES")

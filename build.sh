@@ -3,6 +3,7 @@
 
 BUILD_EXAMPLES=0
 GFX_USE_GLFW=0
+BUILD_GLV=1
 MAKE_VERBOSE=1
 
 for i
@@ -20,6 +21,14 @@ do
   esac
 done
 
+#make GLV
+if [ $BUILD_GLV = 1 ]; then
+  echo "BUILDING SUBMODULE GLV LIBRARY...."
+  echo "please make sure you have run:"
+  echo "  git submodule init"
+  echo "  git submodule update"
+  make -C GLV
+fi
 
 mkdir -p build
 cd build
