@@ -3,7 +3,7 @@
  *
  *       Filename:  gfx_std_types.h
  *
- *    Description:  
+ *    Description:
  *
  *        Version:  1.0
  *        Created:  10/31/2014 17:33:14
@@ -11,7 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:  pretty awesome
  *
  * =====================================================================================
  */
@@ -23,41 +23,44 @@
 #include <typeinfo>
 
 using namespace std;
-namespace gfx { namespace util {
-    
-    enum StandardTypes {
-        BOOLEAN,
-        UCHAR,
-        CHAR,
-        UINT,
-        INT,
-        ULONG,
-        LONG,
-        FLOAT,
-        DOUBLE        
-    };
+namespace gfx {
+namespace util {
 
-    typedef std::map< const char *, int> NameMap;
+enum StandardTypes
+{
+  BOOLEAN,
+  UCHAR,
+  CHAR,
+  UINT,
+  INT,
+  ULONG,
+  LONG,
+  FLOAT,
+  DOUBLE
+};
 
-    NameMap create_types(){
-        NameMap m;
-        bool b;
-        unsigned char uc;
-    //    char c;
-        float f;
-        double d;
-        int i;
-        
-        m[ typeid(b).name() ] = BOOLEAN;
-        m[ typeid(uc ).name() ] = UCHAR;
-        m[ typeid(f ).name() ] = FLOAT;
-        m[ typeid(d ).name() ] = DOUBLE;
-        m[ typeid(i ).name() ] = DOUBLE;
-        return m;
-    }
+typedef std::map<const char *, int> NameMap;
 
-    static NameMap Types = create_types();
+NameMap create_types ()
+{
+  NameMap m;
+  bool b;
+  unsigned char uc;
+  //    char c;
+  float f;
+  double d;
+  int i;
 
-} } //gfx::util::
+  m[typeid (b).name ()] = BOOLEAN;
+  m[typeid (uc).name ()] = UCHAR;
+  m[typeid (f).name ()] = FLOAT;
+  m[typeid (d).name ()] = DOUBLE;
+  m[typeid (i).name ()] = DOUBLE;
+  return m;
+}
+
+static NameMap Types = create_types ();
+}
+}  //gfx::util::
 
 #endif

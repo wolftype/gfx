@@ -11,7 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  pretty awesome 
+ *   Organization:  pretty awesome
  *
  * =====================================================================================
  */
@@ -21,67 +21,67 @@
 
 using namespace gfx;
 
-struct R2T : GFXRenderNode {
- 
- RenderToTexture r2t;
- Blur blur;
+struct R2T : GFXRenderNode
+{
 
- void onInit(){
-    
-    r2t.init(width,height,mRenderGraph);
-    blur.init(width,height,mRenderGraph);
-    
+  RenderToTexture r2t;
+  Blur blur;
+
+  void onInit ()
+  {
+
+    r2t.init (width, height, mRenderGraph);
+    blur.init (width, height, mRenderGraph);
+
+    //set texture
     blur.texture = r2t.texture;
 
     blur << r2t;
-    
+
     //bind downstream
-    divert(blur);     // blur points to this instance's downstream process
+    divert (blur);  // blur points to this instance's downstream process
     //bind upstream
-    channel(r2t);     // r2t calls this instance's upstream processes
- }
+    channel (r2t);  // r2t calls this instance's upstream processes
+  }
 
- void onRender(){
-   blur.onRender();
- }
-
+  void onRender () { blur.onRender (); }
 };
 
 
-struct MyApp : GFXApp<GlutContext> {
+struct MyApp : GFXApp<GlutContext>
+{
 
- MBO mbo;
- R2T r2t;
+  MBO mbo;
+  R2T r2t;
 
- virtual void setup(){
+  virtual void setup ()
+  {
 
-    mbo = Mesh::Sphere();
+    mbo = Mesh::Sphere ();
 
-    mRenderer.clear();
+    mRenderer.clear ();
     mRenderer << r2t << mShaderNode << mSceneNode << this;
- 
-    mRenderGraph.init(&mRenderer, 800,400);//
-    mRenderGraph.immediate(false); 
-   
- }
 
- virtual void onDraw(){
+    mRenderGraph.init (&mRenderer, 800, 400);
+  }
 
-     draw(mbo,1,0,0);
+  virtual void onDraw ()
+  {
 
-     static float time = 0; time+=.01;
-     r2t.blur.ux = sin(time);
-     r2t.blur.uy = cos(time/2);
+    draw (mbo, 1, 0, 0);
 
- }
-
-
+    static float time = 0;
+    time += .01;
+    r2t.blur.ux = sin (time);
+    r2t.blur.uy = cos (time / 2);
+  }
 };
 
 
-int main(){
+int main ()
+{
 
   MyApp app;
-  app.start();
+  app.start ();
   return 0;
 }

@@ -3,7 +3,7 @@
  *
  *       Filename:  gl_macros.h
  *
- *    Description:  some useful #defines like PI and STRINGIFY and GLSL 
+ *    Description:  some useful #defines like PI and STRINGIFY and GLSL
  *                  include after including glew.h
  *
  *        Version:  1.0
@@ -12,23 +12,23 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:  pretty awesome
  *
  * =====================================================================================
  */
 
-#ifndef  gl_macros_INC
-#define  gl_macros_INC
+#ifndef gl_macros_INC
+#define gl_macros_INC
 
 #include <math.h>
 
-namespace gfx{
+namespace gfx {
 
 #ifndef PI
-#define PI (float)3.14159265359
+#define PI (float) 3.14159265359
 #endif
 
-#ifndef STRINGIFY 
+#ifndef STRINGIFY
 #define STRINGIFY(A) #A
 #endif
 
@@ -38,10 +38,8 @@ namespace gfx{
 #endif
 
 #ifndef RAND
-#define RAND (1.0 * rand() / (RAND_MAX))
+#define RAND (1.0 * rand () / (RAND_MAX))
 #endif
-
-
 }
 
-#endif   /* ----- #ifndef gl_macros_INC  ----- */
+#endif /* ----- #ifndef gl_macros_INC  ----- */

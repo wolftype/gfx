@@ -1,6 +1,6 @@
 /*
  *  gfx_vbo.h
- *  
+ *
  *
  *  Created by x on 1/9/11.
  *  Copyright 2011 x. All rights reserved.
@@ -16,164 +16,173 @@
 
 namespace gfx {
 
-    ///Vertex Buffer Object. Vertex data can be interleaved with color info, etc, watch for packing bit alignments!
-  class VBO {
-  
-    private:
-    
-            typedef unsigned char uchar;
-    
-            GLuint          mId;        ///< Unique buffer ID
+///Vertex Buffer Object. Vertex data can be interleaved with color info, etc, watch for packing bit alignments!
+class VBO
+{
 
-            GL::TYPE        mType;      ///< type of the buffer (for RTVBO operations)
-        
-            GL::FORMAT      mFormat;    ///< format of the buffer (for RTVBO operations)
-            
-            GL::BUFFER      mTarget;    ///< Specifies the target buffer object being mapped (vertex or index? or pixel (un)pack)
-            GL::USAGE       mUsage;     ///< Specifies how the buffer will be used, dynamic, etc
+ private:
+  typedef unsigned char uchar;
 
-            GLsizeiptr      mDataSize;  ///< Size of buffer in bytes
-      
-            GLvoid *        mData;      ///< user data
-        
-            GLuint          mOffset;    ///< offset into buffer
-      
-            GLuint mNum;                ///< Number of Vertices
-      
-    public:
-            
-            GLuint id() const { return mId; }
-        
-            VBO() : mId(0) ,
-            mType(GL::USHORT),
-            mFormat(GL::RGB), 
-            mTarget(GL::VERTEXBUFFER),
-            mUsage(GL::DYNAMIC),
-            mOffset(0),
-            mNum(0),
-            mDataSize(0),
-            mData(NULL)
-            { }
-      
-            VBO(GLvoid * udata, int num, GLsizeiptr s, 
-                GL::BUFFER b = GL::VERTEXBUFFER, GL::USAGE use = GL::STATIC)
-            : mId(0),
-            mType(GL::USHORT),
-            mFormat(GL::RGB), 
-            mTarget(b),
-            mUsage(use),
-            mNum(num),
-            mOffset(0),
-            mDataSize(s),
-            mData(udata)
+  GLuint mId;  ///< Unique buffer ID
 
-            {
-                generate();        
-            }   
+  GL::TYPE mType;  ///< type of the buffer (for RTVBO operations)
 
-      //Copy and Assignment
-      
-          void data( GLvoid * d ) { mData = d; }
-        
-          void target(GL::BUFFER t) { mTarget = t; }
-        
-          void generate(GLvoid * udata,  GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER);
-            
-          void generate() {
-                glGenBuffers(1, &mId);  
-                cout << "GENERATING VBO id " << mId << endl; 
-                GL::error( "vbo gen");
-                bind();
-                buffer();
-                unbind();
-          }
-    
-          void bind() const {
-                glBindBuffer(mTarget, mId);//arb?
-                GL::error( "vbo bind");
-          }
+  GL::FORMAT mFormat;  ///< format of the buffer (for RTVBO operations)
 
-          void buffer(){
-            //    mDataSize = GL :: dataSize( mFormat, mType, mNum );
-                glBufferData(mTarget, mDataSize, mData, mUsage);
-                GL::error( "vbo buffer data");
-          }    
+  GL::BUFFER
+    mTarget;         ///< Specifies the target buffer object being mapped (vertex or index? or pixel (un)pack)
+  GL::USAGE mUsage;  ///< Specifies how the buffer will be used, dynamic, etc
 
-            void buffer(GLvoid * data){
-                mData = data;
-                glBufferData(mTarget, mDataSize, mData, mUsage);
-                GL::error( "vbo buffer data");
-            }    
+  GLsizeiptr mDataSize;  ///< Size of buffer in bytes
 
-            void set(GLvoid* udata, int num, GLsizeiptr s, GL::BUFFER t){
-                mData = udata;
-                mNum = num;
-                mTarget = t;
-                mDataSize = s;//GL::dataSize(mFormat, mType, mNum);
-            }
+  GLvoid *mData;  ///< user data
 
-            void null(){
-                mData = NULL;
-            }
+  GLuint mOffset;  ///< offset into buffer
 
-            void unbind() const {
-                glBindBuffer(mTarget, 0);//arb?
-                GL::error("vbo ubind");
-            }
+  GLuint mNum;  ///< Number of Vertices
 
-            void update(GLvoid * data ) {
-                mData = data;
-                bind();
-                glBufferSubData( mTarget, 0, mDataSize, mData );
-                unbind();
-                GL::error( "vbo update data");
+ public:
+  GLuint id () const { return mId; }
 
-            }
-            
-            void update() {
+  VBO ()
+      : mId (0),
+        mType (GL::USHORT),
+        mFormat (GL::RGB),
+        mTarget (GL::VERTEXBUFFER),
+        mUsage (GL::DYNAMIC),
+        mOffset (0),
+        mNum (0),
+        mDataSize (0),
+        mData (NULL)
+  {
+  }
 
-                bind();
-                glBufferSubData( mTarget, 0, mDataSize, mData );
-                unbind();
-                GL::error( "vbo update data");
+  VBO (GLvoid *udata, int num, GLsizeiptr s, GL::BUFFER b = GL::VERTEXBUFFER,
+       GL::USAGE use = GL::STATIC)
+      : mId (0),
+        mType (GL::USHORT),
+        mFormat (GL::RGB),
+        mTarget (b),
+        mUsage (use),
+        mNum (num),
+        mOffset (0),
+        mDataSize (s),
+        mData (udata)
 
-            }
-      
-            template<class T>
-            void update(int idx, int num, T * d) {
+  {
+    generate ();
+  }
 
-                bind();
-                glBufferSubData( mTarget, idx * sizeof(T), num * sizeof(T), (GLvoid*)d);
-                unbind();
-                GL::error( "vbo update sub data");
+  //Copy and Assignment
 
-            }
-            
-            void offset(GLuint n ) { mOffset = n; }
-            
-            void usage(GL::USAGE u) { mUsage = u; }
-      
-            //void draw(GLenum);
-            
-            void drawArray(GLenum mode = GL_LINE_LOOP) const{
-                glDrawArrays  (mode, 0, mNum);  
-                GL::error("vbo draw arrays");
-            }
-            
-            void drawElements(GLenum mode = GL_TRIANGLES, int num = -1, int off = 0) const{
-                glDrawElements ( mode, (num==-1) ? mNum - off : num, mType, (GLvoid *) ( sizeof( mType ) * off ) );  
-                GL::error("vbo draw elements");
-            }
-            void enable();
-            void disable();
-            
-            GLsizeiptr size() const { return mDataSize; }
-            GLuint num() const { return mNum; }
-            
-  };
-  
+  void data (GLvoid *d) { mData = d; }
 
-    
-} // gfx::
+  void target (GL::BUFFER t) { mTarget = t; }
+
+  void generate (GLvoid *udata, GLsizeiptr s, GL::BUFFER = GL::VERTEXBUFFER);
+
+  void generate ()
+  {
+    glGenBuffers (1, &mId);
+    cout << "GENERATING VBO id " << mId << endl;
+    GL::error ("vbo gen");
+    bind ();
+    buffer ();
+    unbind ();
+  }
+
+  void bind () const
+  {
+    glBindBuffer (mTarget, mId);  //arb?
+    GL::error ("vbo bind");
+  }
+
+  void buffer ()
+  {
+    //    mDataSize = GL :: dataSize( mFormat, mType, mNum );
+    glBufferData (mTarget, mDataSize, mData, mUsage);
+    GL::error ("vbo buffer data");
+  }
+
+  void buffer (GLvoid *data)
+  {
+    mData = data;
+    glBufferData (mTarget, mDataSize, mData, mUsage);
+    GL::error ("vbo buffer data");
+  }
+
+  void set (GLvoid *udata, int num, GLsizeiptr s, GL::BUFFER t)
+  {
+    mData = udata;
+    mNum = num;
+    mTarget = t;
+    mDataSize = s;  //GL::dataSize(mFormat, mType, mNum);
+  }
+
+  void null () { mData = NULL; }
+
+  void unbind () const
+  {
+    glBindBuffer (mTarget, 0);  //arb?
+    GL::error ("vbo ubind");
+  }
+
+  void update (GLvoid *data)
+  {
+    mData = data;
+    bind ();
+    glBufferSubData (mTarget, 0, mDataSize, mData);
+    unbind ();
+    GL::error ("vbo update data");
+  }
+
+  void update ()
+  {
+
+    bind ();
+    glBufferSubData (mTarget, 0, mDataSize, mData);
+    unbind ();
+    GL::error ("vbo update data");
+  }
+
+  template <class T>
+  void update (int idx, int num, T *d)
+  {
+
+    bind ();
+    glBufferSubData (mTarget, idx * sizeof (T), num * sizeof (T), (GLvoid *) d);
+    unbind ();
+    GL::error ("vbo update sub data");
+  }
+
+  void offset (GLuint n) { mOffset = n; }
+
+  void usage (GL::USAGE u) { mUsage = u; }
+
+  //void draw(GLenum);
+
+  void drawArray (GLenum mode = GL_LINE_LOOP) const
+  {
+    glDrawArrays (mode, 0, mNum);
+    GL::error ("vbo draw arrays");
+  }
+
+  void drawElements (GLenum mode = GL_TRIANGLES, int num = -1,
+                     int off = 0) const
+  {
+    glDrawElements (mode, (num == -1) ? mNum - off : num, mType,
+                    (GLvoid *) (sizeof (mType) * off));
+    GL::error ("vbo draw elements");
+  }
+  void enable ();
+  void disable ();
+
+  GLsizeiptr size () const { return mDataSize; }
+  GLuint num () const { return mNum; }
+};
+
+
+
+}  // gfx::
 
 #endif

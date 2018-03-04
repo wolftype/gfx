@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#BUILDS AND RUNS ONLY SINGLE FILE 
+#BUILDS AND RUNS ONLY SINGLE FILE
 echo Compiling and Running $1
 
 DIRECTORY=`dirname $1`

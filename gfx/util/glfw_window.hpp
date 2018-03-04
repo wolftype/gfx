@@ -10,8 +10,8 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  Pablo Colapinto 
- *   Organization:  
+ *         Author:  Pablo Colapinto
+ *   Organization:
  *
  * =====================================================================================
  */
@@ -30,179 +30,186 @@
 #include "gfx_control.h"
 
 using namespace std;
-namespace gfx{
+namespace gfx {
 
 
 /*-----------------------------------------------------------------------------
- *  Some Callbacks to be implemented later 
+ *  Some Callbacks to be implemented later
  *-----------------------------------------------------------------------------*/
 
 struct GLFWContext;
 
-struct GLFWInterface : Interface<GLFWContext> {
+struct GLFWInterface : Interface<GLFWContext>
+{
 
-  static void OnKeyDown(GLFWwindow* window, int key, int scancode, int action, int mods){
-      //((APPLICATION*)(app))->onKeyDown(key,action);
-      Keyboard keyboard(key, mods, 0, 0, true);
-      Interface<GLFWContext>::OnKeyDown(keyboard);   
+  static void OnKeyDown (GLFWwindow *window, int key, int scancode, int action,
+                         int mods)
+  {
+    //((APPLICATION*)(app))->onKeyDown(key,action);
+    Keyboard keyboard (key, mods, 0, 0, true);
+    Interface<GLFWContext>::OnKeyDown (keyboard);
   }
 
-  static void OnMouseMove(GLFWwindow* window, double x, double y){
-      Mouse mouse (0, Mouse::IsMoving, x, y);
-      Interface<GLFWContext>::OnMouseMove(mouse);
-      //((APPLICATION*)(app))->onMouseMove(x,y);  
+  static void OnMouseMove (GLFWwindow *window, double x, double y)
+  {
+    Mouse mouse (0, Mouse::IsMoving, x, y);
+    Interface<GLFWContext>::OnMouseMove (mouse);
+    //((APPLICATION*)(app))->onMouseMove(x,y);
   }
 
-  static void OnMouseDown(GLFWwindow* window, int button, int action, int mods){
-      Mouse mouse;
-      mouse.state |= Mouse::IsDown;
-      Interface<GLFWContext>::OnMouseDown(mouse);
+  static void OnMouseDown (GLFWwindow *window, int button, int action, int mods)
+  {
+    Mouse mouse;
+    mouse.state |= Mouse::IsDown;
+    Interface<GLFWContext>::OnMouseDown (mouse);
 
-     // ((APPLICATION*)(app))->onMouseDown(button,action);
+    // ((APPLICATION*)(app))->onMouseDown(button,action);
   }
-
 };
 
 /*!
  *  Singleton initializer
  */
-struct GLFW {
+struct GLFW
+{
 
-  static GLFW& Initialize(int mode = 0){////int argc, char ** argv){
-    static GLFW TheGLFW(mode);
+  static GLFW &Initialize (int mode = 0)
+  {  ////int argc, char ** argv){
+    static GLFW TheGLFW (mode);
     return TheGLFW;
   }
 
   /// Start Graphics Thread, passing application in
   /// fetches the GLFWInterface member of Application's context
-  template<class APPLICATION>
-  static void Start(APPLICATION * app){
-    printf("starting ...\n");
-    while( !app->context().shouldClose() ){//!win.shouldClose() ){
-      //app->onFrame();
-      app->context().interface.OnDraw();
-      app->context().pollEvents(); //why not swap buffers here?
-    }
+  template <class APPLICATION>
+  static void Start (APPLICATION *app)
+  {
+    printf ("starting ...\n");
+    while (!app->context ().shouldClose ())
+      {  //!win.shouldClose() ){
+        //app->onFrame();
+        app->context ().interface.OnDraw ();
+        app->context ().pollEvents ();  //why not swap buffers here?
+      }
   }
 
-  static void Terminate(){
-    glfwTerminate();
-  }
+  static void Terminate () { glfwTerminate (); }
 
-  private:
-    GLFW(int mode) {
-      if( !glfwInit() ) exit(EXIT_FAILURE); 
-    }
+ private:
+  GLFW (int mode)
+  {
+    if (!glfwInit ())
+      exit (EXIT_FAILURE);
+  }
 };
 
 /*!
 
-    A GLFW Context 
+    A GLFW Context
     Has a ::System
 
  */
 
-struct GLFWContext {
+struct GLFWContext
+{
 
-    static GLFW * System;
+  static GLFW *System;
 
-    static GLFWwindow * mWindow;  //one window?  many . ..
-    //static vector<GLFWwindow*> mWindow; or map<GLFWwindow*, int> mWindow;
-    GLFWInterface interface;
-    
-    static vector<WindowData*> mWindows;
-    static int currentWindow;
+  static GLFWwindow *mWindow;  //one window?  many . ..
+  //static vector<GLFWwindow*> mWindow; or map<GLFWwindow*, int> mWindow;
+  GLFWInterface interface;
 
-    /// Get Window Information, if one exists
-    /// @todo handle case of no windows created
-    WindowData& windowData(){ 
-      if (!mWindows.empty()) return *mWindows[0]; 
-      else return create(200,200); 
-    }
+  static vector<WindowData *> mWindows;
+  static int currentWindow;
 
-    int mWidth, mHeight;
+  /// Get Window Information, if one exists
+  /// @todo handle case of no windows created
+  WindowData &windowData ()
+  {
+    if (!mWindows.empty ())
+      return *mWindows[0];
+    else
+      return create (200, 200);
+  }
 
-    int width()  { return mWidth; }
-    int height() { return mHeight; }
-    float ratio() { return (float)mWidth/mHeight;}
+  int mWidth, mHeight;
 
-    GLFWwindow& window() { return *mWindow; }
+  int width () { return mWidth; }
+  int height () { return mHeight; }
+  float ratio () { return (float) mWidth / mHeight; }
 
-    GLFWContext() {}
+  GLFWwindow &window () { return *mWindow; }
 
-    //Create a Window Context
-    WindowData& create(int w, int h, string name="default"){
+  GLFWContext () {}
 
-        cout << "creating GLFW window" << endl;
+  //Create a Window Context
+  WindowData &create (int w, int h, string name = "default")
+  {
 
-        mWidth = w; mHeight = h;
+    cout << "creating GLFW window" << endl;
 
-        mWindow = glfwCreateWindow(w,h,name.c_str(),NULL ,NULL);
+    mWidth = w;
+    mHeight = h;
 
-        if (!mWindow) {
-          glfwTerminate();
-          exit(EXIT_FAILURE);
-        }        
-        
-        glfwMakeContextCurrent(mWindow);
-        glfwSwapInterval(1); //<-- force interval (not guaranteed to work with all graphics drivers)
+    mWindow = glfwCreateWindow (w, h, name.c_str (), NULL, NULL);
 
-        //register callback when window is resized
-        glfwSetWindowSizeCallback(mWindow, Reshape );
+    if (!mWindow)
+      {
+        glfwTerminate ();
+        exit (EXIT_FAILURE);
+      }
 
-        //register callbacks for keyboard and mouse
-        /* glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown); */
-        /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
-        /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
+    glfwMakeContextCurrent (mWindow);
+    glfwSwapInterval (
+      1);  //<-- force interval (not guaranteed to work with all graphics drivers)
 
-        mWindows.push_back( new WindowData(w,h,0) );
-        return *mWindows.back();
+    //register callback when window is resized
+    glfwSetWindowSizeCallback (mWindow, Reshape);
 
-    }
+    //register callbacks for keyboard and mouse
+    /* glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown); */
+    /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
+    /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
 
-    static void Reshape(GLFWwindow * win, int w, int h){
-        GLFWInterface::OnResize(w,h);
-    }
+    mWindows.push_back (new WindowData (w, h, 0));
+    return *mWindows.back ();
+  }
+
+  static void Reshape (GLFWwindow *win, int w, int h)
+  {
+    GLFWInterface::OnResize (w, h);
+  }
 
 
-    //Get the Current framebuffer Size in pixels and Set the Viewport to it    
-    void setViewport(){ 
-        glfwGetFramebufferSize(mWindow, &mWidth, &mHeight); 
-        glViewport(0,0,mWidth,mHeight);  
-    }
+  //Get the Current framebuffer Size in pixels and Set the Viewport to it
+  void setViewport ()
+  {
+    glfwGetFramebufferSize (mWindow, &mWidth, &mHeight);
+    glViewport (0, 0, mWidth, mHeight);
+  }
 
-    //Check whether window should close
-    bool shouldClose(){
-      return glfwWindowShouldClose(mWindow);
-    }
+  //Check whether window should close
+  bool shouldClose () { return glfwWindowShouldClose (mWindow); }
 
-    //Swap front and back buffers
-    static void SwapBuffers(){
-      glfwSwapBuffers(mWindow);
-    }
+  //Swap front and back buffers
+  static void SwapBuffers () { glfwSwapBuffers (mWindow); }
 
-    //listen
-    void pollEvents(){
-      glfwPollEvents();
-    }
+  //listen
+  void pollEvents () { glfwPollEvents (); }
 
-    //Destroy the window
-    void destroy(){
-      glfwDestroyWindow(mWindow);
-    }
+  //Destroy the window
+  void destroy () { glfwDestroyWindow (mWindow); }
 
-    ~GLFWContext(){
-      destroy();
-    }
+  ~GLFWContext () { destroy (); }
 };
 
-GLFW * GLFWContext::System;
-GLFWwindow * GLFWContext::mWindow;
-vector<WindowData*> GLFWContext::mWindows;
+GLFW *GLFWContext::System;
+GLFWwindow *GLFWContext::mWindow;
+vector<WindowData *> GLFWContext::mWindows;
 int GLFWContext::currentWindow;
 
 
-} //gfx
+}  //gfx
 
 
 #endif

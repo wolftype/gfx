@@ -25,6 +25,24 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   SET( WINDOWS 1)
 endif()
 
+#default release type if none specified
+if (NOT CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE RelWithDebInfo)
+endif ()
+
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  set(BUILD_TYPE_FLAGS "-g -O0")
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+  set(BUILD_TYPE_FLAGS "-g0 -O3")
+elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+  set(BUILD_TYPE_FLAGS "-g -O3")
+else()
+  message(FATAL_ERROR "invalid build type or failure to set a build type.  specify Release, Debug, or RelWithDebInfo")
+endif()
+
+message ("BUILD EXAMPLES: " ${BUILD_EXAMPLES} )
+message ("USE GLFW: " ${GFX_USE_GLFW} )
+
 #PROJECT INCLUDE AND LINK
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/gfx/)
@@ -89,19 +107,20 @@ elseif(${APPLE})
   include_directories(${GLEW_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIR})
 
-  #todo GLV should be optional
-  find_package(GLV REQUIRED)
-  message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
-  message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
+  #GLV is OPTIONAL
+  find_package(GLV)
+  message ("GLV LIBRARY :" ${GLV_LIBRARY})
+  message ("GLV HEADERS :" ${GLV_INCLUDE_DIR})
 
- # if(${GLV_FOUND})
+ if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
   set(libraries ${libraries} ${GLV_LIBRARY} )
- # endif()
-  include_directories(gl2ps)
+ endif()
+
+ include_directories(gl2ps)
 
   #GLFW
-#  if (${USE_GLFW})
+  #  if (${GFX_USE_GLFW})
 #    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
 #  add_subdirectory(glfw)
 #  link_directories(${PROJECT_BINARY_DIR})
@@ -113,21 +132,25 @@ elseif(${APPLE})
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
 
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx)
+  set(gfx_library gfx)
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
 
   #TARGETS
-  if(${BUILD_EXAMPLES})
   set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
   file(GLOB examples examples/GL/*.cpp)
   foreach(filename ${examples})
+    message (${filename})
     get_filename_component(target ${filename} NAME_WE)
-    add_executable(${target} EXCLUDE_FROM_ALL ${filename} )
+    if(${BUILD_EXAMPLES})
+      add_executable(${target} ${filename} )
+    else ()
+      add_executable(${target} EXCLUDE_FROM_ALL ${filename} )
+    endif()
     target_link_libraries(${target} ${libraries} )
   endforeach()
-  endif()
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
@@ -136,18 +159,20 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   option(USE_CLANG "use clang" ON)
 
   find_package(OpenGL REQUIRED)
+
+  #todo, these should not be required
   find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
 
   #GLV should be optional
-  find_package(GLV REQUIRED)
+  find_package(GLV OPTIONAL)
   message ("GLV LIBRARY FOUND AT:" ${GLV_LIBRARY})
   message ("GLV HEADERS FOUND AT:" ${GLV_INCLUDE_DIR})
 
- # if(${GLV_FOUND})
+ if(${GLV_FOUND})
   include_directories(${GLV_INCLUDE_DIR})
   set(libraries ${libraries} ${GLV_LIBRARY} )
- # endif()
+ endif()
   include_directories(gl2ps)
 
   #GLFW
@@ -162,7 +187,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
 
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} gfx)
+  set(gfx_library gfx)
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
@@ -204,6 +230,19 @@ get_property(inc_dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIR
 set_property(GLOBAL PROPERTY GFX_LIBRARIES "${libraries}")
 set_property(GLOBAL PROPERTY GFX_INCLUDE_DIR "${inc_dirs}")
 set_property(GLOBAL PROPERTY GFX_LINK_DIR "${link_dirs}")
+
+foreach(lib ${gfx_libraries})
+  message(STATUS "libraries='${lib}'")
+endforeach()
+
+install(TARGETS ${gfx_library}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
+#INSTALL HEADERS
+install(DIRECTORY gfx DESTINATION include)
+
 
 #PRINT DIRECTORIES
 #message("GFX LINK DIRECTORES")

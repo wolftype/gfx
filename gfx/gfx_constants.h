@@ -12,8 +12,8 @@
 
 namespace gfx{
 
-#ifndef PI 
-   #define PI 3.141592653589793 
+#ifndef PI
+   #define PI 3.141592653589793
 #endif
 
 #ifndef TWOPI
@@ -48,11 +48,11 @@ namespace gfx{
 #define GOLDENANGLE 137.507764
 #endif
 
-#ifndef GOLDENRADIAN 
+#ifndef GOLDENRADIAN
 #define GOLDENRADIAN 2.399963
 #endif
 
-#ifndef SMALLRAD 
+#ifndef SMALLRAD
 #define SMALLRAD (PI * 36 / 180)
 #endif
 
@@ -78,7 +78,7 @@ namespace gfx{
 
 #ifndef ERROR
 #define ERROR(x,y) (x<=y && x>=-y)
-#endif   
+#endif
 
 #ifndef MAXRADIUS
 #define MAXRADIUS 100000

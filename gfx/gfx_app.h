@@ -97,8 +97,7 @@ public WindowEventHandler
   GFXRenderGraph mRenderGraph;
 
   int mMode;                              ///< render mode
-
-  SceneController sceneController;        ///< interface to matrix transforms
+SceneController sceneController;        ///< interface to matrix transforms
   ObjectController objectController;      ///< interface to objects on screen
 
   Vec3f mColor;                           ///< Background Color
@@ -175,11 +174,10 @@ public WindowEventHandler
        //todo fix bug that crashes without shader node (see notes)
        mRenderer << mStereo << mShaderNode << mSceneNode << this;
        //todo fix glmode (immediate vs programmable vs es, etc)
-       mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
+       mRenderGraph.init(&mRenderer,w,h);//,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
 
        // todo who handles resize events?
        // mContext.interface.addWindowEventHandler(&mRenderGraph);
-
 
       /*-----------------------------------------------------------------------------
        * 5. Enable Presets (depth func, blend func) see gfx_gl.h
@@ -189,11 +187,11 @@ public WindowEventHandler
 
   }
 
-  void anaglyphic () {
-    mRenderer.reset();
-    mRenderer << mStereo << mShaderNode << mSceneNode << this;
-    mRenderGraph.init(&mRenderer,width, height, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH);
-  }
+//  void anaglyphic () {
+//    mRenderer.reset();
+//    mRenderer << mStereo << mShaderNode << mSceneNode << this;
+//    mRenderGraph.init(&mRenderer,width, height, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH);
+//  }
 
   /*-----------------------------------------------------------------------------
    *  User must define setup() in a subclass. setup() is called by App::start() method
@@ -302,7 +300,6 @@ public WindowEventHandler
   virtual void onResize(int w, int h){
      scene.resize(w,h);
      set(w,h);
-    // cout << "onResize" << endl;
     // mRenderer.onResize(w,h);  //or resize
    }
 

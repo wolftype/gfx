@@ -12,14 +12,14 @@
  *       Compiler:  gcc
  *
  *         Author:  Pablo Colapinto (), gmail -> wolftype
- *   Organization:  
+ *   Organization:
  *
  * =====================================================================================
  */
 
 
-#ifndef  glv_control_INC
-#define  glv_control_INC
+#ifndef glv_control_INC
+#define glv_control_INC
 
 #include "gfx_control.h"
 
@@ -29,137 +29,153 @@
 namespace gfx {
 
 /// Base class for mapping window and input events to a GLV controller
-class GLVControl {
-public:
+class GLVControl
+{
+ public:
   ///
-  GLVControl(glv::GLV& v): mGLV(&v){}
+  GLVControl (glv::GLV &v) : mGLV (&v) {}
 
   /// Set GLV controller
-  GLVControl& glv(glv::GLV& v){ mGLV=&v; return *this; }
-  
-  /// Get mutable GLV controller
-  glv::GLV& glv(){ return *mGLV; }
+  GLVControl &glv (glv::GLV &v)
+  {
+    mGLV = &v;
+    return *this;
+  }
 
-protected:
-  glv::GLV * mGLV;
+  /// Get mutable GLV controller
+  glv::GLV &glv () { return *mGLV; }
+
+ protected:
+  glv::GLV *mGLV;
 };
 
 
 /// Mapping from keyboard and mouse controls to a GLV controller
-class GLVInputControl : public GLVControl, public InputEventHandler {
-public:
+class GLVInputControl : public GLVControl, public InputEventHandler
+{
+ public:
   ///
-  GLVInputControl(glv::GLV& v): GLVControl(v){}
-  virtual ~GLVInputControl(){}
+  GLVInputControl (glv::GLV &v) : GLVControl (v) {}
+  virtual ~GLVInputControl () {}
 
-  virtual void onMouseDown(const Mouse& m);
-  virtual void onMouseUp(const Mouse& m);
+  virtual void onMouseDown (const Mouse &m);
+  virtual void onMouseUp (const Mouse &m);
 
-  virtual void onMouseDrag(const Mouse& m){
-    motionToGLV(m, glv::Event::MouseDrag);
+  virtual void onMouseDrag (const Mouse &m)
+  {
+    motionToGLV (m, glv::Event::MouseDrag);
   }
 
-  virtual void onMouseMove(const Mouse& m){
-    motionToGLV(m, glv::Event::MouseMove);
+  virtual void onMouseMove (const Mouse &m)
+  {
+    motionToGLV (m, glv::Event::MouseMove);
   }
 
-  virtual void onKeyDown(const Keyboard& k){
-    keyToGLV(k, true);
-  }
+  virtual void onKeyDown (const Keyboard &k) { keyToGLV (k, true); }
 
-  virtual void onKeyUp(const Keyboard& k){
-    keyToGLV(k, false);
-  }
+  virtual void onKeyUp (const Keyboard &k) { keyToGLV (k, false); }
 
-protected:
-  void keyToGLV(const Keyboard& k, bool down);
-  void motionToGLV(const Mouse& m, glv::Event::t e);
+ protected:
+  void keyToGLV (const Keyboard &k, bool down);
+  void motionToGLV (const Mouse &m, glv::Event::t e);
 };
 
 
 
 /// Mapping from window events to a GLV controller
-class GLVWindowControl : public GLVControl, public WindowEventHandler {
-public:
+class GLVWindowControl : public GLVControl, public WindowEventHandler
+{
+ public:
   ///
-  GLVWindowControl(glv::GLV& v): GLVControl(v){}
-  virtual ~GLVWindowControl(){}
+  GLVWindowControl (glv::GLV &v) : GLVControl (v) {}
+  virtual ~GLVWindowControl () {}
 
-  virtual void onCreate();
-  virtual void onDestroy();
-  virtual void onResize(int dw, int dh);
-  virtual void onFrame();
+  virtual void onCreate ();
+  virtual void onDestroy ();
+  virtual void onResize (int dw, int dh);
+  virtual void onFrame ();
 };
 
 
 
 /// A glv::GLV subclass that can be easily bound to an al::Window
-class GLVBinding : public glv::GLV{
-public:
-
-  GLVBinding() : mWindowCtrl(*this), mInputCtrl(*this){
-    disable( glv::DrawBack);
-  }
-  
-  template<class CONTEXT>
-  void listenTo(CONTEXT& win){
-    win.interface.addWindowEventHandler(&mWindowCtrl);
-    win.interface.addInputEventHandler(&mInputCtrl);
+class GLVBinding : public glv::GLV
+{
+ public:
+  GLVBinding () : mWindowCtrl (*this), mInputCtrl (*this)
+  {
+    disable (glv::DrawBack);
   }
 
-private:
+  template <class CONTEXT>
+  void listenTo (CONTEXT &win)
+  {
+    win.interface.addWindowEventHandler (&mWindowCtrl);
+    win.interface.addInputEventHandler (&mInputCtrl);
+  }
+
+ private:
   GLVWindowControl mWindowCtrl;
   GLVInputControl mInputCtrl;
 };
 
 
-inline void GLVInputControl::onMouseDown(const Mouse& m){
-  glv::space_t xrel=m.x, yrel=m.y;
-  glv().setMouseDown(xrel,yrel, m.button, 0);
-  glv().setMousePos(m.x, m.y, xrel, yrel);
-  glv().propagateEvent();
+inline void GLVInputControl::onMouseDown (const Mouse &m)
+{
+  glv::space_t xrel = m.x, yrel = m.y;
+  glv ().setMouseDown (xrel, yrel, m.button, 0);
+  glv ().setMousePos (m.x, m.y, xrel, yrel);
+  glv ().propagateEvent ();
 }
 
-inline void GLVInputControl::onMouseUp(const Mouse& m){
+inline void GLVInputControl::onMouseUp (const Mouse &m)
+{
   glv::space_t xrel, yrel;
-  glv().setMouseUp(xrel,yrel, m.button, 0);
-  glv().setMousePos(m.x, m.y, xrel, yrel);
-  glv().propagateEvent();
+  glv ().setMouseUp (xrel, yrel, m.button, 0);
+  glv ().setMousePos (m.x, m.y, xrel, yrel);
+  glv ().propagateEvent ();
 }
 
-inline void GLVInputControl::keyToGLV(const Keyboard& k, bool down){
-  down ? glv().setKeyDown(k.code) : glv().setKeyUp(k.code);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->alt(k.alt());
- // const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->ctrl(k.ctrl());
-//  const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
-  const_cast<glv::Keyboard*>(&glv().keyboard())->shift(k.shift());
-  glv().propagateEvent();
+inline void GLVInputControl::keyToGLV (const Keyboard &k, bool down)
+{
+  down ? glv ().setKeyDown (k.code) : glv ().setKeyUp (k.code);
+  const_cast<glv::Keyboard *> (&glv ().keyboard ())->alt (k.alt ());
+  // const_cast<glv::Keyboard*>(&glv().keyboard())->caps(k.caps);
+  const_cast<glv::Keyboard *> (&glv ().keyboard ())->ctrl (k.ctrl ());
+  //  const_cast<glv::Keyboard*>(&glv().keyboard())->meta(k.meta);
+  const_cast<glv::Keyboard *> (&glv ().keyboard ())->shift (k.shift ());
+  glv ().propagateEvent ();
 }
 
-inline void GLVInputControl::motionToGLV(const Mouse& m, glv::Event::t e){
+inline void GLVInputControl::motionToGLV (const Mouse &m, glv::Event::t e)
+{
   glv::space_t x = m.x, y = m.y, relx = x, rely = y;
-  glv().setMouseMotion(relx, rely, e);
-  glv().setMousePos((int)x, (int)y, relx, rely);
-  glv().propagateEvent();
+  glv ().setMouseMotion (relx, rely, e);
+  glv ().setMousePos ((int) x, (int) y, relx, rely);
+  glv ().propagateEvent ();
 }
 
 
-inline void GLVWindowControl::onCreate(){
-  glv().broadcastEvent(glv::Event::WindowCreate);
+inline void GLVWindowControl::onCreate ()
+{
+  glv ().broadcastEvent (glv::Event::WindowCreate);
 }
 
-inline void GLVWindowControl::onDestroy(){
-  glv().broadcastEvent(glv::Event::WindowDestroy);
+inline void GLVWindowControl::onDestroy ()
+{
+  glv ().broadcastEvent (glv::Event::WindowDestroy);
 }
 
-inline void GLVWindowControl::onResize(int dw, int dh){
-  glv().extent(dw,dh );//glv().width(), glv().height());
-  glv().broadcastEvent(glv::Event::WindowResize);
+inline void GLVWindowControl::onResize (int dw, int dh)
+{
+  glv ().extent (dw, dh);  //glv().width(), glv().height());
+  glv ().broadcastEvent (glv::Event::WindowResize);
 }
 
-inline void GLVWindowControl::onFrame(){
-  glv().drawGLV(glv().w, glv().h, .1);//WindowEventHandler<CONTEXT>::window().spfActual());
+inline void GLVWindowControl::onFrame ()
+{
+  glv ().drawGLV (glv ().w, glv ().h,
+                  .1);  //WindowEventHandler<CONTEXT>::window().spfActual());
 }
 
 
@@ -170,7 +186,7 @@ inline void GLVWindowControl::onFrame(){
 /* public: */
 
 /* 	/// */
-/* 	GLVDetachable() :	glv::GLV(0,0), */ 
+/* 	GLVDetachable() :	glv::GLV(0,0), */
 /* 	mParentWindow(NULL), mInputControl(*this), mWindowControl(*this) */
 /*   { */
 /* 	 init(); */
@@ -179,17 +195,17 @@ inline void GLVWindowControl::onFrame(){
 
 
 /* 	/// @param[in] parent	parent window */
-/* 	GLVDetachable(CONTEXT& parent) :	glv::GLV(0,0), */ 
+/* 	GLVDetachable(CONTEXT& parent) :	glv::GLV(0,0), */
 /* 	mInputControl(*this), mWindowControl(*this) */
 /* { */
 /* 	parentWindow(parent); */
 /* 	init(); */
 /* } */
 
-	
+
 /* 	/// Get button for detaching/attaching GUI */
 /* 	glv::Button& detachedButton(){ return mDetachedButton; } */
-	
+
 /* 	/// Get parent window */
 /* 	Window& parentWindow(){ return *mParentWindow; } */
 
@@ -205,7 +221,7 @@ inline void GLVWindowControl::onFrame(){
 
 /* 	/// Get whether GUI is detached from parent window */
 /* //	GLVDetachable& detached(bool v); */
-	
+
 /* 	/// Toggle whether GUI is detached from parent window */
 /* //	GLVDetachable& detachedToggle(){ return detached(!detached()); } */
 
@@ -320,6 +336,6 @@ inline void GLVWindowControl::onFrame(){
 /* } */
 
 
-} // gfx::
+}  // gfx::
 
-#endif   /* ----- #ifndef glv_control_INC  ----- */
+#endif /* ----- #ifndef glv_control_INC  ----- */

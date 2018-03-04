@@ -16,44 +16,50 @@
  */
 
 
-#ifndef  gfx_vao_INC
-#define  gfx_vao_INC
+#ifndef gfx_vao_INC
+#define gfx_vao_INC
 
 #include "gfx_lib.h"
 
 namespace gfx {
 
-struct VAO  {
+struct VAO
+{
 
   GLuint id;
 
-  VAO(){
-    generate();
-//    bind();
+  VAO ()
+  {
+    generate ();
+    //    bind();
   }
 
-  void generate(){
+  void generate ()
+  {
 #ifndef GFX_USE_GLES
-    GENVERTEXARRAYS(1,&id); //<-- This macro calls appropriate glGenVertexArray function (or glGenVertexArrayAPPLE, etc.)
+    GENVERTEXARRAYS (
+      1,
+      &id);  //<-- This macro calls appropriate glGenVertexArray function (or glGenVertexArrayAPPLE, etc.)
 #endif
   }
 
-  void bind() const {
-#ifndef GFX_USE_GLES    
-    BINDVERTEXARRAY(id);    //<-- This macro calls appropriate glBindVertexArray function
-#endif
-  }
-
-  void unbind() const {
+  void bind () const
+  {
 #ifndef GFX_USE_GLES
-    BINDVERTEXARRAY(0);
+    BINDVERTEXARRAY (
+      id);  //<-- This macro calls appropriate glBindVertexArray function
 #endif
   }
 
-
+  void unbind () const
+  {
+#ifndef GFX_USE_GLES
+    BINDVERTEXARRAY (0);
+#endif
+  }
 };
 
-} //gfx::
+}  //gfx::
 
 
-#endif   /* ----- #ifndef gfx_vao_INC  ----- */
+#endif /* ----- #ifndef gfx_vao_INC  ----- */

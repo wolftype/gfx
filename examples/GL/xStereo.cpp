@@ -22,47 +22,48 @@
 
 using namespace gfx;
 
-struct MyApp : GFXPrintApp<GlutContext> {
+struct MyApp : GFXPrintApp<GlutContext>
+{
 
-  MBO circle =  Mesh::Circle();
+  MBO circle = Mesh::Circle ();
 
   GFXStereoNode mStereo;
 
-  virtual void setup(){
+  virtual void setup ()
+  {
 
-      mColor.set(0,0,0);
-      //mRenderer.reset();
-      //mRenderer << mStereo << mSceneNode << this;
-     
-      //mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
-      //mRenderGraph.immediate(true);
-  } 
+    mColor.set (0, 0, 0);
+    //mRenderer.reset();
+    //mRenderer << mStereo << mSceneNode << this;
 
-  virtual void onDraw(){
-    draw (circle, 1,1,1);
+    //mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
+    //mRenderGraph.immediate(true);
   }
 
-  virtual void onKeyDown(const gfx::Keyboard& k){
-    switch (k.code){
-      case 'm':
-        printf("m: mono / stereo toggle\n");
-        mRenderGraph.mStereoMode =
-          mRenderGraph.mStereoMode == GFXRenderGraph::MONO ?
-            GFXRenderGraph::ANAGLYPH : GFXRenderGraph::MONO;
-        break;
+  virtual void onDraw () { draw (circle, 1, 1, 1); }
+
+  virtual void onKeyDown (const gfx::Keyboard &k)
+  {
+    switch (k.code)
+      {
+        case 'm':
+          printf ("m: mono / stereo toggle\n");
+          mRenderGraph.mStereoMode =
+            mRenderGraph.mStereoMode == GFXRenderGraph::MONO
+              ? GFXRenderGraph::ANAGLYPH
+              : GFXRenderGraph::MONO;
+          break;
       }
   }
-
 };
 
 
 
-
-int main(){
+int main ()
+{
   MyApp app;
 
-  app.start();
+  app.start ();
 
   return 0;
-
 }
