@@ -174,7 +174,7 @@ SceneController sceneController;        ///< interface to matrix transforms
        //todo fix bug that crashes without shader node (see notes)
        mRenderer << mStereo << mShaderNode << mSceneNode << this;
        //todo fix glmode (immediate vs programmable vs es, etc)
-       mRenderGraph.init(&mRenderer,w,h);//,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
+       mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
 
        // todo who handles resize events?
        // mContext.interface.addWindowEventHandler(&mRenderGraph);

@@ -12,6 +12,14 @@ endif(COMMAND cmake_policy)
 #PROJECT
 project(GFX)
 
+#set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
+#set( LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib )
+
+message ("GFX ROOT: " ${CMAKE_SOURCE_DIR})
+
+set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/bin")
+
 MESSAGE ("\n\n******SYSTEM INFORMATION******")
 MESSAGE( "System Name: " ${CMAKE_SYSTEM_NAME} )
 MESSAGE( "System Processor: " ${CMAKE_SYSTEM_PROCESSOR} )
@@ -112,7 +120,7 @@ elseif(${APPLE})
  include_directories(${PROJECT_SOURCE_DIR}/GLV)
  include_directories(gl2ps)
 
- message ("GLV LIB: " ${GLV_LIBRARY})
+ message ("******GLV LIB: " ${GLV_LIBRARY})
 
   #GLFW
 #  if (${GFX_USE_GLFW})
@@ -128,13 +136,12 @@ elseif(${APPLE})
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} ${GLV_LIBRARY})
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
 
   #TARGETS
-  set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
   file(GLOB examples examples/GL/*.cpp)
   foreach(filename ${examples})
     message (${filename})
