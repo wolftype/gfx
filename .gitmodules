@@ -3,4 +3,4 @@
 	url = git://github.com/glfw/glfw.git
 [submodule "GLV"]
 	path = GLV
-	url = https://github.com/AlloSphere-Research-Group/GLV.git
+	url = https://github.com/wolftype/GLV.git

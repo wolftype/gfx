@@ -21,16 +21,7 @@ do
   esac
 done
 
-#make GLV
-if [ $BUILD_GLV = 1 ]; then
-  echo "BUILDING SUBMODULE GLV LIBRARY...."
-  echo "please make sure you have run:"
-  echo "  git submodule init"
-  echo "  git submodule update"
-  make -C GLV
-fi
-
 mkdir -p build
 cd build
 cmake -DBUILD_EXAMPLES=$BUILD_EXAMPLES -DGFX_USE_GLFW=$GFX_USE_GLFW -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
-make VERBOSE=$MAKE_VERBOSE -j3
+#make VERBOSE=$MAKE_VERBOSE -j3
