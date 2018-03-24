@@ -209,6 +209,11 @@ elseif(${WINDOWS})
 
   find_package(OpenGL REQUIRED)
 
+ # add_subdirectory(GLV)
+ # link_directories(${GLV_BINARY_DIR})
+ # include_directories(${PROJECT_SOURCE_DIR}/GLV)
+ # include_directories(gl2ps)
+ 
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
   add_subdirectory(glfw)
 
@@ -216,20 +221,31 @@ elseif(${WINDOWS})
   link_directories(${GLFW_BINARY_DIR})
   link_directories(${PROJECT_SOURCE_DIR}/win/glew/lib/)
 
-  INCLUDE_DIRECTORIES(gl2ps)
+#  INCLUDE_DIRECTORIES(gl2ps)
   INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/win/glew/include/)
   INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
   INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/glfw/include/)
 
+#  add_library(gfx gl2ps/gl2ps.c)
+#  set(gfx_library gfx)
+  set(libraries ${libraries} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARIES} glew32s)
+
+
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200")
 
-  FILE(GLOB ExampleFiles "${PROJECT_SOURCE_DIR}/examples/GL/*")
-  foreach( srcfile ${ExampleFiles} )
-    get_filename_component(target ${srcfile} NAME_WE)
-    add_executable(${target} EXCLUDE_FROM_ALL ${srcfile} )
-	target_link_libraries(${target} glfw glew32s ${GLFW_LIBRARIES} )
-  endforeach( srcfile ${ExampleFiles} )
+  #TARGETS
+  file(GLOB examples examples/GL/*.cpp)
+  foreach(filename ${examples})
+    message (example: ${filename})
+    get_filename_component(target ${filename} NAME_WE)
+    if(${BUILD_EXAMPLES})
+      add_executable(${target} ${filename} )
+    else ()
+      add_executable(${target} EXCLUDE_FROM_ALL ${filename} )
+    endif()
+    target_link_libraries(${target} ${libraries} )
+  endforeach()
 
 endif()
 
