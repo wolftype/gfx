@@ -19,6 +19,8 @@
 #ifndef gfx_data_INC
 #define gfx_data_INC
 
+#include <map>
+
 namespace gfx {
 
 /// Attributes Classification (experimental)
@@ -35,7 +37,7 @@ struct GLVertexData
   };
 
   /// Per template T static map of attribute names ("position", "normal", "color") and their offsets
-  static map<string, GLvoid *> Attribute;
+  static std::map<string, GLvoid *> Attribute;
 
   /// Singletons per T
   static GLVertexData &Init ()
@@ -51,7 +53,7 @@ struct GLVertexData
 
 /// The Attribute name and offset map
 template <class T>
-map<string, GLvoid *> GLVertexData<T>::Attribute;
+std::map<string, GLvoid *> GLVertexData<T>::Attribute;
 
 
 }  // gfx::
