@@ -348,8 +348,32 @@ void SceneController::keyboardNavigate ()
   switch (io ().keyboard.code)
     {
       case 'c':
-        camera ().reset (0, 0, 5);
+        camera ().reset (0, 0, 10);
         model ().reset ();
+        break;
+      case '0':
+        camera ().reset (0, 0, 10);
+        model ().reset ();
+        break;
+      case '1':
+        camera ().reset (0, 10, 0, Quat (-PIOVERFOUR, Vec3<>(1,0,0)));
+        model ().reset ();
+        cout << "TOP VIEW" << endl;
+        break;
+      case '2':
+        camera ().reset (10, 0, 0, Quat (PIOVERFOUR, Vec3<>(0,1,0)));
+        model ().reset ();
+        cout << "RIGHT VIEW" << endl;
+        break;
+      case '3':
+        camera ().reset (-10, 0, 0, Quat (-PIOVERFOUR, Vec3<>(0,1,0)));
+        model ().reset ();
+        cout << "LEFT VIEW" << endl;
+        break;
+      case '4':
+        camera ().reset (0,-10, 0, Quat (PIOVERFOUR, Vec3<>(1,0,0)));
+        model ().reset ();
+        cout << "BOTTOM VIEW" << endl;
         break;
     }
 

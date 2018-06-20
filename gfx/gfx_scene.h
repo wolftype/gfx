@@ -260,7 +260,7 @@ struct View
 };
 
 
-/*! 
+/*!
  *  CAMERA: A moving pose with a view and a lens
 )
  *-----------------------------------------------------------------------------*/
@@ -355,7 +355,9 @@ struct Scene
     camera.view = gfx::View (camera.pos (), pose, (float) w / h, h);
   }
 
-  Quat cat () { return camera.quat () * model.quat (); }
+  Quat cat () { return !camera.quat() * model.quat (); }
+
+//  Quat cat2 () { return camera.quat () * model.quat (); }
 
   Mat4f mod () { return XMat::rot (model.quat ()); }
 
