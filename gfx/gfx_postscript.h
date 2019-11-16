@@ -29,11 +29,12 @@ struct PostScript
 {
 
   /*! @todo move output settings to separate io header  */
-  bool bShadedOutput = false;  ///< default for output
+  bool bShadedOutput = true;  ///< default for output
   bool bSortOutput = true;     ///< default
-  bool bOffsetOutput = false;
-  bool bOccludeOutput = false;
-  bool bTightBounds = true;
+  bool bSimpleSort = true;     ///< default
+  bool bOffsetOutput = true;
+  bool bOccludeOutput = true;
+  bool bTightBounds = false;
   bool bPDF = true;  ///< pdf or eps
 
   // GL2PSrgba red = {1.0,0.0,0.0,1.0};
@@ -84,7 +85,7 @@ struct PostScript
         // } else {
         gl2psBeginPage ("test", "gl2psTestSimple", tv,
                         bPDF ? GL2PS_PDF : GL2PS_EPS,
-                        bSortOutput ? GL2PS_SIMPLE_SORT : GL2PS_NO_SORT,
+                        bSortOutput ? (bSimpleSort ? GL2PS_SIMPLE_SORT : GL2PS_BSP_SORT) : GL2PS_NO_SORT,
                         GL2PS_BEST_ROOT
                           | (bShadedOutput ? 0 : GL2PS_NO_PS3_SHADING)
                           | (bOffsetOutput ? GL2PS_SIMPLE_LINE_OFFSET : 0)
