@@ -41,31 +41,52 @@ struct GLFWContext;
 
 struct GLFWInterface : Interface<GLFWContext>
 {
+  static Mouse mouse;
 
   static void OnKeyDown (GLFWwindow *window, int key, int scancode, int action,
                          int mods)
   {
-    //((APPLICATION*)(app))->onKeyDown(key,action);
     Keyboard keyboard (key, mods, 0, 0, true);
     Interface<GLFWContext>::OnKeyDown (keyboard);
   }
 
   static void OnMouseMove (GLFWwindow *window, double x, double y)
   {
-    Mouse mouse (0, Mouse::IsMoving, x, y);
-    Interface<GLFWContext>::OnMouseMove (mouse);
-    //((APPLICATION*)(app))->onMouseMove(x,y);
+    mouse.state |= Mouse::IsMoving;
+    mouse.x = x;
+    mouse.y = y;
+    if (mouse.state & Mouse::IsDown)
+       Interface<GLFWContext>::OnMouseDrag (mouse);
+    else
+       Interface<GLFWContext>::OnMouseMove (mouse);
   }
 
   static void OnMouseDown (GLFWwindow *window, int button, int action, int mods)
   {
-    Mouse mouse;
-    mouse.state |= Mouse::IsDown;
-    Interface<GLFWContext>::OnMouseDown (mouse);
+    if (action==GLFW_PRESS)
+    {
+      mouse.state |= Mouse::IsDown;
+      Interface<GLFWContext>::OnMouseDown (mouse);
+    } else
+    {
+      mouse.notState (Mouse::IsDown);
+      Interface<GLFWContext>::OnMouseUp (mouse);
+    }
 
-    // ((APPLICATION*)(app))->onMouseDown(button,action);
+  }
+
+  static void OnResize (int w, int h)
+  {
+    io.viewdata.w = w;
+    io.viewdata.h = h;
+    for (auto &i : mWindowEventHandlers)
+      {
+        i->onResize (w, h);
+      }
   }
 };
+
+Mouse GLFWInterface::mouse;
 
 /*!
  *  Singleton initializer
@@ -167,9 +188,12 @@ struct GLFWContext
     glfwSetWindowSizeCallback (mWindow, Reshape);
 
     //register callbacks for keyboard and mouse
-    /* glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown); */
-    /* glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove ); */
-    /* glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown ); */
+    glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown);
+    glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove );
+    glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown );
+
+    interface.io.viewdata.w = w;
+    interface.io.viewdata.h = h;
 
     mWindows.push_back (new WindowData (w, h, 0));
     return *mWindows.back ();
@@ -177,7 +201,18 @@ struct GLFWContext
 
   static void Reshape (GLFWwindow *win, int w, int h)
   {
-    GLFWInterface::OnResize (w, h);
+    int tw, th; 
+    glfwGetFramebufferSize (mWindow, &tw, &th);
+    GLFWInterface::OnResize (tw, th);
+    //GLFWInterface::OnResize (w, h);
+  }
+
+  //just redo it again
+  void reshape()
+  {
+    int tw, th; 
+    glfwGetFramebufferSize (mWindow, &tw, &th);
+    GLFWInterface::OnResize (tw, th);
   }
 
 
@@ -195,7 +230,9 @@ struct GLFWContext
   static void SwapBuffers () { glfwSwapBuffers (mWindow); }
 
   //listen
-  void pollEvents () { glfwPollEvents (); }
+  void pollEvents () {
+    glfwPollEvents ();
+  }
 
   //Destroy the window
   void destroy () { glfwDestroyWindow (mWindow); }

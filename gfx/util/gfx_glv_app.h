@@ -19,6 +19,7 @@
 #define gfx_glv_app_INC
 
 #include "gfx/util/glut_window.hpp"
+#include "gfx/util/glfw_window.hpp"
 #include "gfx/gfx_app.h"
 #include "gfx/util/glv_control.h"
 #include "gfx/util/glv_gui.h"
@@ -43,11 +44,14 @@ struct GFXAppGui : public GFXApp<CONTEXT>
   {
     glv.listenTo (this->mContext);
     glv << gui;
+    this->mContext.reshape();
   }
 
   virtual void _setup ()
   {
     bindGLV ();
+    //get the extents to glv
+//    this->mContext.interface.OnResize (this->io().viewdata.w, this->io().viewdata.h);
     this->setup ();
   }
 

@@ -97,7 +97,8 @@ public WindowEventHandler
   GFXRenderGraph mRenderGraph;
 
   int mMode;                              ///< render mode
-SceneController sceneController;        ///< interface to matrix transforms
+
+  SceneController sceneController;        ///< interface to matrix transforms
   ObjectController objectController;      ///< interface to objects on screen
 
   Vec3f mColor;                           ///< Background Color
@@ -107,7 +108,7 @@ SceneController sceneController;        ///< interface to matrix transforms
   /*-----------------------------------------------------------------------------
    *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
-  GFXApp(int w=800, int h=400, string name = "GFXApp", bool bStereoBuf = false) :// int argc = 0, char ** argv = NULL) :
+  GFXApp(int w=400, int h=400, string name = "GFXApp", bool bStereoBuf = false) :// int argc = 0, char ** argv = NULL) :
   mColor(.2,.2,.2)
   {
 
@@ -120,11 +121,19 @@ SceneController sceneController;        ///< interface to matrix transforms
       WINDOWCONTEXT::System -> Initialize( bStereoBuf );
       mContext.create(w,h,name);
 
+      init();
+
+  }
+
+  void init (){
+
+      int w = io().viewdata.w;
+      int h = io().viewdata.h;
+
       printf ("app is adding itself to context events\n");
       //add this to window context's list of listeners to events
       mContext.interface.addWindowEventHandler(this);
       mContext.interface.addInputEventHandler(this);
-
 
       /*-----------------------------------------------------------------------------
        * 2. Add SceneController and ObjectController Callbacks
@@ -142,18 +151,18 @@ SceneController sceneController;        ///< interface to matrix transforms
       mContext.interface.addInputEventHandler(&objectController);
       mContext.interface.addWindowEventHandler(&objectController);
 
-      mContext.interface.OnResize(w,h);
+      mContext.interface.OnResize( io().viewdata.w, io().viewdata.h);
 
       /*-----------------------------------------------------------------------------
        * 3.  Initialize GLEW and check for features (if not using GLES @todo otherwise what?)
        *-----------------------------------------------------------------------------*/
 #ifndef GFX_USE_GLES
+      printf("glew init \n");
       glewExperimental = true;
       GLenum glewError = glewInit();
       if (glewError != GLEW_OK){
        printf("glew init error\n%s\n", glewGetErrorString( glewError) );
       }
-
       if (GLEW_APPLE_vertex_array_object){
         printf("genVertexArrayAPPLE supported\n");
       } else if (GLEW_ARB_vertex_array_object){

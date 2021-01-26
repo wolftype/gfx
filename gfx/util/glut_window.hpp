@@ -203,9 +203,14 @@ struct GlutContext
     GlutInterface::OnReshape (width, height);
   }
 
+  void reshape()
+  {
+    reshape (windowData().width(), windowData().height());
+  }
+
   static void reshape (int w, int h)
   {
-    mWindows[currentWindow]->reshape (w, h);
+    windowData().reshape (w, h);
     glViewport (0, 0, w, h);
   }
 

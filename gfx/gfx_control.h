@@ -82,8 +82,14 @@ struct Mouse
   {
     IsDown = 1,
     IsMoving = 1 << 1,
-    Click = 1 << 2
+    Click = 1 << 2,
+    AllStates = 7
   };
+
+  void notState (int s)
+  {
+    state &= (Mouse::AllStates ^ s);
+  }
 
   ///< 2D Mouse Position, first and second derivatives of motion, position relative to TL corner
   float lastX, lastY, x, y, dx, dy;  //, ddx, ddy, xrel, yrel;
@@ -410,6 +416,7 @@ struct Interface
 
   static void OnMouseMove (const Mouse &m)
   {
+//    printf ("on mouse move %f %f\n", (float)m.x, (float)m.y);
     io.mouse.state = m.state;
     io.mouse.x = m.x;
     io.mouse.y = m.y;

@@ -12,18 +12,17 @@ endif(COMMAND cmake_policy)
 #PROJECT
 project(GFX)
 
-#set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
-#set( LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib )
-
-message ("GFX ROOT: " ${CMAKE_SOURCE_DIR})
+#CMAKE SOURCE DIR
+MESSAGE ("\n\n******SYSTEM INFORMATION******")
+MESSAGE ( "System Name: " ${CMAKE_SYSTEM_NAME} )
+MESSAGE ( "System Processor: " ${CMAKE_SYSTEM_PROCESSOR} )
+MESSAGE ( "*******************************\n\n")
+MESSAGE ("BUILD EXAMPLES: " ${BUILD_EXAMPLES} )
+MESSAGE ("USE GLFW: " ${GFX_USE_GLFW} )
+MESSAGE ("GFX ROOT: " ${CMAKE_SOURCE_DIR})
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/bin")
-
-MESSAGE ("\n\n******SYSTEM INFORMATION******")
-MESSAGE( "System Name: " ${CMAKE_SYSTEM_NAME} )
-MESSAGE( "System Processor: " ${CMAKE_SYSTEM_PROCESSOR} )
-MESSAGE( "*******************************\n\n")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   SET( LINUX 1)
@@ -48,9 +47,6 @@ else()
   message(FATAL_ERROR "invalid build type or failure to set a build type.  specify Release, Debug, or RelWithDebInfo")
 endif()
 
-message ("BUILD EXAMPLES: " ${BUILD_EXAMPLES} )
-message ("USE GLFW: " ${GFX_USE_GLFW} )
-
 #PROJECT INCLUDE AND LINK
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/gfx/)
@@ -66,31 +62,7 @@ FILE(GLOB UtilFiles "${PROJECT_SOURCE_DIR}/gfx/util/*")
 add_custom_target(GFX_UTIL SOURCES ${UtilFiles})
 
 #RASPBERRY FLAG IS SET BY TOOLCHAIN FILE FOR CONDITIONAL INCLUDES
-if(${RASPBERRY})
-
-  message ("**********CONFIGURING GFX LIBRARY BUILD FOR RASPBERRY PI************")
-  message ("**********root set to " ${CMAKE_FIND_ROOT_PATH} "************")
-
-  find_package(GLES REQUIRED)
-  find_package(EGL REQUIRED)
-
-  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/include)
-  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/local/include)
-  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include)
-  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos/pthreads)
-  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vmcs_host/linux)
-
-  link_directories(/opt/vc/lib)
-  link_directories(/usr/lib)
-  link_directories(/usr/local/lib)
-  link_directories(/lib)
-
-  set(libraries ${libraries} pthread bcm_host vchiq_arm vcos m stdc++ vcos rt ${EGL_LIBRARY} ${GLES_LIBRARY})
-
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
-
-elseif(${APPLE})
+if(${APPLE})
 
   message ("\n**********CONFIGURING GFX LIBRARY BUILD FOR OSX************\n")
 
@@ -115,31 +87,31 @@ elseif(${APPLE})
   include_directories(${GLEW_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIR})
 
- add_subdirectory(GLV)
- link_directories(${GLV_BINARY_DIR})
- include_directories(${PROJECT_SOURCE_DIR}/GLV)
- include_directories(gl2ps)
+  add_subdirectory(GLV)
+  link_directories(${GLV_BINARY_DIR})
+  include_directories(${PROJECT_SOURCE_DIR}/GLV)
+  include_directories(gl2ps)
 
- message ("******GLV LIB: " ${GLV_LIBRARY})
+  message ("******GLV LIB: " ${GLV_LIBRARY})
 
   #GLFW
 #  if (${GFX_USE_GLFW})
-#    set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
-#  add_subdirectory(glfw)
-#  link_directories(${PROJECT_BINARY_DIR})
-#  link_directories(${GLFW_BINARY_DIR})
-#  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-#  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
+  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
+  add_subdirectory(glfw)
+  link_directories(${PROJECT_BINARY_DIR})
+  link_directories(${GLFW_BINARY_DIR})
+  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
+  include_directories(${PROJECT_SOURCE_DIR}/glm/)
 
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV)
+  #set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV)
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV glfw ${GLFW_LIBRARIES})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
 
   #TARGETS
   file(GLOB examples examples/GL/*.cpp)
@@ -203,6 +175,31 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     target_link_libraries(${target} ${libraries} )
   endforeach()
 
+elseif(${RASPBERRY})
+
+  message ("**********CONFIGURING GFX LIBRARY BUILD FOR RASPBERRY PI************")
+  message ("**********root set to " ${CMAKE_FIND_ROOT_PATH} "************")
+
+  find_package(GLES REQUIRED)
+  find_package(EGL REQUIRED)
+
+  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/include)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/usr/local/include)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vcos/pthreads)
+  include_directories(${CMAKE_FIND_ROOT_PATH}/opt/vc/include/interface/vmcs_host/linux)
+
+  link_directories(/opt/vc/lib)
+  link_directories(/usr/lib)
+  link_directories(/usr/local/lib)
+  link_directories(/lib)
+
+  set(libraries ${libraries} pthread bcm_host vchiq_arm vcos m stdc++ vcos rt ${EGL_LIBRARY} ${GLES_LIBRARY})
+
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D __raspberry__ -D __LINUX_ALSA__ -std=c++0x")
+
+
 elseif(${WINDOWS})
 
   message ("\n**********CONFIGURING GFX LIBRARY BUILD FOR WINDOWS MACHINE ************\n")
@@ -213,7 +210,7 @@ elseif(${WINDOWS})
  # link_directories(${GLV_BINARY_DIR})
  # include_directories(${PROJECT_SOURCE_DIR}/GLV)
  # include_directories(gl2ps)
- 
+
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
   add_subdirectory(glfw)
 
