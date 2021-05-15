@@ -7,7 +7,7 @@
 
 using namespace gfx;
 
-struct MyApp : GFXAppGui <GlutContext>
+struct MyApp : GFXAppGui <GLFWContext>
 {
 
   MBO mbo;
@@ -43,7 +43,6 @@ struct MyApp : GFXAppGui <GlutContext>
     Vec3f nx = Quat::spin (Vec3f (1.0, 0.0, 0.0), nq);
 
     cout << nq << endl;
-
 
     cout << nq * Quat (0, 1, 0, 0) << endl;
     cout << nx << endl;

@@ -18,7 +18,6 @@ MESSAGE ( "System Name: " ${CMAKE_SYSTEM_NAME} )
 MESSAGE ( "System Processor: " ${CMAKE_SYSTEM_PROCESSOR} )
 MESSAGE ( "*******************************\n\n")
 MESSAGE ("BUILD EXAMPLES: " ${BUILD_EXAMPLES} )
-MESSAGE ("USE GLFW: " ${GFX_USE_GLFW} )
 MESSAGE ("GFX ROOT: " ${CMAKE_SOURCE_DIR})
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/lib")
@@ -90,12 +89,12 @@ if(${APPLE})
   add_subdirectory(GLV)
   link_directories(${GLV_BINARY_DIR})
   include_directories(${PROJECT_SOURCE_DIR}/GLV)
+
   include_directories(gl2ps)
 
   message ("******GLV LIB: " ${GLV_LIBRARY})
 
   #GLFW
-#  if (${GFX_USE_GLFW})
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
   add_subdirectory(glfw)
   link_directories(${PROJECT_BINARY_DIR})
@@ -138,7 +137,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
 
-  #GLV should be optional
+  #todo GLV should be optional
   add_subdirectory(GLV)
   link_directories(${GLV_BINARY_DIR})
   include_directories(${PROJECT_SOURCE_DIR}/GLV)

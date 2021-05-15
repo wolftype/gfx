@@ -15,7 +15,6 @@ struct MyApp : GFXApp<GLFWContext> {
 
     mRenderGraph.immediate(true);
 
-
     Quat qa( PI*1.25 / 2.0, Vec3f(0.0,1.0,0.0) );
     Quat qb( PI*-.25 / 2.0, Vec3f(0.0,1.0,0.0) );
 
@@ -43,6 +42,9 @@ struct MyApp : GFXApp<GLFWContext> {
     draw(mbo,1,0,0);
  }
 
+ void onKeyDown(const Keyboard& k){
+    cout << "KEY DOWN " << k.code << endl;
+ }
 
 };
 

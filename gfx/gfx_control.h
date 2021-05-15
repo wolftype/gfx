@@ -127,7 +127,10 @@ struct Mouse
 
 struct ViewData
 {
-  float w, h;
+  float w, h;  //framebuffer width and height (context)
+  float win_w, win_h; //window width and height
+  float rw(){ return (float)w/win_w; }
+  float rh(){ return (float)h/win_h; }
   Vec3f z;
   Vec3f projectFar, projectNear, projectMid;
   Vec3f ray, clickray;
@@ -405,21 +408,22 @@ struct Interface
   static void OnMouseDown (const Mouse &m)
   {
     io.mouse.state |= Mouse::IsDown;
-    io.mouse.lastX = m.x;
-    io.mouse.lastY = m.y;
+    io.mouse.lastX = m.x * io.viewdata.rw();
+    io.mouse.lastY = m.y * io.viewdata.rh();
     for (auto &i : mInputEventHandlers)
       {
         if (i->active ())
           i->onMouseDown (io.mouse);
       }
+
+//    printf ("on mouse down%f %f\n", (float)io.mouse.lastX, (float)io.mouse.lastY);
   }
 
   static void OnMouseMove (const Mouse &m)
   {
-//    printf ("on mouse move %f %f\n", (float)m.x, (float)m.y);
     io.mouse.state = m.state;
-    io.mouse.x = m.x;
-    io.mouse.y = m.y;
+    io.mouse.x = m.x * io.viewdata.rw();
+    io.mouse.y = m.y * io.viewdata.rh();
     for (auto &i : mInputEventHandlers)
       {
         if (i->active ())
@@ -430,8 +434,8 @@ struct Interface
   static void OnMouseDrag (const Mouse &m)
   {
     io.mouse.state = m.state;
-    io.mouse.x = m.x;
-    io.mouse.y = m.y;
+    io.mouse.x = m.x * io.viewdata.rw();
+    io.mouse.y = m.y * io.viewdata.rh();
     io.mouse.dx = io.mouse.x - io.mouse.lastX;
     io.mouse.dy = io.mouse.y - io.mouse.lastY;
 

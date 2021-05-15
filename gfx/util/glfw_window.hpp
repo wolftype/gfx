@@ -75,6 +75,14 @@ struct GLFWInterface : Interface<GLFWContext>
 
   }
 
+  //window
+  static void OnResizeWindow(int w, int h)
+  {
+    io.viewdata.win_w = w;
+    io.viewdata.win_h = h;
+  }
+
+  //framebuffer
   static void OnResize (int w, int h)
   {
     io.viewdata.w = w;
@@ -192,8 +200,13 @@ struct GLFWContext
     glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove );
     glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown );
 
-    interface.io.viewdata.w = w;
-    interface.io.viewdata.h = h;
+    int tw, th; 
+    glfwGetFramebufferSize (mWindow, &tw, &th);
+    interface.io.viewdata.win_w = w;
+    interface.io.viewdata.win_h = h;
+
+    interface.io.viewdata.w = tw;
+    interface.io.viewdata.h = th;
 
     mWindows.push_back (new WindowData (w, h, 0));
     return *mWindows.back ();
@@ -204,7 +217,7 @@ struct GLFWContext
     int tw, th; 
     glfwGetFramebufferSize (mWindow, &tw, &th);
     GLFWInterface::OnResize (tw, th);
-    //GLFWInterface::OnResize (w, h);
+    GLFWInterface::OnResizeWindow (w, h);
   }
 
   //just redo it again
