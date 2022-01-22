@@ -144,14 +144,13 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   include_directories(gl2ps)
 
   #GLFW
-#  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
-#  add_subdirectory(glfw)
-#  link_directories(${PROJECT_BINARY_DIR})
-#  link_directories(${GLFW_BINARY_DIR})
-#  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-#  include_directories(${PROJECT_SOURCE_DIR}/glm/)
-#  target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
-
+  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
+  add_subdirectory(glfw)
+  link_directories(${PROJECT_BINARY_DIR})
+  link_directories(${GLFW_BINARY_DIR})
+  include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
+  include_directories(${PROJECT_SOURCE_DIR}/glm/)
+  #target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
 
