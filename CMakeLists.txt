@@ -155,7 +155,7 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV)
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV glfw ${GLFW_LIBRARIES})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
