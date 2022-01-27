@@ -116,6 +116,19 @@ struct Glut
 
   static void Terminate () {}
 
+  //initialize only for util functions, do not connect to window
+  //e.g. when using GLFW but still using glutSolidSphere functions
+  static void InitOnly()
+  {
+    int argc = 1;
+    char c[] = {'G', 'F', 'X'};
+    char *argv[] = {c, NULL};
+
+    printf("INIT ONLY GLUT\n");
+
+    glutInit (&argc, argv);
+  };
+
  private:
   Glut (bool bStereo)
   {
@@ -123,6 +136,7 @@ struct Glut
     char c[] = {'G', 'F', 'X'};
     char *argv[] = {c, NULL};
 
+    printf("INIT GLUT\n");
     glutInit (&argc, argv);
     glutInitDisplayMode (GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH
                          | (bStereo ? GLUT_STEREO : 0));
