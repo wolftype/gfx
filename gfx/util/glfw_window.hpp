@@ -28,7 +28,6 @@
 
 
 #include "gfx_control.h"
-#include "util/glut_window.hpp"
 
 using namespace std;
 namespace gfx {
@@ -130,7 +129,7 @@ struct GLFW
   {
     if (!glfwInit ())
       exit (EXIT_FAILURE);
-    Glut::InitOnly();
+    //Glut::InitOnly();
   }
 };
 
