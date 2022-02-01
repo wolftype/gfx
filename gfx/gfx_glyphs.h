@@ -13,6 +13,7 @@
 #include "gfx_lib.h"
 #include "gfx_matrix.h"
 #include "gfx_gl.h"
+#include "gfx_mesh.h"
 
 
 namespace gfx {
@@ -143,12 +144,12 @@ void Triangle (const V &a, const V &b, const V &c)
 
 
 
-//glut cone
+//cone
 void Cone ();
 void SolidCone ();
-//glut wire sphere
+//wire sphere
 void Sphere (double radius = 1, int slices = 20, int stacks = 20);
-//glut solid sphere
+//solid sphere
 void SolidSphere (double radius = 1, int slices = 20, int stacks = 20);
 
 //filled quad
@@ -823,14 +824,36 @@ inline void Glyph::Point2D (const A &v)
 
 inline void Glyph::Cone ()
 {
-  glTranslated (0, 0, -.2);
-  glutWireCone (.1, .2, 8, 3);
+  //glutWireCone (.1, .2, 8, 3);
+
+  Mesh m = Mesh::Cone (.4, .2, 8, 3);
+   glRotated(90,1, 0, 0);
+   glTranslated (0, -.2,0);
+  glBegin(GL_LINE_STRIP);
+  for (auto& i: m.index())
+  {
+    GL::normal(m[i].Norm);
+    GL::vertex(m[i].Pos);
+  }
+  glEnd();
+
 }
 
 inline void Glyph::SolidCone ()
 {
-  glTranslated (0, 0, -.2);
-  glutSolidCone (.1, .2, 8, 3);
+//  glutSolidCone (.1, .2, 8, 3);
+
+  Mesh m = Mesh::Cone (.4, .2, 8, 3);
+   glRotated(90,1, 0, 0);
+   glTranslated (0, -.2,0);
+  glBegin(GL_TRIANGLE_STRIP);
+  for (auto& i: m.index())
+  {
+    GL::normal(m[i].Norm);
+    GL::vertex(m[i].Pos);
+  }
+  glEnd();
+
 }
 
 
@@ -873,12 +896,23 @@ inline void Glyph::TriLine (bool down)
 
 inline void Glyph::Sphere (double radius, int slices, int stacks)
 {
-  glutWireSphere (radius, slices, stacks);
+  //glutWireSphere (radius, slices, stacks);
+  Mesh m = Mesh::Sphere (radius, slices, stacks);
+  glBegin(GL_LINE_STRIP);
+  for (auto& i: m.index())
+    GL::vertex(m[i].Pos);
+  glEnd();
 }
 
 inline void Glyph::SolidSphere (double radius, int slices, int stacks)
 {
-  glutSolidSphere (radius, slices, stacks);
+ // glutSolidSphere (radius, slices, stacks);
+  Mesh m = Mesh::Sphere (radius, slices, stacks);
+
+  glBegin(GL_TRIANGLE_STRIP);
+  for (auto& i: m.index())
+    GL::vertex(m[i].Pos);
+  glEnd();
 }
 
 inline void Glyph::Rect (double w, double h)

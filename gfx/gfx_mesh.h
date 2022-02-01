@@ -1375,37 +1375,100 @@ inline Mesh Mesh::Circle (double radius, double _res)
   return m;
 }
 
-
 inline Mesh Mesh::Cone (double r, double h, int slices, int stacks)
 {
-
   Mesh m;
+  //bottom middle
+  m.add (Vec3f (0, 0, 0), Vec3f (0, -1, 0));
 
+  //work your way up
   for (int i = 0; i <= stacks; ++i)
     {
-      float z = h * i / stacks;
+
+      float y = h * i / stacks;
+
       for (int j = 0; j < slices; ++j)
         {
-          float rad = 2.0 * PI * j / slices;
-          float x = cos (rad) * (h - z) * r;
-          float y = sin (rad) * (h - z) * r;
-          m.add (Vertex (Vec3f (x, y, z), Vec3f (x, y, z), Vec4f (1, 1, 1, 1),
-                         Vec2f (z, 1.0 * j / slices)));
-          m.add (i * slices + j);
+          float rad = TWOPI * j / slices;
+          float x = cos (rad) * (h - y) * r;
+          float z = sin (rad) * (h - y) * r;
+
+          m.add (Vec3f (x, y, z), Vec3f (x, 0, z).unit ());
         }
-      m.add (i * slices);
     }
-  int peak = m.index ().back ();
 
-  for (int j = 0; j < slices; ++j)
+  m.add (Vec3f (0, h, 0), Vec3f (0, 1, 0));
+
+
+  //TOP
+//  int last = m.vertex ().size () - 1;
+//  m.add (last - slices).add (last);
+//  for (int j = last - slices + 1; j < last; ++j)
+//    {
+//      int idx[2] = {j, last};
+//      m.add (idx, 2);
+//    }
+//  m.add (last - slices).add (last).add (last);  //add twice to finish
+
+  //BOTTOM
+  m.add (1).add (1).add (0);  //add twice to start
+  for (int j = slices; j > 1; --j)
     {
-      m.add (j).add (peak);
+      int idx[2] = {j, 0};
+      m.add (idx, 2);
+    }
+  m.add (1).add (0).add (0);
+
+  for (int i = 0; i < stacks; ++i)
+    {
+      m.add (i * slices + 1).add (i * slices + 1);
+      for (int j = 0; j < slices; ++j)
+        {
+          int ix = i * slices + j + 1;
+          int ixn = (j < slices - 1) ? ix + 1 : i * slices + 1;
+          int nx = ix + slices;
+          int nxn = (j < slices - 1) ? nx + 1 : ixn + slices;
+          int idx[2] = {nxn, ixn};
+          m.add (idx, 2);
+        }
+      m.add (i * slices + 2 + slices).add (i * slices + 2 + slices);
     }
 
-  m.mode (GL::LL);
+  m.mode (GL::TS);
   m.store ();
   return m;
 }
+
+//inline Mesh Mesh::Cone_(double r, double h, int slices, int stacks)
+//{
+//
+//  Mesh m;
+//
+//  for (int i = 0; i <= stacks; ++i)
+//    {
+//      float z = h * i / stacks;
+//      for (int j = 0; j < slices; ++j)
+//        {
+//          float rad = 2.0 * PI * j / slices;
+//          float x = cos (rad) * (h - z) * r;
+//          float y = sin (rad) * (h - z) * r;
+//          m.add (Vertex (Vec3f (x, y, z), Vec3f (x, y, z), Vec4f (1, 1, 1, 1),
+//                         Vec2f (z, 1.0 * j / slices)));
+//          m.add (i * slices + j);
+//        }
+//      m.add (i * slices);
+//    }
+//  int peak = m.index ().back ();
+//
+//  for (int j = 0; j < slices; ++j)
+//    {
+//      m.add (j).add (peak);
+//    }
+//
+//  m.mode (GL::LL);
+//  m.store ();
+//  return m;
+//}
 
 
 inline Mesh Mesh::Dir ()
@@ -1508,8 +1571,10 @@ inline Mesh Mesh::Cylinder (float r, float height, int slices, int stacks)
 {
 
   Mesh m;
+  //bottom middle
   m.add (Vec3f (0, -height / 2.0, 0), Vec3f (0, -1, 0));
 
+  //work your way up
   for (int i = 0; i <= stacks; ++i)
     {
 
