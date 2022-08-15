@@ -138,14 +138,16 @@ void SceneController::onMouseUp (const Mouse &m)
 void SceneController::onKeyDown (const Keyboard &k)
 {
 
-  if (io ().keyboard.code == Key::Tab)
+  if (io ().keyboard.code == Key::Tab || io ().keyboard.code == 258)
     {
+      cout << "TOGGLE CONTROL MODE GFX SCENE CONTROLLER" << endl;
       io ().toggle (ControlMode::Edit);
       io ().toggle (ControlMode::Navigate);
     }
 
   if (io ().mode (ControlMode::Navigate))
     {
+      cout << "CONTROL MODE NAV" << endl;
       if (io ().trigger == true)
         keyboardNavigate ();
       io ().trigger = false;
