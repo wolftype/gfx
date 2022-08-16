@@ -1,6 +1,6 @@
 [submodule "glfw"]
 	path = glfw
-	url = git://github.com/wolftype/glfw.git
+	url = https://github.com/wolftype/glfw.git
 [submodule "GLV"]
 	path = GLV
 	url = https://github.com/wolftype/GLV.git
