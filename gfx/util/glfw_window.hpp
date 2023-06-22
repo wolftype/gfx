@@ -46,8 +46,11 @@ struct GLFWInterface : Interface<GLFWContext>
   static void OnKeyDown (GLFWwindow *window, int key, int scancode, int action,
                          int mods)
   {
-    Keyboard keyboard (key, mods, 0, 0, true);
-    Interface<GLFWContext>::OnKeyDown (keyboard);
+    if (action == GLFW_PRESS)
+    {
+      Keyboard keyboard (key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyDown (keyboard);
+    }
   }
 
   static void OnMouseMove (GLFWwindow *window, double x, double y)
@@ -201,7 +204,7 @@ struct GLFWContext
     glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove );
     glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown );
 
-    int tw, th; 
+    int tw, th;
     glfwGetFramebufferSize (mWindow, &tw, &th);
     interface.io.viewdata.win_w = w;
     interface.io.viewdata.win_h = h;
@@ -215,7 +218,7 @@ struct GLFWContext
 
   static void Reshape (GLFWwindow *win, int w, int h)
   {
-    int tw, th; 
+    int tw, th;
     glfwGetFramebufferSize (mWindow, &tw, &th);
     GLFWInterface::OnResize (tw, th);
     GLFWInterface::OnResizeWindow (w, h);
@@ -224,7 +227,7 @@ struct GLFWContext
   //just redo it again
   void reshape()
   {
-    int tw, th; 
+    int tw, th;
     glfwGetFramebufferSize (mWindow, &tw, &th);
     GLFWInterface::OnResize (tw, th);
   }

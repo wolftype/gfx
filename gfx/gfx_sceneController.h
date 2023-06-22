@@ -152,6 +152,10 @@ void SceneController::onKeyDown (const Keyboard &k)
         keyboardNavigate ();
       io ().trigger = false;
     }
+  else {
+      cout << "CONTROL MODE EDIT" << endl;
+  }
+
 }
 
 void SceneController::onKeyUp (const Keyboard &k)
