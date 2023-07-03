@@ -90,7 +90,7 @@ struct Renderable : RenderableBase<T>
 
   static void Draw (const T &t, GFXSceneNode *_i)
   {
-    printf (R"(Renderable<T>::Draw routine not yet defined for this type: 
+    printf (R"(Renderable<T>::Draw routine not yet defined for this type:
               You must delcare a Renderable<CLASSNAME>::Draw function
               See gfx/gfx_render.h)");
   }
@@ -98,7 +98,7 @@ struct Renderable : RenderableBase<T>
   static void Draw (const T &t, const Mat4f &model, GFXSceneNode *_i)
   {
     printf (
-      R"(Renderable<T>::Draw (with ModelMatrix) routine not yet defined for this type: 
+      R"(Renderable<T>::Draw (with ModelMatrix) routine not yet defined for this type:
               You must delcare a Renderable<CLASSNAME>::Draw function
               See gfx/gfx_render.h)");
   }
@@ -117,7 +117,7 @@ struct Renderable : RenderableBase<T>
    *
    *  you must define your own draw method for your type T:
    *
-   *  template<> void Drawable<T>::Immediate(const T& t){ ... }  
+   *  template<> void Drawable<T>::Immediate(const T& t){ ... }
    *
    *  or specialize the whole Drawable class itself for your own generic types:
    *
@@ -126,7 +126,7 @@ struct Renderable : RenderableBase<T>
    *    static void Immediate(const YourType<T>& m){ ... }
    *  };
    *
-   *  [notes: cannot just use methods to find best fit 
+   *  [notes: cannot just use methods to find best fit
    *  (generalized template, partially generalized template, specialized)
    *  cannot even just use a namespace here
    *  though it is easier to overload free functions than methods, ADL doesn't work

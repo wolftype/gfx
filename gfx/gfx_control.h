@@ -215,9 +215,11 @@ enum
    *-----------------------------------------------------------------------------*/
 struct GFXio
 {
+  //Stateful
   Mouse mouse;
   Keyboard keyboard;
   ViewData viewdata;
+
   Vec3f click ()
   {
     Vec3f m = mouse.click ();

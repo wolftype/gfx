@@ -62,8 +62,8 @@ class SceneController : public InputEventHandler
   MPose &model () { return mScene->model; }
 
   /*-----------------------------------------------------------------------------
-         *  NAVIGATION
-         *-----------------------------------------------------------------------------*/
+   *  NAVIGATION
+   *-----------------------------------------------------------------------------*/
   void keyboardCamSpin (float acc, bool trigger);
   void keyboardCamTranslate (float acc, bool trigger);
   void keyboardModelTransform (float acc, bool trigger);
@@ -122,6 +122,7 @@ void SceneController::onMouseDrag (const Mouse &m)
 {
   if (io ().mode (ControlMode::Navigate))
     {
+      //cout << "mouse drag" << endl;
       mouseNavigate ();
     }
 }
@@ -130,8 +131,12 @@ void SceneController::onMouseUp (const Mouse &m)
 {
   if (io ().mode (ControlMode::Navigate))
     {
+      //cout << "mouse up" << endl;
       mouseNavigateStop ();
     }
+  else {
+      //cout << "mouse up NO NAV" << endl;
+  }
 }
 
 
@@ -147,13 +152,13 @@ void SceneController::onKeyDown (const Keyboard &k)
 
   if (io ().mode (ControlMode::Navigate))
     {
-      cout << "CONTROL MODE NAV" << endl;
+      //cout << "CONTROL MODE NAV" << endl;
       if (io ().trigger == true)
         keyboardNavigate ();
       io ().trigger = false;
     }
   else {
-      cout << "CONTROL MODE EDIT" << endl;
+      //cout << "CONTROL MODE EDIT" << endl;
   }
 
 }
@@ -408,18 +413,22 @@ void SceneController::mouseNavigate ()
 {
   if (io ().keyboard.modifier == 0)
     {
+      //cout << "keyboard no mod" << endl;
       mouseModelTransform ();
     }
   else if (io ().keyboard.alt ())
     {
+      //cout << "keyboard alt" << endl;
       mouseModelTransform_ (1.0, true);
     }
   else if (io ().keyboard.shift ())
     {
+      //cout << "keyboard shift" << endl;
       mouseCamTranslate (1.0, true);
     }
   else if (io ().keyboard.ctrl ())
     {
+      //cout << "keyboard ctrl" << endl;
       mouseCamSpin (1.0, true);
     }
 }

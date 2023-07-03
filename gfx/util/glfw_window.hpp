@@ -53,6 +53,21 @@ struct GLFWInterface : Interface<GLFWContext>
     }
   }
 
+  static void OnKeyDownOrUp (GLFWwindow *window, int key, int scancode, int action,
+                         int mods)
+  {
+    if (action == GLFW_PRESS)
+    {
+      Keyboard keyboard (key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyDown (keyboard);
+    }
+    else if (action == GLFW_RELEASE)
+    {
+      Keyboard keyboard (key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyUp(keyboard);
+    }
+  }
+
   static void OnMouseMove (GLFWwindow *window, double x, double y)
   {
     mouse.state |= Mouse::IsMoving;
@@ -200,7 +215,7 @@ struct GLFWContext
     glfwSetWindowSizeCallback (mWindow, Reshape);
 
     //register callbacks for keyboard and mouse
-    glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDown);
+    glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDownOrUp);
     glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove );
     glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown );
 
