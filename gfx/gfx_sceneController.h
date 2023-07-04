@@ -5,6 +5,10 @@
  *
  *    Description:  A utility for navigating virtual environment with mouse and keyboard input
  *
+ *    Methods here control viewing the scene, and whether we are in navigate or Edit mode
+ *
+ *    Note methods typically work in Navigate mode, whereas Edit mode methods are handled by the objectController.
+ *
  *        Version:  1.0
  *        Created:  06/09/2014 17:50:12
  *       Revision:  none

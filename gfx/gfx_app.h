@@ -109,7 +109,7 @@ public WindowEventHandler
    *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
   GFXApp(int w=400, int h=400, string name = "GFXApp", bool bStereoBuf = false) :// int argc = 0, char ** argv = NULL) :
-  mColor(.2,.2,.2)
+  mColor(1.0,1.0,1.0)
   {
 
       mSceneNode.mScenePtr = &scene;
