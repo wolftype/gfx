@@ -108,10 +108,10 @@ public WindowEventHandler
   /*-----------------------------------------------------------------------------
    *  Constructor: Optional to Pass in width and height of window, and any command line arguments
    *-----------------------------------------------------------------------------*/
-  GFXApp(int w=400, int h=400, string name = "GFXApp", bool bStereoBuf = false) :// int argc = 0, char ** argv = NULL) :
-//  mColor(1.0,1.0,1.0)
-mColor(250.0/256.0,240.0/256.0,217.0/256.0)
+  GFXApp(int w=800, int h=600, string name = "GFXApp", bool bStereoBuf = false)
   {
+
+      mColor = Vec3f(222.0/256.0,165.0/256.0,87.0/256.0);
 
       mSceneNode.mScenePtr = &scene;
 
