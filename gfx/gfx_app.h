@@ -111,7 +111,7 @@ public WindowEventHandler
   GFXApp(int w=800, int h=600, string name = "GFXApp", bool bStereoBuf = false)
   {
 
-      mColor = Vec3f(222.0/256.0,165.0/256.0,87.0/256.0);
+      mColor = Vec3f(.2, .2, .2);//222.0/256.0,165.0/256.0,87.0/256.0);
 
       mSceneNode.mScenePtr = &scene;
 
