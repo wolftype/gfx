@@ -41,7 +41,7 @@ enum {
   };
 
   typedef map<string, Widget*> WidgetMap;
-  typedef map<string, Widget*>::iterator WidgetPtr; 
+  typedef map<string, Widget*>::iterator WidgetPtr;
 
     class Gui : public Table {
 
@@ -105,8 +105,8 @@ enum {
               static int it = 0;
               stringstream name;
 
-              if (nm == "" ) 
-                  name << typeid(T).name() << "_" << it; 
+              if (nm == "" )
+                  name << typeid(T).name() << "_" << it;
               else name << nm;
 
 
@@ -126,7 +126,7 @@ enum {
               it++;
               return *this;
           }
-          
+
           /*!  add widget and automatically determine type of widget */
           template<class T>
           Gui& operator () (T& val, float max){
@@ -139,13 +139,13 @@ enum {
 
           void add ( Widget* v, const std::string& _name){
 
-              mWidget[ _name ] = v;  
+              mWidget[ _name ] = v;
               Label * tmp = new Label (_name );
 
               Box * box = new Box();
-              *this << ( *box << *mWidget[ _name]  << *tmp );  
+              *this << ( *box << *mWidget[ _name]  << *tmp );
 
-              arrange();    
+              arrange();
           }
 
           Widget& widget(string name) { return *mWidget[name]; }      ///< Get Widget
@@ -184,7 +184,7 @@ enum {
         }
         case BUTTON:
         {
-          //cout << " adding Button to gui " << endl; 
+          //cout << " adding Button to gui " << endl;
           Button *ns = new Button(glv::Rect(20,20));
           ns -> attachVariable(val, 0);
           s = (Widget*)ns;
@@ -199,12 +199,12 @@ enum {
         }
       }
 
-      s->colors().text.set(0,0,0); 
-      s->colors().fore.set(0,0,0);  
+      s->colors().text.set(0,0,0);
+      s->colors().fore.set(0,0,0);
       s->name( _name );
       add((Widget*)s, _name);
     }
 
 } //glv:: gui
-                          
+
 #endif   /* ----- #ifndef glv_gui_INC  ----- */

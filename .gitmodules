@@ -4,3 +4,6 @@
 [submodule "GLV"]
 	path = GLV
 	url = https://github.com/wolftype/GLV.git
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui
