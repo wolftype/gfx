@@ -117,7 +117,7 @@ public WindowEventHandler
 
       printf ("app is creating window context\n");
      /*-----------------------------------------------------------------------------
-      *  1. Initialize Window and Callbacks
+      *  1. Initialize Window Context and Callbacks
       *-----------------------------------------------------------------------------*/
       WINDOWCONTEXT::System -> Initialize( bStereoBuf );
       mContext.create(w,h,name);
@@ -194,7 +194,6 @@ public WindowEventHandler
        *-----------------------------------------------------------------------------*/
        GL::enablePreset();
 
-
   }
 
 //  void anaglyphic () {
@@ -212,11 +211,13 @@ public WindowEventHandler
     setup();
   }
 
+
   /*-----------------------------------------------------------------------------
    *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
+  //@todo, how does this fit in?
   template<class T>
   void draw(const T& t, float r=1,float g=1,float b=1,float a=1){
 

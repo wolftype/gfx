@@ -116,6 +116,7 @@ Mouse GLFWInterface::mouse;
 
 /*!
  *  Singleton initializer
+ *  calls glfwInit
  */
 struct GLFW
 {
@@ -128,19 +129,23 @@ struct GLFW
 
   /// Start Graphics Thread, passing application in
   /// fetches the GLFWInterface member of Application's context
+  /// This method is called by the App<>::start() method
   template <class APPLICATION>
   static void Start (APPLICATION *app)
   {
     printf ("starting ...\n");
     while (!app->context ().shouldClose ())
-      {  //!win.shouldClose() ){
-        //app->onFrame();
-        app->context ().interface.OnDraw ();
-        app->context ().pollEvents ();  //why not swap buffers here?
+      { 
+        //does order matter?
+        app->context ().pollEvents ();
+        app->context ().interface.OnDraw (); //onFrame
+//        app->onFrame();
       }
   }
 
   static void Terminate () { glfwTerminate (); }
+
+  static std::string glsl_version;
 
  private:
   GLFW (int mode)
@@ -148,14 +153,29 @@ struct GLFW
     if (!glfwInit ())
       exit (EXIT_FAILURE);
     //Glut::InitOnly();
+    //
+   #if defined(__APPLE__)
+//       // GL 3.2 + GLSL 150
+       glsl_version = "#version 120";
+       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+////       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+//       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+   #else
+//       // GL 3.0 + GLSL 130
+       glsl_version = "#version 130";
+       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+   #endif
+
   }
 };
 
 /*!
-
     A GLFW Context
-    Has a ::System
+    Has a GLFW singleton accessed via ::System
 
+    An App is Templated on this Windowing Context
  */
 
 struct GLFWContext
@@ -190,7 +210,7 @@ struct GLFWContext
 
   GLFWContext () {}
 
-  //Create a Window Context
+  //Create a Window Context this is called by App
   WindowData &create (int w, int h, string name = "default")
   {
 
@@ -276,6 +296,7 @@ GLFW *GLFWContext::System;
 GLFWwindow *GLFWContext::mWindow;
 vector<WindowData *> GLFWContext::mWindows;
 int GLFWContext::currentWindow;
+std::string GLFW::glsl_version;
 
 
 }  //gfx
