@@ -34,8 +34,10 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
   {
   }
 
-  //called before START
-  void setup(){
+  //called before START, overloaded with additional imgui setups
+  //note, subclasses should still call "setup" themselves
+  void _setup(){
+    printf("set up IMGUI\n");
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -43,25 +45,28 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
-    
+
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(&mContext.window(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL2_Init();
-  }
 
-  //called everyframe 
-//  void onFrame(){
-  void onDraw(){
+    setup();
+ }
+
+  //called by App::onRender
+  void onEarlyRender(){
    ImGui_ImplOpenGL2_NewFrame();
    ImGui_ImplGlfw_NewFrame();
    ImGui::NewFrame();
-//
-   ImGui::ShowDemoWindow(); // Show demo window! :)
-//                             //
-//  //  GFXApp<CONTEXT>::onFrame();
-//    //tthis should maybe happen after other scenes draw
-    onLateRender();
   }
+
+  virtual void onDrawGui(){};
+
+  void _onDraw(){
+    onDrawGui();
+    onDraw();
+  }
+
 
   void onLateRender(){
     ImGui::Render();

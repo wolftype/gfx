@@ -16,7 +16,7 @@ rm bin/$TARGET
 
 RUN_CMAKE=1
 MAKE_VERBOSE=1
-USE_GLFW=0
+USE_GLFW=1
 
 for i
   do
@@ -35,7 +35,7 @@ done
 
 if [ $RUN_CMAKE = 1 ]; then
   echo "RUN_CMAKE = TRUE"
-  cmake -DBUILD_EXAMPLES=1 ..
+  cmake -DBUILD_EXAMPLES=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
 fi
 
 make $TARGET

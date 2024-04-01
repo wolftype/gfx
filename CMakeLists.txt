@@ -2,7 +2,7 @@
 #for cross-compiling to raspberry pi or jetson etc use -DCMAKE_TOOLCHAIN_FILE=path/to/file (e.g. toolchains/rpi)
 
 #VERSION
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0)#//2.8.12)
 
 #POLICIES
 #if(COMMAND cmake_policy)
@@ -11,6 +11,8 @@ cmake_minimum_required(VERSION 2.8.12)
 
 #PROJECT
 project(GFX)
+
+set(BUILD_EXAMPLES OFF CACHE BOOL "build examples")
 
 #CMAKE SOURCE DIR
 MESSAGE ("\n\n******SYSTEM INFORMATION******")
@@ -69,7 +71,7 @@ if(${APPLE})
 
   find_package(OpenGL REQUIRED)
 #to do, can we eliminate GLUT here?
-  find_package(GLUT REQUIRED)
+#find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
 
   if(${GLEW_FOUND})
@@ -106,12 +108,12 @@ if(${APPLE})
   #  message ("******GLV LIB: " ${GLV_LIBRARY})
 
   #GLFW
-  set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
+  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
   add_subdirectory(glfw)
   link_directories(${PROJECT_BINARY_DIR})
   link_directories(${GLFW_BINARY_DIR})
   include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-  include_directories(${PROJECT_SOURCE_DIR}/glm/)
+  #  include_directories(${PROJECT_SOURCE_DIR}/glm/)
 
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)

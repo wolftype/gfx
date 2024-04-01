@@ -12,23 +12,57 @@ struct MyApp : GFXAppImGui
 
   MBO mbo;
 
-  float amt1;
+  float f0, f1;
   bool bToggle;
+  int e;
 
-  virtual void setup ()
+  bool bShowColor, bShowNomp;
+
+  ImGuiWindowFlags wflags = 0; 
+
+
+  void setup ()
   {
-    GFXAppImGui::setup();
-
     mbo = Mesh::Circle ();
     mRenderGraph.immediate (true);
 
+    wflags |= ImGuiWindowFlags_MenuBar; 
   }
 
-  virtual void onDraw ()
+  void onDraw ()
   {
-    GFXAppImGui::onDraw();
+    draw (mbo, 1, f0, 0);
+  }
 
-    draw (mbo, 1, 0, 0);
+  void onDrawGui()
+  {
+    if (!ImGui::Begin("Test",NULL, wflags))
+    {
+        ImGui::End();
+        return;
+    }
+    ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
+
+    if(ImGui::BeginMenuBar()){
+      if(ImGui::BeginMenu("Examples")){
+         ImGui::MenuItem("Color", NULL, &bShowColor);
+         ImGui::MenuItem("Nomp", NULL, &bShowNomp);
+         ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
+    }
+
+    ImGui::Button("Button");
+    ImGui::Checkbox("checkbox", &bToggle);
+    ImGui::InputFloat("input float", &f0, 0.01f, 1.0f, "%.3f");
+    ImGui::RadioButton("radio a", &e, 0); ImGui::SameLine();
+    ImGui::RadioButton("radio b", &e, 1); ImGui::SameLine();
+    ImGui::RadioButton("radio c", &e, 2);
+    ImGui::SliderFloat("slider float", &f1, -20, 600, "%.0f");
+
+    ImGui::PopItemWidth();
+    ImGui::End();
+
   }
 
 };

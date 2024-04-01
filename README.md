@@ -2,6 +2,7 @@ gfx
 ===
 
 a simple header only generic graphics library (openGL and openGL es2.0)
+with a gui submodule (currently, Dear ImGUI)
 
 features/goals:
 ---
@@ -11,13 +12,11 @@ features/goals:
 * is self-contained math-wise (does not rely on glm)
 * provides a simple scene graph model
 * can be used stand alone or as a renderer in your own openGL projects
-* has some helpful utilities for spatial coherence across multiple screens
-
-see also cuttlefish project
+* has some helpful utilities for spatial coherence across multiple screens (see also cuttlefish project)
 
 license:
 ---
-free to be for you and me. 
+free to be for you and me.
 cobbled together by pablo colapinto, likely includes code from wesley smith, graham wakefield, lance putnam and other members of the allosphere research group . . .
 please credit these folk if you copy into your own project.
 
@@ -47,6 +46,21 @@ xGlutRenderer.cpp shows how to inject a render pipeline into a glut context
 
 file guide
 ==========
+
+Loop:
+==========
+
+Apps must inherit from the GFXApp class and define an onDraw() method and asetup() method.
+
+The GFXAPP class is itself a RenderNode (it's onRender function calls onDraw). It has, as a member, the rendergraph to which rendernodes are attached.  It attaches itself to this member on initialization.
+
+As a RenderNode
+
+Contexts
+
+GFXApp is templated on the windowing context, e.g. GLFWContext, and subscriibes to window and input events fromt the context's interface.
+
+the GLFWContext
 
 data structures and basic math
 ---

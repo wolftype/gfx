@@ -211,13 +211,18 @@ public WindowEventHandler
     setup();
   }
 
-
   /*-----------------------------------------------------------------------------
    *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
+  virtual void _onDraw () {
+    onDraw();
+  }
+
+
   //@todo, how does this fit in?
+  //draw class T (in either immediate mode or programmable pipeline)
   template<class T>
   void draw(const T& t, float r=1,float g=1,float b=1,float a=1){
 
@@ -262,7 +267,9 @@ public WindowEventHandler
 
      GL::enablePreset();
 
+     //clear screen
      clear();
+     //update physics
      onAnimate();
 
      //mRenderer calls one upstream render (namely, this)
@@ -273,7 +280,8 @@ public WindowEventHandler
 
      mRenderGraph.onRender();
 
-     scene.step();                            ///< update camera physics
+     //update camera physics
+     scene.step();         
 
      /* NOTE: swapbuffers is NOT called here because
       * we are in just one of many potential windowEventHandler callbacks (which add optional side effects)
@@ -281,12 +289,17 @@ public WindowEventHandler
       * see gfx_control.h for the Interface class */
   }
 
+  //optional early and late functions, e.g. used to setup GUI overlays
+  virtual void onEarlyRender(){} 
+  virtual void onLateRender(){} 
 
   /*-----------------------------------------------------------------------------
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h)
    *-----------------------------------------------------------------------------*/
   virtual void onRender(){
-      onDraw();
+      onEarlyRender();
+      _onDraw();
+      onLateRender();
   }
 
   /*-----------------------------------------------------------------------------
