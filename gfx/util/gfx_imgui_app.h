@@ -121,7 +121,7 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
         ImGui::End();
         return false;
     }
-    ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
+    ImGui::PushItemWidth(ImGui::GetFontSize() * -5);
     return true;
   };
 
