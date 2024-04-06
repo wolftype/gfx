@@ -29,7 +29,11 @@ namespace gfx {
 struct GFXAppImGui : public GFXApp<GLFWContext>
 {
 
-  GFXAppImGui (int w = 400, int h = 400, string name = "gfx with imgui")
+  ImGuiWindowFlags wflags = 0;
+
+  int iBool, iFloat = 0;
+  
+   GFXAppImGui (int w = 800, int h = 600, string name = "gfx with imgui")
       : GFXApp<GLFWContext> (w, h, name)
   {
   }
@@ -60,10 +64,80 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
    ImGui::NewFrame();
   }
 
+  //override to use your own settings
+  virtual bool guiBegin(){
+    iBool = iFloat = 0;
+    if (!ImGui::Begin("Gui",NULL, wflags))
+    {
+        ImGui::End();
+        return false;
+    }
+    ImGui::PushItemWidth(ImGui::GetFontSize()* -5);
+    return true;
+  }
+
+  //override to use your own settings
+  virtual void guiEnd(){
+    ImGui::PopItemWidth();
+    ImGui::End();
+  }
+
+  //helper bool func
+  void gui(bool& val, string nm = ""){
+       stringstream name;
+
+       if (nm == "" )
+       {
+         name << "b_" << iBool;
+         iBool++;
+       }
+       else name << nm;
+
+       ImGui::Checkbox(name.str().c_str(), &val);
+
+  }
+
+  //helper float slider func
+  void gui(float& val, string nm = "", float min = 0, float max = 1){
+
+       stringstream name;
+
+       if (nm == "" )
+       {
+           name << "float_" << iFloat;
+           iFloat++;
+       }
+       else name << nm;
+
+       ImGui::SliderFloat(name.str().c_str(), &val, min, max, "%.4f");
+
+  }
+
+
+  virtual bool onGuiBegin(){
+    iBool = iFloat = 0;
+    if (!ImGui::Begin("Test",NULL, wflags))
+    {
+        ImGui::End();
+        return false;
+    }
+    ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
+    return true;
+  };
+
   virtual void onDrawGui(){};
 
+  virtual void onGuiEnd(){
+    ImGui::PopItemWidth();
+    ImGui::End();
+  };
+
+
   void _onDraw(){
-    onDrawGui();
+    if (onGuiBegin()){
+      onDrawGui();
+      onGuiEnd();
+    }
     onDraw();
   }
 

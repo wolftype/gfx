@@ -18,8 +18,6 @@ struct MyApp : GFXAppImGui
 
   bool bShowColor, bShowNomp;
 
-  ImGuiWindowFlags wflags = 0; 
-
 
   void setup ()
   {
@@ -36,12 +34,6 @@ struct MyApp : GFXAppImGui
 
   void onDrawGui()
   {
-    if (!ImGui::Begin("Test",NULL, wflags))
-    {
-        ImGui::End();
-        return;
-    }
-    ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
 
     if(ImGui::BeginMenuBar()){
       if(ImGui::BeginMenu("Examples")){
@@ -58,10 +50,7 @@ struct MyApp : GFXAppImGui
     ImGui::RadioButton("radio a", &e, 0); ImGui::SameLine();
     ImGui::RadioButton("radio b", &e, 1); ImGui::SameLine();
     ImGui::RadioButton("radio c", &e, 2);
-    ImGui::SliderFloat("slider float", &f1, -20, 600, "%.0f");
-
-    ImGui::PopItemWidth();
-    ImGui::End();
+    ImGui::SliderFloat("slider float", &f1, -20, 20, "%.3f");
 
   }
 
