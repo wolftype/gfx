@@ -29,6 +29,8 @@ namespace gfx {
 struct GFXAppImGui : public GFXApp<GLFWContext>
 {
 
+  bool bDrawGui = true;
+
   ImGuiWindowFlags wflags = 0;
 
   int iBool, iFloat = 0;
@@ -115,8 +117,11 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
 
 
   virtual bool onGuiBegin(){
+
+    if (!bDrawGui) return false;
+
     iBool = iFloat = 0;
-    if (!ImGui::Begin("Test",NULL, wflags))
+    if (!ImGui::Begin("Settings",NULL, wflags))
     {
         ImGui::End();
         return false;
@@ -125,7 +130,9 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
     return true;
   };
 
-  virtual void onDrawGui(){};
+  virtual void onDrawGui(){
+    bDrawGui = false; 
+  };
 
   virtual void onGuiEnd(){
     ImGui::PopItemWidth();
