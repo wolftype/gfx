@@ -24,7 +24,7 @@ struct MyApp : GFXAppImGui
     mbo = Mesh::Circle ();
     mRenderGraph.immediate (true);
 
-    wflags |= ImGuiWindowFlags_MenuBar; 
+    wflags |= ImGuiWindowFlags_MenuBar;
   }
 
   void onDraw ()
@@ -51,6 +51,7 @@ struct MyApp : GFXAppImGui
     ImGui::RadioButton("radio b", &e, 1); ImGui::SameLine();
     ImGui::RadioButton("radio c", &e, 2);
     ImGui::SliderFloat("slider float", &f1, -20, 20, "%.3f");
+    ImGui::DragFloat("slider float", &f1, -20, 20, "%.3f");
 
   }
 

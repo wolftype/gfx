@@ -330,7 +330,7 @@ struct Scene
 
   Pose viewpose;
 
-  Scene () : camera (0, 0, 5) {}
+  Scene () : camera (0, 0, 10) {}
 
   void fit (int w, int h)
   {

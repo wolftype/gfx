@@ -34,7 +34,7 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
   ImGuiWindowFlags wflags = 0;
 
   int iBool, iFloat = 0;
-  
+
    GFXAppImGui (int w = 800, int h = 600, string name = "gfx with imgui")
       : GFXApp<GLFWContext> (w, h, name)
   {
@@ -74,7 +74,7 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
         ImGui::End();
         return false;
     }
-    ImGui::PushItemWidth(ImGui::GetFontSize()* -5);
+    ImGui::PushItemWidth(ImGui::GetFontSize()* -10);
     return true;
   }
 
@@ -131,7 +131,7 @@ struct GFXAppImGui : public GFXApp<GLFWContext>
   };
 
   virtual void onDrawGui(){
-    bDrawGui = false; 
+    bDrawGui = false;
   };
 
   virtual void onGuiEnd(){
