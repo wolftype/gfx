@@ -12,8 +12,8 @@ struct MyApp : GFXAppImGui
 
   MBO mbo;
 
-  float f0, f1;
-  bool bToggle;
+  float f0, f1, f2;
+  bool bCheckbox;
   int e;
 
   bool bShowColor, bShowNomp;
@@ -44,14 +44,15 @@ struct MyApp : GFXAppImGui
       ImGui::EndMenuBar();
     }
 
-    ImGui::Button("Button");
-    ImGui::Checkbox("checkbox", &bToggle);
+    if (ImGui::Button("Button")) printf ("BUTTON!\n");
+//    ImGui::Checkbox("checkbox", &bCheckbox);
+    gui (bCheckbox,"checkbox");
     ImGui::InputFloat("input float", &f0, 0.01f, 1.0f, "%.3f");
     ImGui::RadioButton("radio a", &e, 0); ImGui::SameLine();
     ImGui::RadioButton("radio b", &e, 1); ImGui::SameLine();
     ImGui::RadioButton("radio c", &e, 2);
     ImGui::SliderFloat("slider float", &f1, -20, 20, "%.3f");
-    ImGui::DragFloat("slider float", &f1, -20, 20, "%.3f");
+    ImGui::DragFloat("drag float", &f2, 1.0, -20, 20, "%.3f");
 
   }
 
