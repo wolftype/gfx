@@ -50,7 +50,7 @@ class SceneController : public InputEventHandler {
 
 public:
   SceneController(Scene *s = NULL)
-      : mScene(s), mRotVel(.02), mVel(.1), mModelRotVel(.5) {};
+      : mScene(s), mRotVel(.005), mVel(.1), mModelRotVel(.5) {};
 
   Scene &scene() { return *mScene; }
   void scene(Scene *s) { mScene = s; }
@@ -77,7 +77,7 @@ public:
   /*-----------------------------------------------------------------------------
    *  NAVIGATION
    *-----------------------------------------------------------------------------*/
-  void keyboardCamSpin(float acc, bool trigger);
+  void keyboardCamDefault(float acc, bool trigger);
   void keyboardCamTranslate(float acc, bool trigger);
   void keyboardModelTransform(float acc, bool trigger);
   void keyboardNavigate();
@@ -145,17 +145,18 @@ void SceneController::onMouseUp(const Mouse &m) {
 void SceneController::onKeyDown(const Keyboard &k) {
 
   if (io().keyboard.code == Key::Tab || io().keyboard.code == 258) {
-    cout << "TOGGLE CONTROL MODE GFX SCENE CONTROLLER" << endl;
     io().toggle(ControlMode::Edit);
     io().toggle(ControlMode::Navigate);
+    if (io().mode(ControlMode::Navigate))
+      cout << "Toggle Mode Navigate" << endl;
+    else
+      cout << "Toggle Mode Edit" << endl;
   }
 
   if (io().mode(ControlMode::Navigate)) {
     if (io().kbNavigationTriggerable == true) {
       keyboardNavigate();
       io().kbNavigationTriggerable = false;
-    } else {
-      // cout << "CONTROL MODE EDIT" << endl;
     }
   }
 }
@@ -211,16 +212,10 @@ void SceneController::keyboardCamTranslate(float acc, bool trigger) {
   if (trigger) {
     switch (io().keyboard.code) {
     case Key::Up:
-      if (io().keyboard.ctrl())
-        camera().dx() += camera().up() * mVel;
-      else
-        camera().dx() += camera().forward() * mVel;
+      camera().dx() += camera().up() * mVel;
       break;
     case Key::Down:
-      if (io().keyboard.ctrl())
-        camera().dx() -= camera().up() * mVel;
-      else
-        camera().dx() -= camera().forward() * mVel;
+      camera().dx() -= camera().up() * mVel;
       break;
     case Key::Left:
       camera().dx() -= camera().right() * mVel;
@@ -232,15 +227,18 @@ void SceneController::keyboardCamTranslate(float acc, bool trigger) {
   }
 }
 
-void SceneController::keyboardCamSpin(float acc, bool trigger) {
+void SceneController::keyboardCamDefault(float acc, bool trigger) {
   camera().ab() = acc;
+  camera().ax() = acc;
   if (trigger) {
     switch (io().keyboard.code) {
     case Key::Up:
-      camera().db() += camera().x() * mRotVel;
+      // camera().db() += camera().x() * mRotVel;
+      camera().dx() += camera().forward() * mVel;
       break;
     case Key::Down:
-      camera().db() -= camera().x() * mRotVel;
+      // camera().db() -= camera().x() * mRotVel;
+      camera().dx() -= camera().forward() * mVel;
       break;
     case Key::Left:
       camera().db() += camera().y() * mRotVel;
@@ -364,18 +362,16 @@ void SceneController::keyboardNavigate() {
   if (io().keyboard.alt()) {
     keyboardModelTransform(1.0, true);
   } else if (io().keyboard.shift()) {
-    printf("CAM TRANS\n");
     keyboardCamTranslate(1.0, true);
   } else {
-    printf("CAM SPIN\n");
-    keyboardCamSpin(1.0, true);
+    keyboardCamDefault(1.0, true);
   }
 }
 
 void SceneController::keyboardNavigateStop() {
   keyboardModelTransform(.7, false);
   keyboardCamTranslate(.95, false);
-  keyboardCamSpin(.7, false);
+  keyboardCamDefault(.7, false);
 }
 
 void SceneController::mouseNavigate() {

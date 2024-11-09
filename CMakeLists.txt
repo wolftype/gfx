@@ -169,10 +169,10 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} GLV glfw ${GLFW_LIBRARIES})
+  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} glfw ${GLFW_LIBRARIES})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
+  #  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
 
   #TARGETS
   file(GLOB examples examples/GL/*.cpp)
@@ -218,9 +218,6 @@ elseif(${WINDOWS})
 
   find_package(OpenGL REQUIRED)
 
- # add_subdirectory(GLV)
- # link_directories(${GLV_BINARY_DIR})
- # include_directories(${PROJECT_SOURCE_DIR}/GLV)
  # include_directories(gl2ps)
 
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
