@@ -3,10 +3,13 @@
  *
  *       Filename:  gfx_app.h
  *
- *    Description:  an OpenGL utility that takes windowing contexts (e.g. Glut or GLFW) as a template parameter,
- *                  handles keyboard and mouse inputs, and gives two GL rendering modes (fixed or programmable)
+ *    Description:  an OpenGL utility that takes windowing contexts (e.g. Glut
+ or GLFW) as a template parameter,
+ *                  handles keyboard and mouse inputs, and gives two GL
+ rendering modes (fixed or programmable)
  *
- *                  Basic Usage: subclass GFXApp and define setup() and onDraw() methods;
+ *                  Basic Usage: subclass GFXApp and define setup() and onDraw()
+ methods;
  *
  *                  struct App : GFXApp<GlutContext>{
  *
@@ -27,17 +30,20 @@
                       which is passed to subsequent onRender calls
  *
  *
- *                  for fancier rendering (i.e. rendering to texture or blur etc)
+ *                  for fancier rendering (i.e. rendering to texture or blur
+ etc)
  *                  overwrite the onFrame() and onRender() methods.
  *
- *                  GFXApp will handle mouse and window event callbacks defined in gfx_control.h
+ *                  GFXApp will handle mouse and window event callbacks defined
+ in gfx_control.h
  *
  *                    onMouseDown(const Mouse& m)
  *                    onMouseDrag(const Mouse& m)
  *
  *                    etc.
  *
- *                  WINDOWCONTEXT template parameter (e.g. GlutContext) must have:
+ *                  WINDOWCONTEXT template parameter (e.g. GlutContext) must
+ have:
  *                    System() (singleton method)
  *                        with an Initialize() method
  *                    Start() method
@@ -45,8 +51,10 @@
  *                    create(int w, int h) method
  *                    interace (a public member of type gfx::Interface)
  *
- *                    see util/glut_window.hpp and util/glfw_window.hpp as example context classes
- *                    that can be passed to this GfxApp class as a template parameter.
+ *                    see util/glut_window.hpp and util/glfw_window.hpp as
+ example context classes
+ *                    that can be passed to this GfxApp class as a template
+ parameter.
  *
  *        Version:  1.0
  *        Created:  05/29/2014 07:18:12
@@ -63,278 +71,266 @@
 
 #include <stdio.h>
 
-#include "gfx_lib.h"              //<- Graphics Libraries
-#include "gfx_scene.h"            //<- Matrix transforms (should rename this to gfx_modelViewProjection.h)
-#include "gfx_control.h"          //<- Event Handling GFXio
-#include "gfx_sceneController.h"  //<- Matrix transforms bound to user inputEvents
+#include "gfx_control.h" //<- Event Handling GFXio
+#include "gfx_effects.h" //<- Graphics Pipeline Rendering Processes
+#include "gfx_lib.h"     //<- Graphics Libraries
 #include "gfx_objectController.h" //<- Objects in Memory bound to user inputEvents and windowEvents
-#include "gfx_render.h"           //<- Graphics Pipeline Rendering Processes
-#include "gfx_effects.h"          //<- Graphics Pipeline Rendering Processes
-
+#include "gfx_render.h" //<- Graphics Pipeline Rendering Processes
+#include "gfx_scene.h" //<- Matrix transforms (should rename this to gfx_modelViewProjection.h)
+#include "gfx_sceneController.h" //<- Matrix transforms bound to user inputEvents
 
 namespace gfx {
 
-template<class WINDOWCONTEXT>
-struct GFXApp :
-public GFXRenderNode,
-public InputEventHandler,
-public WindowEventHandler
-{
-
+template <class WINDOWCONTEXT>
+struct GFXApp : public GFXRenderNode,
+                public InputEventHandler,
+                public WindowEventHandler {
   WINDOWCONTEXT mContext;
-  WINDOWCONTEXT& context() { return mContext; }
-  WindowData& windowData() { return mContext.windowData(); }
+  WINDOWCONTEXT &context() { return mContext; }
+  WindowData &windowData() { return mContext.windowData(); }
 
-  Interface<WINDOWCONTEXT>& interface(){ return mContext.interface; }
+  Interface<WINDOWCONTEXT> &interface() { return mContext.interface; }
 
-  Scene scene;                            ///< modelviewprojection matrix transforms
+  Scene scene; ///< modelviewprojection matrix transforms
 
-  GFXRenderNode mRenderer;                ///< root render node
-  GFXStereoNode mStereo;                  ///< stereo rendering
-  GFXShaderNode mShaderNode;              ///< shader pipeline
-  GFXSceneNode  mSceneNode;               ///< scene ptr
+  GFXRenderNode mRenderer;   ///< root render node
+  GFXStereoNode mStereo;     ///< stereo rendering
+  GFXShaderNode mShaderNode; ///< shader pipeline
+  GFXSceneNode mSceneNode;   ///< scene ptr
 
   GFXRenderGraph mRenderGraph;
 
-  int mMode;                              ///< render mode
+  int mMode; ///< render mode
 
-  SceneController sceneController;        ///< interface to matrix transforms
-  ObjectController objectController;      ///< interface to objects on screen
+  SceneController sceneController;   ///< interface to matrix transforms
+  ObjectController objectController; ///< interface to objects on screen
 
-  Vec3f mColor;                           ///< Background Color
+  Vec3f mColor; ///< Background Color
 
-  GFXio& io() { return mContext.interface.io; } ///< get io
+  GFXio &io() { return mContext.interface.io; } ///< get io
 
   /*-----------------------------------------------------------------------------
-   *  Constructor: Optional to Pass in width and height of window, and any command line arguments
+   *  Constructor: Optional to Pass in width and height of window, and any
+   *command line arguments
    *-----------------------------------------------------------------------------*/
-  GFXApp(int w=800, int h=600, string name = "GFXApp", bool bStereoBuf = false)
-  {
+  GFXApp(int w = 800, int h = 600, string name = "GFXApp",
+         bool bStereoBuf = false) {
+    mColor = Vec3f(.2, .2, .2); // 222.0/256.0,165.0/256.0,87.0/256.0);
 
-      mColor = Vec3f(.2, .2, .2);//222.0/256.0,165.0/256.0,87.0/256.0);
+    mSceneNode.mScenePtr = &scene;
 
-      mSceneNode.mScenePtr = &scene;
+    printf("app is creating window context\n");
+    /*-----------------------------------------------------------------------------
+     *  1. Initialize Window Context and Callbacks
+     *-----------------------------------------------------------------------------*/
+    WINDOWCONTEXT::System->Initialize(bStereoBuf);
+    mContext.create(w, h, name);
 
-      printf ("app is creating window context\n");
-     /*-----------------------------------------------------------------------------
-      *  1. Initialize Window Context and Callbacks
-      *-----------------------------------------------------------------------------*/
-      WINDOWCONTEXT::System -> Initialize( bStereoBuf );
-      mContext.create(w,h,name);
-
-      init();
-
+    init();
   }
 
-  void init (){
+  void init() {
+    int w = io().viewdata.w;
+    int h = io().viewdata.h;
 
-      int w = io().viewdata.w;
-      int h = io().viewdata.h;
+    printf("gfx_app is adding itself to context events\n");
+    // add this to window context's list of listeners to events
+    mContext.interface.addWindowEventHandler(this);
+    mContext.interface.addInputEventHandler(this);
 
-      printf ("app is adding itself to context events\n");
-      //add this to window context's list of listeners to events
-      mContext.interface.addWindowEventHandler(this);
-      mContext.interface.addInputEventHandler(this);
+    /*-----------------------------------------------------------------------------
+     * 2. Add SceneController and ObjectController Callbacks
+     *-----------------------------------------------------------------------------*/
+    // bind sceneController to scene and add as listener to input events
+    sceneController.scene(&scene);
+    sceneController.io(&mContext.interface.io);
+    mContext.interface.addInputEventHandler(&sceneController);
 
-      /*-----------------------------------------------------------------------------
-       * 2. Add SceneController and ObjectController Callbacks
-       *-----------------------------------------------------------------------------*/
-      //bind sceneController to scene and add as listener to input events
-      sceneController.scene(&scene);
-      sceneController.io(&mContext.interface.io);
-      mContext.interface.addInputEventHandler(&sceneController);
+    // attach this application (io and scene) to objectController
+    objectController.io(&mContext.interface.io);
+    objectController.scene(&scene);
 
-      //attach this application (io and scene) to objectController
-      objectController.io( &mContext.interface.io );
-      objectController.scene( &scene );
+    // add object controller as listener to input and window events
+    mContext.interface.addInputEventHandler(&objectController);
+    mContext.interface.addWindowEventHandler(&objectController);
 
-      //add object controller as listener to input and window events
-      mContext.interface.addInputEventHandler(&objectController);
-      mContext.interface.addWindowEventHandler(&objectController);
+    mContext.interface.OnResize(io().viewdata.w, io().viewdata.h);
 
-      mContext.interface.OnResize( io().viewdata.w, io().viewdata.h);
-
-      /*-----------------------------------------------------------------------------
-       * 3.  Initialize GLEW and check for features (if not using GLES @todo otherwise what?)
-       *-----------------------------------------------------------------------------*/
+    /*-----------------------------------------------------------------------------
+     * 3.  Initialize GLEW and check for features (if not using GLES @todo
+     *otherwise what?)
+     *-----------------------------------------------------------------------------*/
 #ifndef GFX_USE_GLES
-      printf("glew init \n");
-      glewExperimental = true;
-      GLenum glewError = glewInit();
-      if (glewError != GLEW_OK){
-       printf("glew init error\n%s\n", glewGetErrorString( glewError) );
-      }
-      if (GLEW_APPLE_vertex_array_object){
-        printf("genVertexArrayAPPLE supported\n");
-      } else if (GLEW_ARB_vertex_array_object){
-        printf("genVertexArrays supported\n");
-      }
+    printf("glew init \n");
+    glewExperimental = true;
+    GLenum glewError = glewInit();
+    if (glewError != GLEW_OK) {
+      printf("glew init error\n%s\n", glewGetErrorString(glewError));
+    }
+    if (GLEW_APPLE_vertex_array_object) {
+      printf("genVertexArrayAPPLE supported\n");
+    } else if (GLEW_ARB_vertex_array_object) {
+      printf("genVertexArrays supported\n");
+    }
 #endif
-      /*-----------------------------------------------------------------------------
-       * 4. Set up Default Programmable Rendering Pipeline
-       *
-       *  "this" is a GFXRenderNode bound to mRenderer, a GFXShaderNode (default)
-       *  to pipe draw methods into a different shader, bind "this" to another
-       *  subclassed GFXRenderNode and optionally overload the virtual update() method
-       *  call mRenderer.reset() first and re-init the rendergraph
-       *-----------------------------------------------------------------------------*/
-       //int glmode = GFXRenderGraph::IMMEDIATE;
-       //int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE : GFXRenderGraph::MONO;
+    /*-----------------------------------------------------------------------------
+     * 4. Set up Default Programmable Rendering Pipeline
+     *
+     *  "this" is a GFXRenderNode bound to mRenderer, a GFXShaderNode (default)
+     *  to pipe draw methods into a different shader, bind "this" to another
+     *  subclassed GFXRenderNode and optionally overload the virtual update()
+     *method call mRenderer.reset() first and re-init the rendergraph
+     *-----------------------------------------------------------------------------*/
+    // int glmode = GFXRenderGraph::IMMEDIATE;
+    // int stereomode = bStereoBuf ? GFXRenderGraph::ACTIVE :
+    // GFXRenderGraph::MONO;
 
-       //todo fix bug that crashes without shader node (see notes)
-       mRenderer << mStereo << mShaderNode << mSceneNode << this;
-       //todo fix glmode (immediate vs programmable vs es, etc)
-       mRenderGraph.init(&mRenderer,w,h,GFXRenderGraph::IMMEDIATE,GFXRenderGraph::MONO);
+    // todo fix bug that crashes without shader node (see notes)
+    mRenderer << mStereo << mShaderNode << mSceneNode << this;
+    // todo fix glmode (immediate vs programmable vs es, etc)
+    mRenderGraph.init(&mRenderer, w, h, GFXRenderGraph::IMMEDIATE,
+                      GFXRenderGraph::MONO);
 
-       // todo who handles resize events?
-       // mContext.interface.addWindowEventHandler(&mRenderGraph);
+    // todo who handles resize events?
+    // mContext.interface.addWindowEventHandler(&mRenderGraph);
 
-      /*-----------------------------------------------------------------------------
-       * 5. Enable Presets (depth func, blend func) see gfx_gl.h
-       *-----------------------------------------------------------------------------*/
-       GL::enablePreset();
-
+    /*-----------------------------------------------------------------------------
+     * 5. Enable Presets (depth func, blend func) see gfx_gl.h
+     *-----------------------------------------------------------------------------*/
+    GL::enablePreset();
   }
 
-//  void anaglyphic () {
-//    mRenderer.reset();
-//    mRenderer << mStereo << mShaderNode << mSceneNode << this;
-//    mRenderGraph.init(&mRenderer,width, height, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH);
-//  }
+  //  void anaglyphic () {
+  //    mRenderer.reset();
+  //    mRenderer << mStereo << mShaderNode << mSceneNode << this;
+  //    mRenderGraph.init(&mRenderer,width, height, GFXRenderGraph::IMMEDIATE,
+  //    GFXRenderGraph::ANAGLYPH);
+  //  }
 
   /*-----------------------------------------------------------------------------
-   *  User must define setup() in a subclass. setup() is called by App::start() method
+   *  User must define onSetup() in a subclass. setup() is called by
+   *App::start() method
    *-----------------------------------------------------------------------------*/
-  virtual void setup() = 0;
+  virtual void onSetup() = 0;
 
-  virtual void _setup () {
-    setup();
-  }
+  virtual void _onSetup() { onSetup(); }
 
   /*-----------------------------------------------------------------------------
-   *  User must Define onDraw() in a subclass. onDraw() is called by onRender() method;
+   *  User must Define onDraw() in a subclass. onDraw() is called by onRender()
+   *method;
    *-----------------------------------------------------------------------------*/
   virtual void onDraw() = 0;
 
-  virtual void _onDraw () {
-    onDraw();
-  }
-
+  virtual void _onDraw() { onDraw(); }
 
   //@todo, how does this fit in?
-  //draw class T (in either immediate mode or programmable pipeline)
-  template<class T>
-  void draw(const T& t, float r=1,float g=1,float b=1,float a=1){
-
-    if ( mRenderGraph.immediate() ){
-      render::begin(r,g,b,a);
+  // draw class T (in either immediate mode or programmable pipeline)
+  template <class T>
+  void draw(const T &t, float r = 1, float g = 1, float b = 1, float a = 1) {
+    if (mRenderGraph.immediate()) {
+      render::begin(r, g, b, a);
       render::draw(t);
-    }
-    else Renderable<T>::Draw(t, &mSceneNode);
+    } else
+      Renderable<T>::Draw(t, &mSceneNode);
   }
 
-
   /*-----------------------------------------------------------------------------
-   *  Starts Graphics Thread.  To be called from main()  @TODO change to startGFX()
+   *  Starts Graphics Thread.  To be called from main()  @TODO change to
+   *startGFX()
    *-----------------------------------------------------------------------------*/
-  void start(){
-    _setup();
-    WINDOWCONTEXT::System -> Start(this);
+  void start() {
+    _onSetup();
+    WINDOWCONTEXT::System->Start(this);
   }
 
   /*-----------------------------------------------------------------------------
    *  Optional method for updating physics etc -- called onFrame();
    *-----------------------------------------------------------------------------*/
-  virtual void onAnimate(){}
+  virtual void onAnimate() {}
 
   /*-----------------------------------------------------------------------------
    *  Clear Window Contents
-      @todo conflict: clear() is also method for clearing upstream render nodes
    *-----------------------------------------------------------------------------*/
-  void clear(){
+  virtual void onClear() { _onClear(); }
 
-     mContext.setViewport();
-     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-     glClearColor( mColor[0],mColor[1],mColor[2], 1 );
-     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  virtual void _onClear() {
+    mContext.setViewport();
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClearColor(mColor[0], mColor[1], mColor[2], 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
-
 
   /*-----------------------------------------------------------------------------
-   *  Default Rendering (Shader ambivalent) Window Event Handler Callback @sa GFXio
+   *  Default Rendering (Shader ambivalent) Window Event Handler Callback @sa
+   *GFXio
    *-----------------------------------------------------------------------------*/
-  virtual void onFrame(){
+  virtual void onFrame() {
+    GL::enablePreset();
 
-     GL::enablePreset();
+    // clear screen
+    onClear();
 
-     //clear screen
-     clear();
-     //update physics
-     onAnimate();
+    // update physics
+    onAnimate();
 
-     //mRenderer calls one upstream render (namely, this)
-     //which is this app's onRender method
-     //below onRender() defaults to onDraw()
-     //BUT we can rebind pipeline with overloaded << operator.
-     //see examples/xRendertoTexture.cpp
+    // mRenderer calls one upstream rendernode (namely, this)
+    // which is this app's onRender method
+    // below, the method onRender() defaults to internal onDraw()
+    // BUT we can rebind pipeline with overloaded << operator.
+    // see examples/xRendertoTexture.cpp
+    mRenderGraph.onRender();
 
-     mRenderGraph.onRender();
+    // update camera physics
+    scene.step();
 
-     //update camera physics
-     scene.step();         
-
-     /* NOTE: swapbuffers is NOT called here because
-      * we are in just one of many potential windowEventHandler callbacks (which add optional side effects)
-      * swapbuffers is called by Interface::onDraw() only after ALL eventhandlers have been called
-      * see gfx_control.h for the Interface class */
+    /* NOTE: swapbuffers is NOT called here because
+     * we are in just one of many potential windowEventHandler callbacks (which
+     * add optional side effects) swapbuffers is called by Interface::onDraw()
+     * only after ALL eventhandlers have been called see gfx_control.h for the
+     * Interface class */
   }
 
-  //optional early and late functions, e.g. used to setup GUI overlays
-  virtual void onEarlyRender(){} 
-  virtual void onLateRender(){} 
+  // optional early and late functions, e.g. used to setup GUI overlays
+  virtual void onEarlyRender() {}
+  virtual void onLateRender() {}
 
   /*-----------------------------------------------------------------------------
    *  onRender() is inherited from GFXRenderNode (see gfx_render.h)
    *-----------------------------------------------------------------------------*/
-  virtual void onRender(){
-      onEarlyRender();
-      _onDraw();
-      onLateRender();
+  virtual void onRender() {
+    onEarlyRender();
+    _onDraw();
+    onLateRender();
   }
 
   /*-----------------------------------------------------------------------------
    *  Destructor
    *-----------------------------------------------------------------------------*/
-   ~GFXApp(){
-     WINDOWCONTEXT::System -> Terminate();
-   }
+  ~GFXApp() { WINDOWCONTEXT::System->Terminate(); }
 
   /*-----------------------------------------------------------------------------
    *  INPUT EVENT HANDLER METHODS, CALLED BY mContext.interface
    *-----------------------------------------------------------------------------*/
-  virtual void onMouseMove(const Mouse& m){ }
-  virtual void onMouseDrag(const Mouse& m){ }
-  virtual void onMouseDown(const Mouse& m){ }
-  virtual void onMouseUp(const Mouse& m){ }
-  virtual void onKeyDown(const Keyboard& k){}
-  virtual void onKeyUp(const Keyboard& k){ }
+  virtual void onMouseMove(const Mouse &m) {}
+  virtual void onMouseDrag(const Mouse &m) {}
+  virtual void onMouseDown(const Mouse &m) {}
+  virtual void onMouseUp(const Mouse &m) {}
+  virtual void onKeyDown(const Keyboard &k) {}
+  virtual void onKeyUp(const Keyboard &k) {}
 
   /*-----------------------------------------------------------------------------
    *  WINDOW EVENT HANDLER METHODS
    *-----------------------------------------------------------------------------*/
-  virtual void onCreate(){ }
-  virtual void onDestroy(){ }
+  virtual void onCreate() {}
+  virtual void onDestroy() {}
 
-  virtual void onResize(int w, int h){
-     scene.resize(w,h);
-     set(w,h);
-    // mRenderer.onResize(w,h);  //or resize
-   }
-
+  virtual void onResize(int w, int h) {
+    scene.resize(w, h);
+    //    set(w, h);
+    mRenderer.set(w, h); // or resize
+  }
 };
 
-
-}//gfx::
-
+} // namespace gfx
 
 #endif

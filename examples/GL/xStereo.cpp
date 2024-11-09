@@ -16,54 +16,47 @@
  * =====================================================================================
  */
 
-//#include "gfx_app.h"
+// #include "gfx_app.h"
 #include "util/gfx_print_app.h"
-#include "util/glut_window.hpp"
+#include "util/glfw_window.hpp"
 
 using namespace gfx;
 
-struct MyApp : GFXPrintApp<GlutContext>
-{
+struct MyApp : GFXPrintApp<GLFWContext> {
 
-  MBO circle = Mesh::Circle ();
+  MBO circle = Mesh::Circle();
 
   GFXStereoNode mStereo;
 
-  virtual void setup ()
-  {
+  virtual void onSetup() {
 
-    mColor.set (0, 0, 0);
-    //mRenderer.reset();
-    //mRenderer << mStereo << mSceneNode << this;
+    mColor.set(0, 0, 0);
+    mRenderer.reset();
+    mRenderer << mStereo << mSceneNode << this;
 
-    //mRenderGraph.init(&mRenderer, 800,400, GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH );
-    //mRenderGraph.immediate(true);
+    mRenderGraph.init(&mRenderer, io().viewdata.w, io().viewdata.h,
+                      GFXRenderGraph::IMMEDIATE, GFXRenderGraph::ANAGLYPH);
+
+    // mRenderGraph.immediate(true);
   }
 
-  virtual void onDraw () { draw (circle, 1, 1, 1); }
+  virtual void onDraw() { draw(circle, 1, 1, 1); }
 
-  virtual void onKeyDown (const gfx::Keyboard &k)
-  {
-    switch (k.code)
-      {
-        case 'm':
-          printf ("m: mono / stereo toggle\n");
-          mRenderGraph.mStereoMode =
-            mRenderGraph.mStereoMode == GFXRenderGraph::MONO
+  virtual void onKeyDown(const gfx::Keyboard &k) {
+    switch (k.code) {
+    case 'm':
+      printf("m: mono / stereo toggle\n");
+      mRenderGraph.mStereoMode =
+          mRenderGraph.mStereoMode == GFXRenderGraph::MONO
               ? GFXRenderGraph::ANAGLYPH
               : GFXRenderGraph::MONO;
-          break;
-      }
+      break;
+    }
   }
 };
 
-
-
-int main ()
-{
+int main() {
   MyApp app;
-
-  app.start ();
-
+  app.start();
   return 0;
 }

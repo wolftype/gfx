@@ -20,54 +20,47 @@
 
 using namespace gfx;
 
-struct MyApp : GFXApp<GLFWContext>
-{
+struct MyApp : GFXApp<GLFWContext> {
 
   MBO mbo;
   Slab slab;
 
-  virtual void setup ()
-  {
+  virtual void onSetup() {
 
-    mbo = Mesh::Sphere ();
+    mbo = Mesh::Sphere();
 
-    slab.init (10, 10, &mRenderGraph);
+    slab.init(10, 10, &mRenderGraph);
 
     float *cval = new float[slab.width * slab.height * 4];
 
-    for (int i = 0; i < slab.width; ++i)
-      {
-        for (int j = 0; j < slab.height; ++j)
-          {
-            cval[i * slab.height * 4 + j * 4] = (float) i / slab.width;
-            cval[i * slab.height * 4 + j * 4 + 1] = (float) j / slab.height;
-            cval[i * slab.height * 4 + j * 4 + 2] = (float) j / i;
-            cval[i * slab.height * 4 + j * 4 + 3] = .5;
-          }
+    for (int i = 0; i < slab.width; ++i) {
+      for (int j = 0; j < slab.height; ++j) {
+        cval[i * slab.height * 4 + j * 4] = (float)i / slab.width;
+        cval[i * slab.height * 4 + j * 4 + 1] = (float)j / slab.height;
+        cval[i * slab.height * 4 + j * 4 + 2] = (float)j / i;
+        cval[i * slab.height * 4 + j * 4 + 3] = .5;
       }
+    }
 
-    slab.texture->update (cval);
+    slab.texture->update(cval);
   }
 
-  virtual void onDraw ()
-  {
+  virtual void onDraw() {
 
-    draw (mbo, 1, 0, 0);
+    draw(mbo, 1, 0, 0);
 
     static float time = 0;
     time += .01;
     float rad = 5.0;
-    light = Vec3f (sin (time) * rad, cos (time) * rad, 1);
+    light = Vec3f(sin(time) * rad, cos(time) * rad, 1);
 
-    slab.onRender ();
+    slab.onRender();
   }
 };
 
-
-int main ()
-{
+int main() {
 
   MyApp app;
-  app.start ();
+  app.start();
   return 0;
 }

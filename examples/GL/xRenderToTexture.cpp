@@ -21,67 +21,63 @@
 
 using namespace gfx;
 
-struct R2T : GFXRenderNode
-{
+struct R2T : GFXRenderNode {
 
+  // A Render Node
   RenderToTexture r2t;
+
+  // A Shader Node that applies a blur to a bown texture and renders it
   Blur blur;
 
-  void onInit ()
-  {
+  void onInit() {
 
-    r2t.init (width, height, mRenderGraph);
-    blur.init (width, height, mRenderGraph);
+    r2t.init(width, height, mRenderGraph);
+    blur.init(width, height, mRenderGraph);
 
-    //set texture
+    // set texture
     blur.texture = r2t.texture;
 
+    // pipe the render to the blur effect;
     blur << r2t;
 
-    //bind downstream
-    divert (blur);  // blur points to this instance's downstream process
-    //bind upstream
-    channel (r2t);  // r2t calls this instance's upstream processes
+    // bind downstream
+    divert(blur); // now blur points to R2T node's downstream process
+    // bind upstream
+    channel(r2t); // now r2t calls R2T nodes's upstream processes
   }
 
-  void onRender () { blur.onRender (); }
+  void onRender() { blur.onRender(); }
 };
 
-
-struct MyApp : GFXApp<GLFWContext>
-{
+struct MyApp : GFXApp<GLFWContext> {
 
   MBO mbo;
   R2T r2t;
 
-  virtual void setup ()
-  {
+  virtual void onSetup() {
 
-    mbo = Mesh::Sphere ();
+    mbo = Mesh::Sphere();
 
-    mRenderer.clear ();
+    mRenderer.clear();
     mRenderer << r2t << mShaderNode << mSceneNode << this;
 
-    mRenderGraph.init (&mRenderer, 800, 400);
+    mRenderGraph.init(&mRenderer, io().viewdata.w, io().viewdata.h);
   }
 
-  virtual void onDraw ()
-  {
+  virtual void onDraw() {
 
-    draw (mbo, 1, 0, 0);
+    draw(mbo, 1, 0, 0);
 
     static float time = 0;
     time += .01;
-    r2t.blur.ux = sin (time);
-    r2t.blur.uy = cos (time / 2);
+    r2t.blur.ux = sin(time);
+    r2t.blur.uy = cos(time / 2);
   }
 };
 
-
-int main ()
-{
+int main() {
 
   MyApp app;
-  app.start ();
+  app.start();
   return 0;
 }

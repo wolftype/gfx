@@ -26,12 +26,10 @@
 
 #include <iostream>
 
-
 #include "gfx_control.h"
 
 using namespace std;
 namespace gfx {
-
 
 /*-----------------------------------------------------------------------------
  *  Some Callbacks to be implemented later
@@ -39,76 +37,62 @@ namespace gfx {
 
 struct GLFWContext;
 
-struct GLFWInterface : Interface<GLFWContext>
-{
+struct GLFWInterface : Interface<GLFWContext> {
   static Mouse mouse;
 
-  static void OnKeyDown (GLFWwindow *window, int key, int scancode, int action,
-                         int mods)
-  {
-    if (action == GLFW_PRESS)
-    {
-      Keyboard keyboard (key, mods, 0, 0, true);
-      Interface<GLFWContext>::OnKeyDown (keyboard);
+  static void OnKeyDown(GLFWwindow *window, int key, int scancode, int action,
+                        int mods) {
+    if (action == GLFW_PRESS) {
+      Keyboard keyboard(key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyDown(keyboard);
     }
   }
 
-  static void OnKeyDownOrUp (GLFWwindow *window, int key, int scancode, int action,
-                         int mods)
-  {
-    if (action == GLFW_PRESS)
-    {
-      Keyboard keyboard (key, mods, 0, 0, true);
-      Interface<GLFWContext>::OnKeyDown (keyboard);
-    }
-    else if (action == GLFW_RELEASE)
-    {
-      Keyboard keyboard (key, mods, 0, 0, true);
+  static void OnKeyDownOrUp(GLFWwindow *window, int key, int scancode,
+                            int action, int mods) {
+    if (action == GLFW_PRESS) {
+      Keyboard keyboard(key, mods, 0, 0, true);
+      Interface<GLFWContext>::OnKeyDown(keyboard);
+    } else if (action == GLFW_RELEASE) {
+      Keyboard keyboard(key, mods, 0, 0, true);
       Interface<GLFWContext>::OnKeyUp(keyboard);
     }
   }
 
-  static void OnMouseMove (GLFWwindow *window, double x, double y)
-  {
+  static void OnMouseMove(GLFWwindow *window, double x, double y) {
     mouse.state |= Mouse::IsMoving;
     mouse.x = x;
     mouse.y = y;
     if (mouse.state & Mouse::IsDown)
-       Interface<GLFWContext>::OnMouseDrag (mouse);
+      Interface<GLFWContext>::OnMouseDrag(mouse);
     else
-       Interface<GLFWContext>::OnMouseMove (mouse);
+      Interface<GLFWContext>::OnMouseMove(mouse);
   }
 
-  static void OnMouseDown (GLFWwindow *window, int button, int action, int mods)
-  {
-    if (action==GLFW_PRESS)
-    {
+  static void OnMouseDown(GLFWwindow *window, int button, int action,
+                          int mods) {
+    if (action == GLFW_PRESS) {
       mouse.state |= Mouse::IsDown;
-      Interface<GLFWContext>::OnMouseDown (mouse);
-    } else
-    {
-      mouse.notState (Mouse::IsDown);
-      Interface<GLFWContext>::OnMouseUp (mouse);
+      Interface<GLFWContext>::OnMouseDown(mouse);
+    } else {
+      mouse.notState(Mouse::IsDown);
+      Interface<GLFWContext>::OnMouseUp(mouse);
     }
-
   }
 
-  //window
-  static void OnResizeWindow(int w, int h)
-  {
+  // window
+  static void OnResizeWindow(int w, int h) {
     io.viewdata.win_w = w;
     io.viewdata.win_h = h;
   }
 
-  //framebuffer
-  static void OnResize (int w, int h)
-  {
+  // framebuffer
+  static void OnResize(int w, int h) {
     io.viewdata.w = w;
     io.viewdata.h = h;
-    for (auto &i : mWindowEventHandlers)
-      {
-        i->onResize (w, h);
-      }
+    for (auto &i : mWindowEventHandlers) {
+      i->onResize(w, h);
+    }
   }
 };
 
@@ -118,56 +102,51 @@ Mouse GLFWInterface::mouse;
  *  Singleton initializer
  *  calls glfwInit
  */
-struct GLFW
-{
+struct GLFW {
 
-  static GLFW &Initialize (int mode = 0)
-  {  ////int argc, char ** argv){
-    static GLFW TheGLFW (mode);
+  static GLFW &Initialize(int mode = 0) { ////int argc, char ** argv){
+    static GLFW TheGLFW(mode);
     return TheGLFW;
   }
 
   /// Start Graphics Thread, passing application in
   /// fetches the GLFWInterface member of Application's context
   /// This method is called by the App<>::start() method
-  template <class APPLICATION>
-  static void Start (APPLICATION *app)
-  {
-    printf ("starting ...\n");
-    while (!app->context ().shouldClose ())
-      { 
-        //does order matter?
-        app->context ().pollEvents ();
-        app->context ().interface.OnDraw (); //onFrame
-//        app->onFrame();
-      }
+  template <class APPLICATION> static void Start(APPLICATION *app) {
+    printf("starting ...\n");
+    while (!app->context().shouldClose()) {
+      // does order matter?
+      app->context().pollEvents();
+      app->context().interface.OnDraw(); // onFrame
+      //        app->onFrame();
+    }
   }
 
-  static void Terminate () { glfwTerminate (); }
+  static void Terminate() { glfwTerminate(); }
 
   static std::string glsl_version;
 
- private:
-  GLFW (int mode)
-  {
-    if (!glfwInit ())
-      exit (EXIT_FAILURE);
-    //Glut::InitOnly();
+private:
+  GLFW(int mode) {
+    if (!glfwInit())
+      exit(EXIT_FAILURE);
+    // Glut::InitOnly();
     //
-   #if defined(__APPLE__)
-//       // GL 3.2 + GLSL 150
-       glsl_version = "#version 120";
-       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-////       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-//       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-   #else
-//       // GL 3.0 + GLSL 130
-       glsl_version = "#version 130";
-       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-   #endif
-
+#if defined(__APPLE__)
+    //       // GL 3.2 + GLSL 150
+    glsl_version = "#version 120";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    ////       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    ///// 3.2+ only
+    //       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            //
+    //       Required on Mac
+#else
+    //       // GL 3.0 + GLSL 130
+    glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
   }
 };
 
@@ -178,13 +157,12 @@ struct GLFW
     An App is Templated on this Windowing Context
  */
 
-struct GLFWContext
-{
+struct GLFWContext {
 
   static GLFW *System;
 
-  static GLFWwindow *mWindow;  //one window?  many . ..
-  //static vector<GLFWwindow*> mWindow; or map<GLFWwindow*, int> mWindow;
+  static GLFWwindow *mWindow; // one window?  many . ..
+  // static vector<GLFWwindow*> mWindow; or map<GLFWwindow*, int> mWindow;
   GLFWInterface interface;
 
   static vector<WindowData *> mWindows;
@@ -192,104 +170,95 @@ struct GLFWContext
 
   /// Get Window Information, if one exists
   /// @todo handle case of no windows created
-  WindowData &windowData ()
-  {
-    if (!mWindows.empty ())
+  WindowData &windowData() {
+    if (!mWindows.empty())
       return *mWindows[0];
     else
-      return create (200, 200);
+      return create(200, 200);
   }
 
   int mWidth, mHeight;
 
-  int width () { return mWidth; }
-  int height () { return mHeight; }
-  float ratio () { return (float) mWidth / mHeight; }
+  int width() { return mWidth; }
+  int height() { return mHeight; }
+  float ratio() { return (float)mWidth / mHeight; }
 
-  GLFWwindow &window () { return *mWindow; }
+  GLFWwindow &window() { return *mWindow; }
 
-  GLFWContext () {}
+  GLFWContext() {}
 
-  //Create a Window Context this is called by App
-  WindowData &create (int w, int h, string name = "default")
-  {
+  // Create a Window Context this is called by App
+  WindowData &create(int w, int h, string name = "default") {
 
     cout << "creating GLFW window" << endl;
 
     mWidth = w;
     mHeight = h;
 
-    mWindow = glfwCreateWindow (w, h, name.c_str (), NULL, NULL);
+    mWindow = glfwCreateWindow(w, h, name.c_str(), NULL, NULL);
 
-    if (!mWindow)
-      {
-        glfwTerminate ();
-        exit (EXIT_FAILURE);
-      }
+    if (!mWindow) {
+      glfwTerminate();
+      exit(EXIT_FAILURE);
+    }
 
-    glfwMakeContextCurrent (mWindow);
-    glfwSwapInterval (
-      1);  //<-- force interval (not guaranteed to work with all graphics drivers)
+    glfwMakeContextCurrent(mWindow);
+    glfwSwapInterval(1); //<-- force interval (not guaranteed to work with all
+                         // graphics drivers)
 
-    //register callback when window is resized
-    glfwSetWindowSizeCallback (mWindow, Reshape);
+    // register callback when window is resized
+    glfwSetWindowSizeCallback(mWindow, Reshape);
 
-    //register callbacks for keyboard and mouse
+    // register callbacks for keyboard and mouse
     glfwSetKeyCallback(mWindow, GLFWInterface::OnKeyDownOrUp);
-    glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove );
-    glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown );
+    glfwSetCursorPosCallback(mWindow, GLFWInterface::OnMouseMove);
+    glfwSetMouseButtonCallback(mWindow, GLFWInterface::OnMouseDown);
 
     int tw, th;
-    glfwGetFramebufferSize (mWindow, &tw, &th);
+    glfwGetFramebufferSize(mWindow, &tw, &th);
     interface.io.viewdata.win_w = w;
     interface.io.viewdata.win_h = h;
 
     interface.io.viewdata.w = tw;
     interface.io.viewdata.h = th;
 
-    mWindows.push_back (new WindowData (w, h, 0));
-    return *mWindows.back ();
+    mWindows.push_back(new WindowData(w, h, 0));
+    return *mWindows.back();
   }
 
-  static void Reshape (GLFWwindow *win, int w, int h)
-  {
+  static void Reshape(GLFWwindow *win, int w, int h) {
     int tw, th;
-    glfwGetFramebufferSize (mWindow, &tw, &th);
-    GLFWInterface::OnResize (tw, th);
-    GLFWInterface::OnResizeWindow (w, h);
+    glfwGetFramebufferSize(mWindow, &tw, &th);
+    GLFWInterface::OnResize(tw, th);
+    GLFWInterface::OnResizeWindow(w, h);
   }
 
-  //just redo it again
-  void reshape()
-  {
+  // just redo it again
+  void reshape() {
     int tw, th;
-    glfwGetFramebufferSize (mWindow, &tw, &th);
-    GLFWInterface::OnResize (tw, th);
+    glfwGetFramebufferSize(mWindow, &tw, &th);
+    GLFWInterface::OnResize(tw, th);
   }
 
-
-  //Get the Current framebuffer Size in pixels and Set the Viewport to it
-  void setViewport ()
-  {
-    glfwGetFramebufferSize (mWindow, &mWidth, &mHeight);
-    glViewport (0, 0, mWidth, mHeight);
+  // Get the Current framebuffer Size in pixels and Set the Viewport to it
+  void setViewport() {
+    glfwGetFramebufferSize(mWindow, &mWidth, &mHeight);
+    glViewport(0, 0, mWidth, mHeight);
   }
 
-  //Check whether window should close
-  bool shouldClose () { return glfwWindowShouldClose (mWindow); }
+  // Check whether window should close
+  bool shouldClose() { return glfwWindowShouldClose(mWindow); }
 
-  //Swap front and back buffers
-  static void SwapBuffers () { glfwSwapBuffers (mWindow); }
+  // Swap front and back buffers
+  static void SwapBuffers() { glfwSwapBuffers(mWindow); }
 
-  //listen
-  void pollEvents () {
-    glfwPollEvents ();
-  }
+  // listen
+  void pollEvents() { glfwPollEvents(); }
 
-  //Destroy the window
-  void destroy () { glfwDestroyWindow (mWindow); }
+  // Destroy the window
+  void destroy() { glfwDestroyWindow(mWindow); }
 
-  ~GLFWContext () { destroy (); }
+  ~GLFWContext() { destroy(); }
 };
 
 GLFW *GLFWContext::System;
@@ -298,8 +267,6 @@ vector<WindowData *> GLFWContext::mWindows;
 int GLFWContext::currentWindow;
 std::string GLFW::glsl_version;
 
-
-}  //gfx
-
+} // namespace gfx
 
 #endif
