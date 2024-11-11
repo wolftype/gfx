@@ -415,7 +415,8 @@ struct GFXShaderNode : GFXRenderNode {
     string V = graph().useES() ? DefaultVertES() : DefaultVert();
     string F = graph().useES() ? DefaultFragES() : DefaultFrag();
 
-    // printf ("%s\n", V.c_str());
+    printf("%s\n", V.c_str());
+    printf("%s\n", F.c_str());
 
     program = new ShaderProgram(V, F);
     // vatt.add<Vertex>(*program);
@@ -435,13 +436,6 @@ struct GFXShaderNode : GFXRenderNode {
   //           sizeof(Vertex), Vertex::ot());
   //         program->unbind();
   //   }
-
-  // virtual void onEnter(){
-  //   if (!graph().immediate()) program->bind();
-  // }
-  // virtual void onExit(){
-  //   if (!graph().immediate()) program->unbind();
-  // }
 
   virtual void onRender() {
     if (graph().immediate()) {
@@ -781,15 +775,22 @@ struct GFXSplitViewNode : GFXRenderNode {
 /*!
  *  Scene Node To Update Downstream Shader Matrix Uniforms and Call Upstream
  Mesh Nodes Renders in either Immediate and Programmable mode, MONO or STEREO
+ Also stores a current color
  */
 struct GFXSceneNode : GFXRenderNode {
 
   virtual const int nodetype() { return GFX_SCENE_NODE; }
 
-  Scene *mScenePtr; ///< pointer to scene matrix transforms
-  float mv[16];     ///< matrix float values
+  /// pointer to scene matrix transforms
+  Scene *mScenePtr;
+  /// matrix float values
+  float mv[16];
+  /// color state
+  Vec4f mCurrentColor = Vec4f(1, 1, 1, 1);
 
-  // float eyeSep = .03; //move to lens)
+  void begin(float r, float g, float b, float a = 1.0) {
+    mCurrentColor.set(r, g, b, a);
+  }
 
   Scene &scene() { return *mScenePtr; }
 
@@ -857,31 +858,26 @@ struct GFXSceneNode : GFXRenderNode {
 };
 
 /*-----------------------------------------------------------------------------
- *  DEFAULT RENDERABLES
+ *  DEFAULT RENDERABLES -- to do can these be moved to gfx_renderable
  *-----------------------------------------------------------------------------*/
 
-template <> inline void Renderable<MBO>::Draw(const MBO &m, GFXSceneNode *_i) {
+template <> inline void Renderable<MBO>::Draw(MBO &m, GFXSceneNode *_i) {
   // shader is already bound at this point
   _i->updateModelView(); ///< identity matrix
+  Vec4f c = _i->mCurrentColor;
+  mesh::color(m.mesh, c);
   m.render(_i->shader().vatt);
 }
 
 template <>
-inline void Renderable<MBO>::Draw(const MBO &m, const Mat4f &model,
+inline void Renderable<MBO>::Draw(MBO &m, const Mat4f &model,
                                   GFXSceneNode *_i) {
   _i->updateModelView(model); ///< modelview * submodel matrix
   // GFXShaderNode& sn = *(GFXShaderNode*)_i->mDownstream;
+  Vec4f c = _i->mCurrentColor;
+  mesh::color(m.mesh, c);
   m.render(_i->shader().vatt);
 }
-
-/* template<> */
-/* void Renderable<MBO> :: UpdateColor(const MBO& m, float r, float g, float b,
- * float a){ */
-/*       /1* if (m.shouldUpdate()){ *1/ */
-/*       /1*   m.mesh.color(r,g,b,a); *1/ */
-/*       /1*   m.update(); *1/ */
-/*       /1* } *1/ */
-/* } */
 
 /**
  * @brief List of Mesh Buffer Objects of which to bind (VAO or VBO) and

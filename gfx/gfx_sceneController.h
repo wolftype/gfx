@@ -387,8 +387,9 @@ void SceneController::mouseNavigate() {
 }
 
 void SceneController::mouseNavigateStop() {
-  mouseModelTransform_(.99, true);
-  mouseCamTranslate(.7, false);
+  if (io().keyboard.modifier == 0)
+    mouseModelTransform_(.99, true);
+  mouseCamTranslate(.9, false);
   mouseCamSpin(.7, false);
 }
 

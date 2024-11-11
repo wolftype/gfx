@@ -106,7 +106,7 @@ enum PARAM {
 
 enum IFORMAT {
 
-  DEPTHCOMP = GL_DEPTH_COMPONENT16,  // GL_DEPTH_COMPONENT24 ?
+  DEPTHCOMP = GL_DEPTH_COMPONENT16, // GL_DEPTH_COMPONENT24 ?
   RGB5 = GL_RGB5_A1,
 #ifndef __REDUCED_GRAPHICS__
   STENCILIDX = GL_STENCIL_INDEX8,
@@ -197,67 +197,67 @@ inline void error(string tmsg) {
   const char *msg = tmsg.c_str();
 
   switch (err) {
-    case GL_INVALID_ENUM:
-      printf("%s:\n %s\n", msg,
-             "An unacceptable value is specified for an "
-             "enumerated argument. The offending command "
-             "is ignored and has no other side effect "
-             "than to set the error flag.");
-      break;
+  case GL_INVALID_ENUM:
+    printf("%s:\n %s\n", msg,
+           "An unacceptable value is specified for an "
+           "enumerated argument. The offending command "
+           "is ignored and has no other side effect "
+           "than to set the error flag.");
+    break;
 
-    case GL_INVALID_VALUE:
-      printf("%s:\n %s\n", msg,
-             "A numeric argument is out of range. The "
-             "offending command is ignored and has no "
-             "other side effect than to set the error "
-             "flag.");
-      break;
+  case GL_INVALID_VALUE:
+    printf("%s:\n %s\n", msg,
+           "A numeric argument is out of range. The "
+           "offending command is ignored and has no "
+           "other side effect than to set the error "
+           "flag.");
+    break;
 
-    case GL_INVALID_OPERATION:
-      printf("%s:\n %s\n", msg,
-             "The specified operation is not allowed in "
-             "the current state. The offending command "
-             "is ignored and has no other side effect "
-             "than to set the error flag.");
-      break;
+  case GL_INVALID_OPERATION:
+    printf("%s:\n %s\n", msg,
+           "The specified operation is not allowed in "
+           "the current state. The offending command "
+           "is ignored and has no other side effect "
+           "than to set the error flag.");
+    break;
 
 #ifndef __REDUCED_GRAPHICS__
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-      printf("%s:\n %s\n", msg, "Framebuffer is Incomplete");
-      break;
+  case GL_INVALID_FRAMEBUFFER_OPERATION:
+    printf("%s:\n %s\n", msg, "Framebuffer is Incomplete");
+    break;
 #endif
 
 #ifndef __raspberry__
 
-    case GL_STACK_OVERFLOW:
-      printf("%s:\n %s\n", msg,
-             "This command would cause a stack overflow. "
-             "The offending command is ignored and has "
-             "no other side effect than to set the error "
-             "flag.");
-      break;
+  case GL_STACK_OVERFLOW:
+    printf("%s:\n %s\n", msg,
+           "This command would cause a stack overflow. "
+           "The offending command is ignored and has "
+           "no other side effect than to set the error "
+           "flag.");
+    break;
 
-    case GL_STACK_UNDERFLOW:
-      printf("%s:\n %s\n", msg,
-             "This command would cause a stack "
-             "underflow. The offending command is "
-             "ignored and has no other side effect than "
-             "to set the error flag.");
-      break;
+  case GL_STACK_UNDERFLOW:
+    printf("%s:\n %s\n", msg,
+           "This command would cause a stack "
+           "underflow. The offending command is "
+           "ignored and has no other side effect than "
+           "to set the error flag.");
+    break;
 #endif
 
-    case GL_OUT_OF_MEMORY:
-      printf("%s:\n %s\n", msg,
-             "There is not enough memory left to execute the command.  The "
-             "state of the GL is undefined, except for the state of the "
-             "error flags, after this error is recorded.");
-      break;
+  case GL_OUT_OF_MEMORY:
+    printf("%s:\n %s\n", msg,
+           "There is not enough memory left to execute the command.  The "
+           "state of the GL is undefined, except for the state of the "
+           "error flags, after this error is recorded.");
+    break;
 
-    case GL_NO_ERROR:
-      break;
+  case GL_NO_ERROR:
+    break;
 
-    default:
-      break;
+  default:
+    break;
   }
 
   // return 10;
@@ -265,52 +265,52 @@ inline void error(string tmsg) {
 
 inline int planes(GLenum format) {
   switch (format) {
-    //		case GL_COLOR_INDEX:
-    case GL_STENCIL_INDEX:
-    case GL_DEPTH_COMPONENT:
-    //		case GL_RED:
-    //		case GL_GREEN:
-    //		case GL_BLUE:
-    case GL_ALPHA:
-    case GL_LUMINANCE:
-      return 1;
+  //		case GL_COLOR_INDEX:
+  case GL_STENCIL_INDEX:
+  case GL_DEPTH_COMPONENT:
+  //		case GL_RED:
+  //		case GL_GREEN:
+  //		case GL_BLUE:
+  case GL_ALPHA:
+  case GL_LUMINANCE:
+    return 1;
 
-    case GL_LUMINANCE_ALPHA:
-      return 2;
-    case GL_RGB:
-      return 3;
-    case GL_RGBA:
-    default:
-      return 4;
+  case GL_LUMINANCE_ALPHA:
+    return 2;
+  case GL_RGB:
+    return 3;
+  case GL_RGBA:
+  default:
+    return 4;
   }
 }
 
 // bytes/px
 inline int bpp(GLenum type) {
   switch (type) {
-      /*
-                         case GL_BITMAP:	??????
-                         type = sizeof(GLbitfield);
-                         break;
-                         */
+    /*
+                       case GL_BITMAP:	??????
+                       type = sizeof(GLbitfield);
+                       break;
+                       */
 
-    case GL_UNSIGNED_SHORT:
-      return sizeof(GLushort);
-    case GL_SHORT:
-      return sizeof(GLshort);
-    case GL_UNSIGNED_INT:
-      return sizeof(GLuint);
-    case GL_INT:
-      return sizeof(GLint);
-    case GL_FLOAT:
-      return sizeof(GLfloat);
-    // case GL_
-    case GL_BYTE:
-      return sizeof(GLbyte);
+  case GL_UNSIGNED_SHORT:
+    return sizeof(GLushort);
+  case GL_SHORT:
+    return sizeof(GLshort);
+  case GL_UNSIGNED_INT:
+    return sizeof(GLuint);
+  case GL_INT:
+    return sizeof(GLint);
+  case GL_FLOAT:
+    return sizeof(GLfloat);
+  // case GL_
+  case GL_BYTE:
+    return sizeof(GLbyte);
 
-    case GL_UNSIGNED_BYTE:
-    default:
-      return sizeof(GLubyte);
+  case GL_UNSIGNED_BYTE:
+  default:
+    return sizeof(GLubyte);
   }
 }
 
@@ -322,57 +322,57 @@ inline GLsizeiptr dataSize(GLenum format, GLenum type, int num) {
 
 inline GLenum type(GLenum t) {
   switch (t) {
-    case GL_FLOAT_MAT2:
-    case GL_FLOAT_MAT4:
-    case GL_FLOAT_VEC2:
-    case GL_FLOAT_VEC3:
-    case GL_FLOAT_VEC4:
-      return GL_FLOAT;
+  case GL_FLOAT_MAT2:
+  case GL_FLOAT_MAT4:
+  case GL_FLOAT_VEC2:
+  case GL_FLOAT_VEC3:
+  case GL_FLOAT_VEC4:
+    return GL_FLOAT;
   }
   return GL_FLOAT;
 }
 inline int cmp(GLenum type) {
   switch (type) {
-    case GL_FLOAT:
-      return 1;
-    case GL_FLOAT_MAT2:
-    case GL_FLOAT_VEC2:
-      return 2;
-    case GL_FLOAT_VEC3:
-      return 3;
-    case GL_FLOAT_VEC4:
-      return 4;
-    case GL_FLOAT_MAT4:
-      return 16;
+  case GL_FLOAT:
+    return 1;
+  case GL_FLOAT_MAT2:
+  case GL_FLOAT_VEC2:
+    return 2;
+  case GL_FLOAT_VEC3:
+    return 3;
+  case GL_FLOAT_VEC4:
+    return 4;
+  case GL_FLOAT_MAT4:
+    return 16;
 
-    default:
-      return 3;
+  default:
+    return 3;
   }
   return 0;
 }
 
 static const string Get(GLenum t) {
   switch (t) {
-    case GL_RGB:
-      return "FORMAT: GL_RGB\n";
-    case GL_RGBA:
-      return "FORMAT: GL_RGBA\n";
-    case GL_ALPHA:
-      return "FORMAT: GL_ALPHA\n";
-      //...
+  case GL_RGB:
+    return "FORMAT: GL_RGB\n";
+  case GL_RGBA:
+    return "FORMAT: GL_RGBA\n";
+  case GL_ALPHA:
+    return "FORMAT: GL_ALPHA\n";
+    //...
 
-    case GL_FLOAT:
-      return "TYPE: GL_FLOAT\n";
-    case GL_UNSIGNED_BYTE:
-      return "TYPE: GL_UNSIGNED_BYTE\n";
-    case GL_BYTE:
-      return "TYPE: GL_BYTE\n";
-      //...
+  case GL_FLOAT:
+    return "TYPE: GL_FLOAT\n";
+  case GL_UNSIGNED_BYTE:
+    return "TYPE: GL_UNSIGNED_BYTE\n";
+  case GL_BYTE:
+    return "TYPE: GL_BYTE\n";
+    //...
 
-    case GL_TEXTURE_2D:
-      return "TARGET: GL_TEXTURE_2D\n";
-      // case GL_CUBE_MAP: return "TARGET: GL_TEXTURE_CUBE_MAP\n";
-      //...
+  case GL_TEXTURE_2D:
+    return "TARGET: GL_TEXTURE_2D\n";
+    // case GL_CUBE_MAP: return "TARGET: GL_TEXTURE_CUBE_MAP\n";
+    //...
   }
   return "";
 }
@@ -383,14 +383,12 @@ inline void clearColor(float r = 0.0, float g = 0.0, float b = 0.0,
 }
 inline void clear(GLbitfield a) { glClear(a); }
 
-template <class A>
-inline void Line(const A &a, const A &b) {
+template <class A> inline void Line(const A &a, const A &b) {
   glVertex3f(a[0], a[1], a[2]);
   glVertex3f(b[0], b[1], b[2]);
 }
 
-template <class A>
-inline void Tri(const A &a, const A &b, const A &c) {
+template <class A> inline void Tri(const A &a, const A &b, const A &c) {
   glVertex3f(a[0], a[1], a[2]);
   glVertex3f(b[0], b[1], b[2]);
   glVertex3f(c[0], c[1], c[2]);
@@ -431,15 +429,13 @@ static GLenum Lights[8] = {GL_LIGHT0, GL_LIGHT1, GL_LIGHT2, GL_LIGHT3,
 
 inline void vertex(float a, float b, float c) { glVertex3f(a, b, c); }
 
-template <class T>
-inline void vertex(const T &v) {
+template <class T> inline void vertex(const T &v) {
   glVertex3f(v[0], v[1], v[2]);
 }
 
 inline void normal(float a, float b, float c) { glNormal3f(a, b, c); }
 
-template <class T>
-inline void normal(const T &v) {
+template <class T> inline void normal(const T &v) {
   glNormal3f(v[0], v[1], v[2]);
 }
 
@@ -448,8 +444,7 @@ inline void translate(double const *p) { glTranslated(p[0], p[1], p[2]); }
 inline void translate(float x, float y, float z) { glTranslatef(x, y, z); }
 inline void translate(double x, double y, double z) { glTranslated(x, y, z); }
 
-template <class T>
-inline void rotate(const T &v) {
+template <class T> inline void rotate(const T &v) {
   glRotatef(v[0], v[1], v[2], v[3]);
 }
 
@@ -598,7 +593,9 @@ inline void enablePreset() {
   //	GL :: specularMat(.2,.2,.2,0.5);
   emissionMat(.2, .2, .2, 0.5);
 
-  lightPos(1, 1, 5);
+  lightPos(2, 2, 5);
+
+  glLineWidth(2);
 }
 
 inline void disablePreset() {
@@ -611,27 +608,27 @@ enum ShadeModel { FLAT = GL_FLAT, SMOOTH = GL_SMOOTH };
 
 inline void Begin(GL::MODE mode) {
   switch (mode) {
-    case GL::P:
-      glBegin(GL_POINTS);
-      break;
-    case GL::L:
-      glBegin(GL_LINES);
-      break;
-    case GL::LL:
-      glBegin(GL_LINE_LOOP);
-      break;
-    case GL::LS:
-      glBegin(GL_LINE_STRIP);
-      break;
-    case GL::T:
-      glBegin(GL_TRIANGLES);
-      break;
-    case GL::TS:
-      glBegin(GL_TRIANGLE_STRIP);
-      break;
-    case GL::TF:
-      glBegin(GL_TRIANGLE_FAN);
-      break;
+  case GL::P:
+    glBegin(GL_POINTS);
+    break;
+  case GL::L:
+    glBegin(GL_LINES);
+    break;
+  case GL::LL:
+    glBegin(GL_LINE_LOOP);
+    break;
+  case GL::LS:
+    glBegin(GL_LINE_STRIP);
+    break;
+  case GL::T:
+    glBegin(GL_TRIANGLES);
+    break;
+  case GL::TS:
+    glBegin(GL_TRIANGLE_STRIP);
+    break;
+  case GL::TF:
+    glBegin(GL_TRIANGLE_FAN);
+    break;
   }
 }
 
@@ -654,8 +651,8 @@ inline void enablePreset() {
 //     inline void pointSize(GLfloat f) { glPointSize(f); }
 //     inline void shadeModel(ShadeModel sm) { glShadeModel(sm); }
 
-}  // namespace GL
+} // namespace GL
 
-}  // namespace gfx
+} // namespace gfx
 
 #endif

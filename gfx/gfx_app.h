@@ -230,8 +230,10 @@ struct GFXApp : public GFXRenderNode,
     if (mRenderGraph.immediate()) {
       render::begin(r, g, b, a);
       render::draw(t);
-    } else
+    } else {
+      mSceneNode.begin(r, g, b, a);
       Renderable<T>::Draw(t, &mSceneNode);
+    }
   }
 
   /*-----------------------------------------------------------------------------

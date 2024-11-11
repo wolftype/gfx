@@ -21,7 +21,7 @@ struct MyApp : GFXAppImGui {
 
   void onSetup() override {
     mbo = Mesh::Circle();
-    mRenderGraph.immediate(true);
+    mRenderGraph.immediate(false);
   }
 
   void onDraw() override { draw(mbo, 1, 0, 0); }

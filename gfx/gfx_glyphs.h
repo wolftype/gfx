@@ -18,49 +18,35 @@
 
 namespace gfx {
 
-/// GL BUILTIN PIPELINE
+/// GL FIXED PIPELINE
 namespace Glyph {
 
 // void Go();
 
 /* Line Between Two Points */
-template <class V>
-void Line(const V &v1, const V &v2);
+template <class V> void Line(const V &v1, const V &v2);
 /* Lines */
-template <class V>
-void Lines(const V &v1, int num);
+template <class V> void Lines(const V &v1, int num);
 
 /* Line from Origin */
-template <class V>
-void Line(const V &v1);
+template <class V> void Line(const V &v1);
 /* Line Between Two Points */
-template <class V>
-void Line2D(const V &v1, const V &v2);
+template <class V> void Line2D(const V &v1, const V &v2);
 
 /* Line Between Two Points */
-template <class V>
-inline void Line2D(const V &v1) {
-  Line2D(V(), v1);
-}
+template <class V> inline void Line2D(const V &v1) { Line2D(V(), v1); }
 
-template <class V>
-void DashedLine(const V &v1, const V &v2, int num = 10);
-template <class V>
-void DashedLine(const V &v1, int num = 10);
-template <class V>
-void Pin(const V &v2);
+template <class V> void DashedLine(const V &v1, const V &v2, int num = 10);
+template <class V> void DashedLine(const V &v1, int num = 10);
+template <class V> void Pin(const V &v2);
 
 // directed line element
-template <class V>
-void Dir(const V &v1);
-template <class V>
-void Arr(const V &v1, bool line = 0);
+template <class V> void Dir(const V &v1);
+template <class V> void Arr(const V &v1, bool line = 0);
 // directed line element at a certain position
-template <class V>
-void Dir(const V &v1, const V &v2);
+template <class V> void Dir(const V &v1, const V &v2);
 // directed line element at a certain position
-template <class V>
-void Dir2D(const V &v1, const V &v2);
+template <class V> void Dir2D(const V &v1, const V &v2);
 
 // reg circle
 void Circle(double radius = 1.0, int res = 50);
@@ -112,15 +98,11 @@ inline static void Point() {
   glEnd();
 }
 
-template <class A>
-static void Point(const A &);
-template <class A>
-static void Points(const A &, int num);
-template <class A>
-static void Point2D(const A &);
+template <class A> static void Point(const A &);
+template <class A> static void Points(const A &, int num);
+template <class A> static void Point2D(const A &);
 // void Point(const Vec3<>& );
-template <class V>
-void Axes(const V &, const V &, const V &);
+template <class V> void Axes(const V &, const V &, const V &);
 // pin (versor)
 
 // flat arrow
@@ -128,8 +110,7 @@ void Tri(bool down = 0);
 void TriLine(bool down = 0);
 
 /// Triangle through three points
-template <class V>
-void Triangle(const V &a, const V &b, const V &c) {
+template <class V> void Triangle(const V &a, const V &b, const V &c) {
   GL::normal(Vec3f(b - a).cross(Vec3f(c - a)).unit());
 
   glBegin(GL_TRIANGLES);
@@ -172,7 +153,7 @@ void Cube(double size = 1);
 //                   void SegPnts(const Cir& K, const Pnt& a, const Pnt& b, int
 //                   res = 20);
 
-}  // namespace Glyph
+} // namespace Glyph
 
 inline void Glyph::Circle(double radius, int numseg) {
   glNormal3f(0, 0, 1);
@@ -239,8 +220,8 @@ inline void Glyph::DirCircle(double radius, bool clockwise, int res,
     glTranslated(t.x, t.y, 0);
     glRotated(180 * rad / PI, 0, 0, 1);
     glScaled(.5, .5, .5);
-    Glyph::Tri(false);  // no need to deal with sign here Op::AA takes care of
-                        // it
+    Glyph::Tri(false); // no need to deal with sign here Op::AA takes care of
+                       // it
 
     glPopMatrix();
   }
@@ -252,7 +233,7 @@ inline void Glyph::DirFillCircle(double radius, bool clockwise, int res,
   Glyph::Circle(radius);
 
   for (int i = 0; i < 5; ++i) {
-    float dt = 0;  //( bAnimate? Time::Clock().total() * 2 * PI : 0 );
+    float dt = 0; //( bAnimate? Time::Clock().total() * 2 * PI : 0 );
     float rad = (dt / 10.0 + (2 * PI * i) / 5);
     // if(bAnimate) rad += Time::Clock().time();
     glPushMatrix();
@@ -365,7 +346,7 @@ inline void Glyph::DirDashedCircle(double radius, bool clockwise, int res,
 inline void Glyph::Segment(float angle, float radius, bool sign, int res) {
   glNormal3f(0, 0, 1);
 
-  int num = res * fabs(angle);  // floor(20 * PI / (1 + ( PI - angle ) ));
+  int num = res * fabs(angle); // floor(20 * PI / (1 + ( PI - angle ) ));
 
   glBegin(GL_LINE_STRIP);
 
@@ -403,7 +384,7 @@ inline void Glyph::Segment3(float angle, float off, float radius, bool sign,
                             int res) {
   glNormal3f(0, 0, 1);
 
-  int num = res;  // * fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
+  int num = res; // * fabs(angle);   //floor(20 * PI / (1 + ( PI - angle ) ));
 
   glBegin(GL_LINE_STRIP);
 
@@ -422,7 +403,7 @@ inline void Glyph::DashedSegment(float angle, float radius, bool sign,
                                  int res) {
   glNormal3f(0, 0, 1);
 
-  int num = res * fabs(angle);  // floor(20 * PI / (1 + ( PI - angle ) ));
+  int num = res * fabs(angle); // floor(20 * PI / (1 + ( PI - angle ) ));
 
   glBegin(GL_LINES);
 
@@ -440,7 +421,7 @@ inline void Glyph::DashedSegment2(float angle, float angle2, float radius,
                                   int res) {
   glNormal3f(0, 0, 1);
 
-  int num = res * fabs(angle);  // floor(20 * PI / (1 + ( PI - angle ) ));
+  int num = res * fabs(angle); // floor(20 * PI / (1 + ( PI - angle ) ));
 
   glBegin(GL_LINES);
 
@@ -458,7 +439,7 @@ inline void Glyph::DashedSegment3(float angle, float off, float radius,
                                   bool sign, int res) {
   glNormal3f(0, 0, 1);
 
-  int num = res * fabs(angle);  // floor(20 * PI / (1 + ( PI - angle ) ));
+  int num = res * fabs(angle); // floor(20 * PI / (1 + ( PI - angle ) ));
 
   glBegin(GL_LINES);
 
@@ -557,8 +538,7 @@ inline void Glyph::DirDashedSegment(float angle, float radius, bool clockwise,
 //
 // }
 
-template <class V>
-inline void Glyph::Line2D(const V &v1, const V &v2) {
+template <class V> inline void Glyph::Line2D(const V &v1, const V &v2) {
   glNormal3f(0, 0, 1);
 
   glBegin(GL_LINES);
@@ -569,8 +549,7 @@ inline void Glyph::Line2D(const V &v1, const V &v2) {
   glEnd();
 }
 
-template <class V>
-inline void Glyph::Line(const V &v1, const V &v2) {
+template <class V> inline void Glyph::Line(const V &v1, const V &v2) {
   glNormal3f(0, 0, 1);
 
   glBegin(GL_LINES);
@@ -581,8 +560,7 @@ inline void Glyph::Line(const V &v1, const V &v2) {
   glEnd();
 }
 
-template <class V>
-inline void Glyph::Lines(const V &v, int num) {
+template <class V> inline void Glyph::Lines(const V &v, int num) {
   glNormal3f(0, 0, 1);
 
   glBegin(GL_LINE_STRIP);
@@ -592,8 +570,7 @@ inline void Glyph::Lines(const V &v, int num) {
   glEnd();
 }
 
-template <class V>
-inline void Glyph::Line(const V &v2) {
+template <class V> inline void Glyph::Line(const V &v2) {
   Glyph::Line(V(0, 0, 0), v2);
 }
 
@@ -617,13 +594,11 @@ inline void Glyph::DashedLine(const V &v1, const V &v2, int num) {
   glEnd();
   glDisable(GL_LINE_STIPPLE);
 }
-template <class V>
-inline void Glyph::DashedLine(const V &v2, int num) {
+template <class V> inline void Glyph::DashedLine(const V &v2, int num) {
   DashedLine(V(0, 0, 0), v2, num);
 }
 
-template <class V>
-inline void Glyph::Dir(const V &v2) {
+template <class V> inline void Glyph::Dir(const V &v2) {
   // Rot r2 = Gen::ratio( V(0,0,1), v2.unit() );
   // Rot t = Gen::aa(r2);
   Quat t = Quat::Rotor(Vec3f(0, 0, 1), Vec3f(v2[0], v2[1], v2[2])).axan();
@@ -703,8 +678,7 @@ inline void Glyph::Dir(const V &v2) {
 //
 // }
 
-template <class A>
-inline void Glyph::Point(const A &v) {
+template <class A> inline void Glyph::Point(const A &v) {
   //  glPointSize(5.0);
   glBegin(GL_POINTS);
   // glNormal3f(v[0], v[1], v[2]);
@@ -712,8 +686,7 @@ inline void Glyph::Point(const A &v) {
   glEnd();
 }
 
-template <class A>
-inline void Glyph::Points(const A &v, int num) {
+template <class A> inline void Glyph::Points(const A &v, int num) {
   glBegin(GL_POINTS);
   for (int i = 0; i < num; ++i) {
     glVertex3f(v[i][0], v[i][1], v[i][2]);
@@ -721,8 +694,7 @@ inline void Glyph::Points(const A &v, int num) {
   glEnd();
 }
 
-template <class A>
-inline void Glyph::Point2D(const A &v) {
+template <class A> inline void Glyph::Point2D(const A &v) {
   //  glPointSize(5.0);
   glBegin(GL_POINTS);
   // glNormal3f(v[0], v[1], v[2]);
@@ -801,7 +773,8 @@ inline void Glyph::Sphere(double radius, int slices, int stacks) {
   // glutWireSphere (radius, slices, stacks);
   Mesh m = Mesh::Sphere(radius, slices, stacks);
   glBegin(GL_LINE_STRIP);
-  for (auto &i : m.index()) GL::vertex(m[i].Pos);
+  for (auto &i : m.index())
+    GL::vertex(m[i].Pos);
   glEnd();
 }
 
@@ -810,7 +783,8 @@ inline void Glyph::SolidSphere(double radius, int slices, int stacks) {
   Mesh m = Mesh::Sphere(radius, slices, stacks);
 
   glBegin(GL_TRIANGLE_STRIP);
-  for (auto &i : m.index()) GL::vertex(m[i].Pos);
+  for (auto &i : m.index())
+    GL::vertex(m[i].Pos);
   glEnd();
 }
 
@@ -1073,6 +1047,6 @@ inline void Glyph::Axes(const V &v1, const V &v2, const V &v3) {
 //
 //     }
 
-}  // namespace gfx
+} // namespace gfx
 
 #endif
