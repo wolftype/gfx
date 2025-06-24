@@ -2,7 +2,7 @@
 #for cross-compiling to raspberry pi or jetson etc use -DCMAKE_TOOLCHAIN_FILE=path/to/file (e.g. toolchains/rpi)
 
 #VERSION
-cmake_minimum_required(VERSION 3.5)#//2.8.12)
+cmake_minimum_required(VERSION 3.10)
 
 #POLICIES
 #if(COMMAND cmake_policy)
