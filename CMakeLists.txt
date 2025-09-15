@@ -148,14 +148,27 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   find_package(OpenGL REQUIRED)
 
   #todo, these should not be required
-  find_package(GLUT REQUIRED)
+  #find_package(GLUT REQUIRED)
   find_package(GLEW REQUIRED)
 
   #todo GLV should be optional
-  add_subdirectory(GLV)
-  link_directories(${GLV_BINARY_DIR})
-  include_directories(${PROJECT_SOURCE_DIR}/GLV)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/GLV)
+    add_subdirectory(GLV)
+    link_directories(${GLV_BINARY_DIR})
+    include_directories(${PROJECT_SOURCE_DIR}/GLV)
+    set(GLV_FOUND TRUE)
+  else()
+    message(STATUS "GLV directory not found, skipping GLV build")
+    set(GLV_FOUND FALSE)
+  endif()
   include_directories(gl2ps)
+
+  #new: adding in imgui
+  include_directories (${PROJECT_SOURCE_DIR}/imgui)
+  include_directories (${PROJECT_SOURCE_DIR}/imgui/backends)
+  #small lib just compiles imgui
+  file(GLOB imgui_src imgui/*.cpp imgui/backends/imgui_impl_opengl2.cpp imgui/backends/imgui_impl_glfw.cpp)
+  add_library(imgui ${imgui_src})
 
   #GLFW
   set( GLFW_BUILD_EXAMPLES OFF CACHE BOOL "turn off build examples")
@@ -163,13 +176,13 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
   link_directories(${PROJECT_BINARY_DIR})
   link_directories(${GLFW_BINARY_DIR})
   include_directories(${PROJECT_SOURCE_DIR}/glfw/include/)
-  include_directories(${PROJECT_SOURCE_DIR}/glm/)
+  #  include_directories(${PROJECT_SOURCE_DIR}/glm/)
   #target_link_libraries(${target} glfw ${GLEW_LIBRARY} ${GLFW_LIBRARIES} )
   #small lib just compiles gl2ps
   add_library(gfx gl2ps/gl2ps.c)
 
   set(gfx_library gfx)
-  set(libraries ${libraries} ${GLUT_LIBRARY} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} glfw ${GLFW_LIBRARIES})
+  set(libraries ${libraries} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${gfx_library} glfw ${GLFW_LIBRARIES} imgui)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -U__STRICT_ANSI__ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast -Wno-deprecated-declarations")
   #  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -U__STRICT_ANSI__ -nostdinc++ -O3 -ftemplate-depth-1200 -Wno-switch -Wno-int-to-pointer-cast")
